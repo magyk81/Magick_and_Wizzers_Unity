@@ -5,7 +5,7 @@ using UnityEngine;
 public class BoardScript : MonoBehaviour
 {
     [SerializeField]
-    private GameObject BASE_CHUNK, BASE_PIECE, BASE_DEST;
+    private GameObject BASE_CHUNK, BASE_TILE, BASE_PIECE, BASE_DEST;
 
     [SerializeField]
     private int size, chunkSize;
@@ -13,6 +13,9 @@ public class BoardScript : MonoBehaviour
 
     [SerializeField]
     private CameraScript cameraScript;
+    [SerializeField]
+    private int playerCount;
+    private Player[] players;
     private Transform trans;
     private Chunk[,] chunks;
     private Tile[,] tiles;
@@ -30,6 +33,10 @@ public class BoardScript : MonoBehaviour
     [SerializeField]
     private HandScript handScript;
 
+    public static readonly int MAX_DESTINATIONS = 3;
+    private GameObject[][] objs_dest;
+    private Transform[][] trans_dest;
+
     // Start is called before the first frame update
     private void Start()
     {
@@ -45,6 +52,23 @@ public class BoardScript : MonoBehaviour
         Transform chunks_parent_trans
             = chunks_parent.GetComponent<Transform>();
         chunks_parent_trans.SetParent(trans);
+
+        // Set up collider grid and its parent gameObject
+        GameObject[,] colliderGrid = new GameObject[chunkSize, chunkSize];
+        GameObject colliderGrid_parent = new GameObject("Collider Grid");
+        Transform colliderGrid_parent_trans
+            = colliderGrid_parent.GetComponent<Transform>();
+        colliderGrid_parent_trans.SetParent(trans);
+        for (int i = 0; i < chunkSize; i++)
+        {
+            for (int j = 0; j < chunkSize; j++)
+            {
+                colliderGrid[i, j] = Instantiate(
+                    BASE_TILE, colliderGrid_parent_trans);
+                colliderGrid[i, j].name = "Tile [" + i + ", " + j + "]";
+                colliderGrid[i, j].SetActive(false);
+            }
+        }
 
         // Set up chunks
         for (int j = 0; j < size; j++)
@@ -101,16 +125,44 @@ public class BoardScript : MonoBehaviour
                 }
 
                 coords[0] = Coord._(i, j);
-                chunks[i, j] = new Chunk(coords, chunkSize);
+                chunks[i, j] = new Chunk(coords, colliderGrid, chunkSize);
                 chunks[i, j].SetGameObject(BASE_CHUNK, chunks_parent_trans);
 
                 // Set up tiles
                 Tiles = chunks[i, j].Tiles;
             }
         }
-        BASE_CHUNK.SetActive(false);
+
+        
+        // Parent gameObject to keep destinations
+        GameObject destinations_parent = new GameObject("Destinations");
+        Transform destinations_parent_trans
+            = destinations_parent.GetComponent<Transform>();
+        destinations_parent_trans.SetParent(trans);
+
+        // Create destination gameObjects and transforms
+        objs_dest = new GameObject[MAX_DESTINATIONS][];
+        trans_dest = new Transform[MAX_DESTINATIONS][];
+        for (int j = 0; j < MAX_DESTINATIONS; j++)
+        {
+            objs_dest[j] = new GameObject[4];
+            trans_dest[j] = new Transform[4];
+            for (int i = 0; i < 4; i++)
+            {
+                objs_dest[j][i] = Instantiate(BASE_DEST,
+                    destinations_parent_trans);
+                objs_dest[j][i].name = "Destination_ " + j + " [" + i + "]"
+                    + (i == 0 ? " _" : "");
+                trans_dest[j][i] = objs_dest[j][i].GetComponent<Transform>();
+                objs_dest[j][i].SetActive(false);
+            }
+        }
+
+        // BASE_PIECE still needed for adding new pieces
         BASE_PIECE.SetActive(false);
-        BASE_DEST.SetActive(false);
+        Destroy(BASE_CHUNK);
+        Destroy(BASE_TILE);
+        Destroy(BASE_DEST);
 
 
         // Set neighbors for chunks and their tiles
@@ -139,15 +191,21 @@ public class BoardScript : MonoBehaviour
                 neighbors[Coord.DOWN] = GetTile(i, j - 1);
                 tiles[i, j].Neighbors = neighbors;
             }
-        }        
+        }
 
-        cameraScript.SetBounds(-0.5F, TOTAL_SIZE - 0.5F);
+        // Set up players
+        players = new Player[playerCount];
+        for (int i = 0; i < playerCount; i++)
+        {
+            players[i] = new Player(handScript, cameraScript, TOTAL_SIZE, i);
+        }
 
         // Testing
         AddPiece(tiles[0, 0]);
         pieces[0].AddDestination(tiles[2, 2]);
         pieces[0].AddDestination(tiles[1, 1]);
         pieces[0].AddDestination(tiles[0, 0]);
+        //SelectPiece(pieces[0]);
     }
 
     Tile GetTile(int x, int y)
@@ -177,8 +235,31 @@ public class BoardScript : MonoBehaviour
     private List<Piece> pieces = new List<Piece>();
     public void AddPiece(Tile tile)
     {
-        pieces.Add(new Piece(tile, trans, BASE_PIECE, BASE_DEST)
+        pieces.Add(new Piece(tile, trans, BASE_PIECE, trans_dest)
             { BoardSize = TOTAL_SIZE });
+    }
+
+    public static void SetClonePositions(Transform[] trans, int boardSize)
+    {
+        float xPosF = trans[0].localPosition.x;
+        float altitude = trans[0].localPosition.y;
+        float yPosF = trans[0].localPosition.z;
+
+        int xMult = (xPosF < boardSize / 2 - 0.5F) ? 1 : -1;
+        int yMult = (yPosF < boardSize / 2 - 0.5F) ? 1 : -1;
+
+        trans[1].localPosition = new Vector3(
+            xPosF + (boardSize * xMult),
+            altitude,
+            yPosF);
+        trans[2].localPosition = new Vector3(
+            xPosF,
+            altitude,
+            yPosF + (boardSize * yMult));
+        trans[3].localPosition = new Vector3(
+            xPosF + (boardSize * xMult),
+            altitude,
+            yPosF + (boardSize * yMult));
     }
 
     private void FixedUpdate()
@@ -190,5 +271,7 @@ public class BoardScript : MonoBehaviour
     private void Update()
     {
         foreach (Piece piece in pieces) { piece.Update(); }
+
+        foreach (Player player in players) { player.Update(pieces); }
     }
 }

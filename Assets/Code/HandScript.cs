@@ -6,6 +6,10 @@ using UnityEngine.UI;
 public class HandScript : MonoBehaviour
 {
     [SerializeField]
+    private CameraScript cameraScript;
+    [SerializeField]
+    private Image[] cursors;
+    [SerializeField]
     private RawImage tint;
     [SerializeField]
     private int drawMoveSpeed;
@@ -31,6 +35,19 @@ public class HandScript : MonoBehaviour
     private float dispDist = Screen.height;
     private readonly int DISP_DIST_PERC_MAX = 100;
     private int dispDistPerc;
+
+    private bool showing = false;
+    public bool Showing
+    {
+        set
+        {
+            showing = value;
+            tint.gameObject.SetActive(showing);
+        }
+    }
+
+    private enum CursorType { NORMAL, DOT }
+    //private CursorType cursorType = CursorType.NORMAL;
 
     private void Start()
     {
@@ -71,7 +88,6 @@ public class HandScript : MonoBehaviour
         {
             objs_card[i] = Instantiate(BASE_CARD, trans);
             objs_card[i].name = "Card Object";
-            Debug.Log("i: " + i);
         }
 
         targetPos = new Vector2[MAX_HAND_SIZE];
@@ -84,10 +100,14 @@ public class HandScript : MonoBehaviour
 
         BASE_CARD.SetActive(false);
 
-        DrawCards(5);
+        // Set up cursors
+        int cursorRadius = cameraScript.CursorRadius;
+        cursors[(int) CursorType.NORMAL].GetComponent<RectTransform>().sizeDelta
+            = new Vector2(cursorRadius * 2F, cursorRadius * 2F);
+        cursors[(int) CursorType.DOT].GetComponent<RectTransform>().sizeDelta
+            = new Vector2(cursorRadius / 10F, cursorRadius / 10F);
 
-        // Testing
-        
+        UpdateCardPositions();
     }
 
     public void DrawCards(int num)
@@ -275,32 +295,9 @@ public class HandScript : MonoBehaviour
             }
         }
     }
-    
-    private void Update()
+
+    private void UpdateCardPositions()
     {
-        // Increment/decrement dispPerc
-        if (CameraScript.state == StateEnum.HAND)
-        {
-            if (dispDistPerc > 0) dispDistPerc--;
-        }
-        else
-        {
-            if (dispDistPerc < DISP_DIST_PERC_MAX) dispDistPerc++;
-        }
-        dispDist = Screen.height * ((float) dispDistPerc) / DISP_DIST_PERC_MAX;
-
-        if (Input.GetKeyDown(KeyCode.H))
-        {
-            if (CameraScript.state == StateEnum.HAND)
-                CameraScript.state = StateEnum.NORMAL;
-            else CameraScript.state = StateEnum.HAND;
-            tint.gameObject.SetActive(CameraScript.state == StateEnum.HAND);
-        }
-
-        // No need to update card display movement if no cards are in sight.
-        if (CameraScript.state != StateEnum.HAND
-            && dispDist == DISP_DIST_PERC_MAX) return;
-
         for (int i = 0; i < MAX_HAND_SIZE; i++)
         {
             if (objs_card[i].activeSelf)
@@ -316,10 +313,9 @@ public class HandScript : MonoBehaviour
                 {
                     // Multiplying Screen.width twice makes it seem like
                     // fullscreen is a similar speed as windowed.
-                    float val = drawMoveSpeed * Screen.width * Screen.width;
-                    if (Debug.isDebugBuild) val /= 3;
+                    float val = drawMoveSpeed * Screen.width;
                     rt.anchoredPosition = new Vector2(
-                        pos.x - (val / 100000F), targetPos_disp[i].y);
+                        pos.x - (val / 1000F), targetPos_disp[i].y);
                     
                     // Don't let card position go past the mark.
                     if (rt.anchoredPosition.x <= targetPos[i].x)
@@ -340,55 +336,42 @@ public class HandScript : MonoBehaviour
             trans_select.anchoredPosition = objs_card[cardSelect]
                 .GetComponent<RectTransform>().anchoredPosition;
         }
+    }
 
-        // Do not listen for key input if not in hand-view mode.
-        if (CameraScript.state != StateEnum.HAND) return;
+    public void PressDirection(int dir, bool press)
+    {
+        if (press) MoveSelection(dir);
+    }
+    
+    // Update which cursor(s) is being displayed
+    public void SetCursor(StateEnum state)
+    {
+        bool useNormalCursor = (state == StateEnum.PIECE
+            || state == StateEnum.DESTINATION);
+        bool useDotCursor = (state == StateEnum.TILE
+            || state == StateEnum.DESTINATION);
+        cursors[(int) CursorType.NORMAL].gameObject.SetActive(useNormalCursor);
+        cursors[(int) CursorType.DOT].gameObject.SetActive(useDotCursor);
+    }
 
-        if (Input.GetKeyDown(KeyCode.Space))
+    private void Update()
+    {
+        if (showing)
         {
-            DrawCards(3);
+            // Increment/decrement dispPerc
+            if (dispDistPerc > 0) dispDistPerc--;
+            foreach (Image cursor in cursors)
+                cursor.gameObject.SetActive(false);
+            
+            UpdateCardPositions();
         }
-        
-        if (Input.GetKeyDown(KeyCode.LeftArrow)) MoveSelection(Coord.LEFT);
-        if (Input.GetKeyDown(KeyCode.RightArrow)) MoveSelection(Coord.RIGHT);
-        if (Input.GetKeyDown(KeyCode.UpArrow)) MoveSelection(Coord.UP);
-        if (Input.GetKeyDown(KeyCode.DownArrow)) MoveSelection(Coord.DOWN);
+        else
+        {
+            if (dispDistPerc < DISP_DIST_PERC_MAX) dispDistPerc++;
 
-        if (Input.GetKeyDown(KeyCode.Alpha1))
-        {
-            cardSelect = 0;
+            // Only update card display movement if cards are in sight.
+            if (dispDistPerc != DISP_DIST_PERC_MAX) UpdateCardPositions();
         }
-        else if (Input.GetKeyDown(KeyCode.Alpha2))
-        {
-            cardSelect = 1;
-        }
-        else if (Input.GetKeyDown(KeyCode.Alpha3))
-        {
-            cardSelect = 2;
-        }
-        else if (Input.GetKeyDown(KeyCode.Alpha4))
-        {
-            cardSelect = 7;
-        }
-        else if (Input.GetKeyDown(KeyCode.Alpha5))
-        {
-            cardSelect = 8;
-        }
-        else if (Input.GetKeyDown(KeyCode.Alpha6))
-        {
-            cardSelect = 9;
-        }
-        else if (Input.GetKeyDown(KeyCode.Alpha7))
-        {
-            cardSelect = 10;
-        }
-        else if (Input.GetKeyDown(KeyCode.Alpha8))
-        {
-            cardSelect = 11;
-        }
-        else if (Input.GetKeyDown(KeyCode.Alpha9))
-        {
-            cardSelect = 8;
-        }
+        dispDist = Screen.height * ((float) dispDistPerc) / DISP_DIST_PERC_MAX;
     }
 }

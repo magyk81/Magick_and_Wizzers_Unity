@@ -1,4 +1,4 @@
 public enum StateEnum
 {
-    NORMAL, HAND
+    PIECE, TILE, CHUNK, DESTINATION, HAND, GRAVE
 }

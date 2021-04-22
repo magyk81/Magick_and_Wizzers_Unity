@@ -6,11 +6,6 @@ public class Chunk
 {
     private readonly GameObject obj;
     private readonly GameObject[] objs_square = new GameObject[4];
-    public GameObject Obj_square {
-        set {
-            
-        }
-    }
     private Chunk[] neighbors = new Chunk[4];
     public Chunk[] Neighbors {
         set {
@@ -24,13 +19,18 @@ public class Chunk
     public Tile[,] Tiles {
         get { return tiles; }
     }
+    private readonly GameObject[,] COLLIDER_GRID;
+    private bool colliderGridHere = false;
     private readonly int SIZE;
     private readonly Coord COORD;
     private readonly Coord[] COORDS;
+    private readonly Vector3 CORNER;
 
-    public Chunk(Coord[] coords, int chunkSize)
+    public Chunk(Coord[] coords, GameObject[,] colliderGrid, int chunkSize)
     {
         SIZE = chunkSize;
+
+        COLLIDER_GRID = colliderGrid;
 
         obj = new GameObject();
         COORD = coords[0];
@@ -54,6 +54,8 @@ public class Chunk
 
         COORDS = new Coord[coords.Length];
         for (int a = 0; a < coords.Length; a++) { COORDS[a] = coords[a]; }
+
+        CORNER = (COORDS[0] * SIZE).ToVec3();
     }
 
     public void SetGameObject(GameObject obj_square, Transform trans_parent)
@@ -106,5 +108,56 @@ public class Chunk
                 tiles[i, j].Neighbors = neighbors;
             }
         }
+    }
+
+    public void PositionColliderGrid(bool show)
+    {
+        if (show)
+        {
+            if (!colliderGridHere)
+            {
+                for (int i = 0; i < SIZE; i++)
+                {
+                    for (int j = 0; j < SIZE; j++)
+                    {
+                        COLLIDER_GRID[i, j].SetActive(true);
+
+                        // TODO: Setup array of transforms
+                        Vector3 pos = new Vector3(
+                            CORNER.x + i, 0, CORNER.z + j);
+                        COLLIDER_GRID[i, j].GetComponent<Transform>()
+                            .localPosition = pos;
+                    }
+                }
+                colliderGridHere = true;
+            }
+        }
+        else
+        {
+            for (int i = 0; i < SIZE; i++)
+            {
+                for (int j = 0; j < SIZE; j++)
+                {
+                    COLLIDER_GRID[i, j].SetActive(false);
+                }
+            }
+        }
+    }
+
+    public bool IsGameObject(GameObject obj)
+    {
+        foreach (GameObject o in objs_square) { if (obj == o) return true; }
+        return false;
+    }
+    public Tile GetTileFromGrid(GameObject obj)
+    {
+        for (int i = 0; i < SIZE; i++)
+        {
+            for (int j = 0; j < SIZE; j++)
+            {
+                if (obj == COLLIDER_GRID[i, j]) return tiles[i, j];
+            }
+        }
+        return null;
     }
 }

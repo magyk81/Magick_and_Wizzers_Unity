@@ -4,96 +4,186 @@ using UnityEngine;
 
 public class CameraScript : MonoBehaviour
 {
-    public static StateEnum state = StateEnum.NORMAL;
-
+    [SerializeField]
+    private int targetFramerate;
     [SerializeField]
     private float speed;
-    private int x = 0, z = 0, y = 2;
-
-    private readonly int LEFT = 0, RIGHT = 1, UP = 2, DOWN = 3;
+    [SerializeField]
+    private int cursorRadius;
+    public int CursorRadius { get { return cursorRadius; } }
+    private int x = 0, z = 0, y = 6;
     private bool[] pressing = { false, false, false, false };
 
     private Transform trans;
+    private Camera cam;
+    private Ray[] ray; private RaycastHit rayHit; private Vector3[] rayVecs;
+
+    private bool movesOnInput = true;
+    public bool MovesOnInput { set { movesOnInput = value; } }
 
     // Start is called before the first frame update
     void Start()
     {
-        trans = GetComponent<Transform>();
+        Application.targetFrameRate = targetFramerate;
 
-        Camera cam = GetComponent<Camera>();
+        trans = GetComponent<Transform>();
+        cam = GetComponent<Camera>();
+
+        // Setup rays
+        ray = new Ray[5];
+        rayVecs = new Vector3[ray.Length];
+        float[] rayVecDirs = new float[rayVecs.Length];
+        rayVecDirs[Coord.LEFT]
+            = ((float) ((cam.pixelWidth / 2) - cursorRadius))
+            / ((float) cam.pixelWidth);
+        rayVecDirs[Coord.RIGHT]
+            = ((float) ((cam.pixelWidth / 2) + cursorRadius))
+            / ((float) cam.pixelWidth);
+        rayVecDirs[Coord.UP]
+            = ((float) ((cam.pixelHeight / 2) + cursorRadius))
+            / ((float) cam.pixelHeight);
+        rayVecDirs[Coord.DOWN]
+            = ((float) ((cam.pixelHeight / 2) - cursorRadius))
+            / ((float) cam.pixelHeight);
+        rayVecs[Coord.LEFT] = new Vector3(rayVecDirs[Coord.LEFT], 0.5F, 0);
+        rayVecs[Coord.RIGHT] = new Vector3(rayVecDirs[Coord.RIGHT], 0.5F, 0);
+        rayVecs[Coord.UP] = new Vector3(0.5F, rayVecDirs[Coord.UP], 0);
+        rayVecs[Coord.DOWN] = new Vector3(0.5F, rayVecDirs[Coord.DOWN], 0);
+        rayVecs[4] = new Vector3(0.5F, 0.5F, 0);
+    }
+
+    public Piece GetHoveredPiece(List<Piece> pieces)
+    {
+        for (int i = 0; i < ray.Length; i++)
+        {
+            if (Physics.Raycast(ray[i], out rayHit))
+            {
+                Collider hitCollider = rayHit.collider;
+                if (hitCollider != null)
+                {
+                    GameObject obj = hitCollider.gameObject;
+                    foreach (Piece piece in pieces)
+                    {
+                        if (piece.IsGameObject(obj)) return piece;
+                    }
+                }
+            }
+        }
+        return null;
+    }
+    public Chunk GetHoveredChunk(Chunk[,] chunks, int size)
+    {
+        if (Physics.Raycast(ray[ray.Length - 1], out rayHit))
+        {
+            Collider hitCollider = rayHit.collider;
+            if (hitCollider != null)
+            {
+                GameObject obj = hitCollider.gameObject;
+                for (int i = 0; i < size; i++)
+                {
+                    for (int j = 0; j < size; j++)
+                    {
+                        if (chunks[i, j].IsGameObject(obj))
+                            return chunks[i, j];
+                    }
+                }
+            }
+        }
+        return null;
+    }
+    public Tile GetHoveredTile(Chunk chunk, int chunkSize)
+    {
+        if (Physics.Raycast(ray[ray.Length - 1], out rayHit))
+        {
+            Collider hitCollider = rayHit.collider;
+            if (hitCollider != null)
+                return chunk.GetTileFromGrid(hitCollider.gameObject);
+        }
+        return null;
+    }
+
+    // Update rays depending on what state we're in
+    public void UpdateRays(StateEnum state)
+    {
+        if (state == StateEnum.PIECE || state == StateEnum.DESTINATION)
+        {
+            // Update rays for selecting with circle
+            for (int i = 0; i < ray.Length; i++)
+            {
+                ray[i] = cam.ViewportPointToRay(rayVecs[i]);
+            }
+        }
+        else if (state == StateEnum.TILE || state == StateEnum.CHUNK)
+        {
+            // Update middle ray for selecting with dot
+            ray[ray.Length - 1] = cam.ViewportPointToRay(
+                rayVecs[ray.Length - 1]);
+        }
     }
 
     // Update is called once per frame
     void Update()
     {
-        if (Input.GetKeyDown(KeyCode.Escape))
+        // React to input and move/relocate camera accordingly
+        if (movesOnInput)
         {
-            Application.Quit();
-        }
+            if (pressing[Coord.LEFT]) x--;
+            if (pressing[Coord.RIGHT]) x++;
+            if (pressing[Coord.UP]) z++;
+            if (pressing[Coord.DOWN]) z--;
 
-        if (state != StateEnum.NORMAL) return;
+            float xPos = x * speed, zPos = z * speed;
 
-        if (Input.GetKeyDown(KeyCode.LeftArrow)) pressing[LEFT] = true;
-        else if (Input.GetKeyUp(KeyCode.LeftArrow)) pressing[LEFT] = false;
-        if (Input.GetKeyDown(KeyCode.RightArrow)) pressing[RIGHT] = true;
-        else if (Input.GetKeyUp(KeyCode.RightArrow)) pressing[RIGHT] = false;
-        if (Input.GetKeyDown(KeyCode.UpArrow)) pressing[UP] = true;
-        else if (Input.GetKeyUp(KeyCode.UpArrow)) pressing[UP] = false;
-        if (Input.GetKeyDown(KeyCode.DownArrow)) pressing[DOWN] = true;
-        else if (Input.GetKeyUp(KeyCode.DownArrow)) pressing[DOWN] = false;
-
-        if (pressing[LEFT]) x--;
-        if (pressing[RIGHT]) x++;
-        if (pressing[UP]) z++;
-        if (pressing[DOWN]) z--;
-
-        float xPos = x * speed, zPos = z * speed;
-
-
-        // Relocate camera if it goes into clone zone
-        bool shouldRelocate = false;
-        if (xPos < lowerBound)
-        {
-            x += (int) (boardSize / speed);
-            shouldRelocate = true;
-        }
-        else if (xPos > upperBound)
-        {
-            x -= (int) (boardSize / speed);
-            shouldRelocate = true;
-        }
-        if (zPos < lowerBound)
-        {
-            z += (int) (boardSize / speed);
-            shouldRelocate = true;
-        }
-        else if (zPos > upperBound)
-        {
-            z -= (int) (boardSize / speed);
-            shouldRelocate = true;
-        }
-
-        if (shouldRelocate)
-        {
-            xPos = x * speed;
-            zPos = z * speed;
-            trans.localPosition = new Vector3(xPos, y, zPos);
-        }
-        else
-        {
-            foreach (bool _ in pressing)
+            // Relocate camera if it goes into clone zone
+            bool shouldRelocate = false;
+            if (xPos < lowerBound)
             {
-                if (_)
+                x += (int) (boardSize / speed);
+                shouldRelocate = true;
+            }
+            else if (xPos > upperBound)
+            {
+                x -= (int) (boardSize / speed);
+                shouldRelocate = true;
+            }
+            if (zPos < lowerBound)
+            {
+                z += (int) (boardSize / speed);
+                shouldRelocate = true;
+            }
+            else if (zPos > upperBound)
+            {
+                z -= (int) (boardSize / speed);
+                shouldRelocate = true;
+            }
+
+            if (shouldRelocate)
+            {
+                xPos = x * speed;
+                zPos = z * speed;
+                trans.localPosition = new Vector3(xPos, y, zPos);
+            }
+            else
+            {
+                foreach (bool _ in pressing)
                 {
-                    trans.localPosition = new Vector3(xPos, y, zPos);
-                    break;
+                    if (_)
+                    {
+                        trans.localPosition = new Vector3(xPos, y, zPos);
+                        break;
+                    }
                 }
             }
-        }
+        }        
+    }
 
+    public void PressDirection(int dir, bool press)
+    {
+        pressing[dir] = press;
     }
 
     private float lowerBound, upperBound, boardSize;
+    // Called once when the board is first generated
     public void SetBounds(float lowerBound, float upperBound)
     {
         this.lowerBound = lowerBound;

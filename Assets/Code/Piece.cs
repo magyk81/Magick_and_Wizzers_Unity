@@ -1,13 +1,12 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Text;
 using UnityEngine;
 
 public class Piece
 {
     private readonly GameObject obj;
     private readonly GameObject[] objs_piece = new GameObject[4];
-    private readonly int MAX_DESTINATIONS = 3;
-    private readonly GameObject[][] objs_dest;
     private readonly Transform[] trans_piece = new Transform[4];
     private readonly Transform[][] trans_dest;
     private Tile tilePrev, tileCurr, tileNext;
@@ -17,7 +16,8 @@ public class Piece
     private int boardSize = 0;
     public int BoardSize { set { if (boardSize == 0) boardSize = value; } }
 
-    public Piece(Tile tile, Transform trans_board, GameObject obj_piece, GameObject obj_dest)
+    public Piece(Tile tile, Transform trans_board, GameObject obj_piece,
+        Transform[][] trans_dest)
     {
         obj = new GameObject();
         obj.name = "Piece";
@@ -25,65 +25,71 @@ public class Piece
         Transform trans = obj.GetComponent<Transform>();
         trans.SetParent(trans_board);
 
-        objs_dest = new GameObject[MAX_DESTINATIONS][];
-        trans_dest = new Transform[MAX_DESTINATIONS][];
-        for (int j = 0; j < MAX_DESTINATIONS; j++)
-        {
-            objs_dest[j] = new GameObject[4];
-            trans_dest[j] = new Transform[4];
-        }
-
         for (int i = 0; i < 4; i++)
         {
             objs_piece[i] = Object.Instantiate(obj_piece, trans);
             objs_piece[i].SetActive(true);
-            objs_piece[i].name = "Piece [" + i + "]" + (i == 0 ? " _" : "");
+            objs_piece[i].name = "[" + i + "]";
             trans_piece[i] = objs_piece[i].GetComponent<Transform>();
-            //objs[i].GetComponent<Renderer>().material = material;
-
-            for (int j = 0; j < MAX_DESTINATIONS; j++)
-            {
-                objs_dest[j][i] = Object.Instantiate(obj_dest, trans);
-                objs_dest[j][i].name = "Destination_ " + j + " [" + i + "]"
-                    + (i == 0 ? " _" : "");
-                trans_dest[j][i] = objs_dest[j][i].GetComponent<Transform>();
-                objs_dest[j][i].SetActive(false);
-            }
         }
+        trans_piece[0].localPosition = tile.Coord.ToVec3();
+
+        this.trans_dest = trans_dest;
 
         tileCurr = tile; tilePrev = tile; tileNext = tile;
-        objs_piece[0].GetComponent<Transform>().localPosition
-            = tile.Coord.ToVec3();
 
-        destinations = new Tile[MAX_DESTINATIONS];
+        destinations = new Tile[BoardScript.MAX_DESTINATIONS];
     }
 
-    private void SetDestinationObjects(int j)
+    public void SetDestinationObjects(bool show)
     {
-        if (destinations[j] == null)
-            for (int i = 0; i < 4; i++) { objs_dest[j][i].SetActive(false); }
-        else
+        for (int i = 0; i < BoardScript.MAX_DESTINATIONS; i++)
         {
-            for (int i = 0; i < 4; i++) { objs_dest[j][i].SetActive(true); }
-            trans_dest[j][0].localPosition = new Vector3(
-                destinations[j].X,
-                trans_piece[0].localPosition.y,
-                destinations[j].Y);
-            SetClonePositions(trans_dest[j]);
+            if (!show || destinations[i] == null)
+            {
+                for (int j = 0; j < 4; j++)
+                    trans_dest[i][j].gameObject.SetActive(false);
+            }
+            else
+            {
+                for (int j = 0; j < 4; j++)
+                    trans_dest[i][j].gameObject.SetActive(true);
+
+                trans_dest[i][0].localPosition = new Vector3(
+                    destinations[i].X,
+                    trans_piece[0].localPosition.y,
+                    destinations[i].Y);
+                BoardScript.SetClonePositions(trans_dest[i], boardSize);
+            }
         }
+    }
+
+    private void PrintDestinations()
+    {
+        StringBuilder str = new StringBuilder();
+        for (int i = 0; i < destinations.Length; i++)
+        {
+            if (i > 0) str.Append(",  ");
+            str.Append("[" + i + "]: ");
+            if (destinations[i] == null)
+                str.Append("null");
+            else str.Append(destinations[i].Coord);
+        }
+        Debug.Log(str);
     }
 
     public void AddDestination(Tile destination)
     {
-        for (int j = 0; j < MAX_DESTINATIONS; j++)
+        for (int j = 0; j < BoardScript.MAX_DESTINATIONS; j++)
         {
             if (destinations[j] == null)
             {
                 destinations[j] = destination;
-                SetDestinationObjects(j);
+                //SetDestinationObjects(j);
                 break;
             }
         }
+        PrintDestinations();
     }
 
     /// <summary>If the piece is at the front destination: Removes the front
@@ -92,16 +98,18 @@ public class Piece
     /// <returns><c>True</c> if the list of destinations is empty.</returns>
     private bool CheckIfAtDestination()
     {
+        if (destinations[0] == null) return true;
         if (tileCurr.Equals(destinations[0]))
         {
-            for (int j = 1; j < MAX_DESTINATIONS; j++)
+            for (int j = 1; j < BoardScript.MAX_DESTINATIONS; j++)
             {
                 destinations[j - 1] = null;
                 destinations[j - 1] = destinations[j];
-                SetDestinationObjects(j - 1);
+                //SetDestinationObjects(j - 1);
             }
-            destinations[MAX_DESTINATIONS - 1] = null;
+            destinations[BoardScript.MAX_DESTINATIONS - 1] = null;
         }
+        PrintDestinations();
         return destinations[0] == null;
     }
 
@@ -118,6 +126,40 @@ public class Piece
         if (distances[shorterHoriz] > distances[shorterVert])
             return shorterHoriz;
         return shorterVert;
+    }
+
+    public bool HasSameDestinationsAs(Piece piece)
+    {
+        for (int i = 0; i < destinations.Length; i++)
+        {
+            if (destinations[i] != piece.destinations[i]) return false;
+        }
+        return true;
+    }
+
+    public Vector3[] GetPositions()
+    {
+        Vector3[] positions = new Vector3[trans_piece.Length];
+        for (int i = 0; i < trans_piece.Length; i++)
+        {
+            positions[i] = trans_piece[i].localPosition;
+        }
+        return positions;
+    }
+
+    public void ToggleParticles(bool on)
+    {
+        foreach (GameObject obj in objs_piece)
+        {
+            // TODO: Have array of particle systems ready from Start()
+            obj.GetComponent<ParticleSystemRenderer>().enabled = on;
+        }
+    }
+
+    public bool IsGameObject(GameObject obj)
+    {
+        foreach (GameObject o in objs_piece) { if (obj == o) return true; }
+        return false;
     }
 
     public void FixedUpdate()
@@ -149,31 +191,6 @@ public class Piece
         }
     }
 
-    private void SetClonePositions(Transform[] trans)
-    {
-        float xPosF = trans[0].localPosition.x;
-        float altitude = trans[0].localPosition.y;
-        float yPosF = trans[0].localPosition.z;
-
-        int xMult = (xPosF < boardSize / 2 - 0.5F) ? 1 : -1;
-        int yMult = (yPosF < boardSize / 2 - 0.5F) ? 1 : -1;
-
-        trans[1].localPosition = new Vector3(
-            xPosF + (boardSize * xMult),
-            altitude,
-            yPosF);
-        trans[2].localPosition = new Vector3(
-            xPosF,
-            altitude,
-            yPosF + (boardSize * yMult));
-        trans[3].localPosition = new Vector3(
-            xPosF + (boardSize * xMult),
-            altitude,
-            yPosF + (boardSize * yMult));
-        
-        //if (trans == trans_dest[0]) Debug.Log(trans_dest[0][3].localPosition);
-    }
-
     public void Update()
     {
         float xPosF = tileCurr.X;
@@ -200,6 +217,6 @@ public class Piece
         }
 
         trans_piece[0].localPosition = new Vector3(xPosF, altitude, yPosF);
-        SetClonePositions(trans_piece);
+        BoardScript.SetClonePositions(trans_piece, boardSize);
     }
 }
