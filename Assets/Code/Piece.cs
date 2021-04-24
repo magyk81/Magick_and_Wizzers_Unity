@@ -147,15 +147,6 @@ public class Piece
         return positions;
     }
 
-    public void ToggleParticles(bool on)
-    {
-        foreach (GameObject obj in objs_piece)
-        {
-            // TODO: Have array of particle systems ready from Start()
-            obj.GetComponent<ParticleSystemRenderer>().enabled = on;
-        }
-    }
-
     public bool IsGameObject(GameObject obj)
     {
         foreach (GameObject o in objs_piece) { if (obj == o) return true; }

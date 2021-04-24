@@ -33,8 +33,12 @@ public class Player
     }
     private Gamepad gamepad = null;
 
+    private readonly int MAX_SELECTIONS = 10;
+    private ParticleSystemRenderer[][] particleSystemRends;
+    private Transform[][] particleSystemTrans;
+
     public Player(HandScript handScript, CameraScript cameraScript,
-        int totalBoardSize, int idx)
+        Transform particleSysParent, int totalBoardSize, int idx)
     {
         this.handScript = handScript;
         this.cameraScript = cameraScript;
@@ -84,7 +88,67 @@ public class Player
             key_SPACE.performed += ctx => handScript.DrawCards(3);
             key_SPACE.Enable();
         }
-        else gamepad = Gamepad.all[idx - 1];
+        else
+        {
+            // Check if there is a gamepad for this player
+            if (Gamepad.all.Count >= idx)
+                gamepad = Gamepad.all[idx - 1];
+            else gamepad = null;
+
+            // Only 1 audio listener should be enabled, so we'll disable every
+            // audio listener that isn't the first one.
+            cameraScript.gameObject.GetComponent<AudioListener>()
+                .enabled = false;
+        }
+
+        // Setup particle systems
+        Transform particleSysTrans = particleSysParent.GetChild(0);
+        if (particleSysTrans != null)
+        {
+            particleSystemRends = new ParticleSystemRenderer[
+                MAX_SELECTIONS + 1][];
+            particleSystemTrans = new Transform[MAX_SELECTIONS + 1][];
+            for (int i = 0; i < MAX_SELECTIONS + 1; i++)
+            {
+                GameObject[] _particleSysObjs = new GameObject[4];
+                ParticleSystemRenderer[] _particleSysRends
+                    = new ParticleSystemRenderer[4];
+                Transform[] _particleSysTrans = new Transform[4];
+
+                for (int j = 0; j < 4; j++)
+                {
+                    _particleSysObjs[j] = Object.Instantiate(
+                        particleSysTrans.gameObject, particleSysParent);
+                    
+                    string _ = j == 0 ? "_" : "";
+                    if (i < MAX_SELECTIONS)
+                    {
+                        _particleSysObjs[j].name = "Selection Particles "
+                            + (idx + 1) + " [" + i + "]" + _;
+                    }
+                    else _particleSysObjs[j].name = "Hover Particles "
+                        + idx + _;
+                    
+                    // Set the layer so that the particles can only be seen by
+                    // its player's camera.
+                    _particleSysObjs[j].layer = idx + 6;
+                    // 6 layers before "Player 1" layer
+
+                    _particleSysRends[j] = _particleSysObjs[j]
+                        .GetComponent<ParticleSystemRenderer>();
+                    _particleSysTrans[j] = _particleSysObjs[j]
+                        .GetComponent<Transform>();
+                }
+                particleSystemRends[i] = _particleSysRends;
+                particleSystemTrans[i] = _particleSysTrans;
+                
+            }
+            Object.Destroy(particleSysTrans.gameObject);
+        }
+        else Debug.LogError("Particle system gameObject child missing from "
+            + particleSysParent);
+        
+        cameraScript.LayerMask = idx + 1;
     }
 
     public void PollInput()
@@ -148,6 +212,29 @@ public class Player
     {
         cameraScript.UpdateRays(state);
 
+        // Move particle systems to follow hovered/selected pieces
+        if (hoveredPiece != null)
+        {
+            Vector3[] piecePositions = hoveredPiece.GetPositions();
+            for (int i = 0; i < 4; i++)
+            {
+                particleSystemTrans[MAX_SELECTIONS][i].localPosition
+                    = piecePositions[i];
+                particleSystemRends[MAX_SELECTIONS][i].enabled = true;
+            }
+        }
+        else
+        {
+            for (int i = 0; i < 4; i++)
+            {
+                particleSystemRends[MAX_SELECTIONS][i].enabled = false;
+            }
+        }
+        for (int i = 0; i < MAX_SELECTIONS; i++)
+        {
+
+        }
+
         switch (state)
         {
             case StateEnum.PIECE:
@@ -158,7 +245,7 @@ public class Player
                 else if (hoveredPiece != null)
                 {
                     // Turn off particle system before setting to null.
-                    hoveredPiece.ToggleParticles(false);
+                    //hoveredPiece.ToggleParticles(false);
                     hoveredPiece.SetDestinationObjects(false);
                     hoveredPiece = null;
                 }
@@ -168,7 +255,7 @@ public class Player
                     hoveredPiece.SetDestinationObjects(true);
 
                     // Turn on the hovered piece's particle system.
-                    hoveredPiece.ToggleParticles(true);
+                    //hoveredPiece.ToggleParticles(true);
                 }
                 break;
             }

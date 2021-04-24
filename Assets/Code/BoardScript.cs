@@ -5,14 +5,17 @@ using UnityEngine;
 public class BoardScript : MonoBehaviour
 {
     [SerializeField]
-    private GameObject BASE_CHUNK, BASE_TILE, BASE_PIECE, BASE_DEST;
+    private int targetFramerate;
+    [SerializeField]
+    private GameObject BASE_CHUNK, BASE_TILE, BASE_PIECE, BASE_DEST,
+        BASE_CANVAS, BASE_CAMERA;
+    [SerializeField]
+    private Transform selectionParticles;
 
     [SerializeField]
     private int size, chunkSize;
     private int TOTAL_SIZE;
 
-    [SerializeField]
-    private CameraScript cameraScript;
     [SerializeField]
     private int playerCount;
     private Player[] players;
@@ -30,9 +33,6 @@ public class BoardScript : MonoBehaviour
         }
     }
 
-    [SerializeField]
-    private HandScript handScript;
-
     public static readonly int MAX_DESTINATIONS = 3;
     private GameObject[][] objs_dest;
     private Transform[][] trans_dest;
@@ -40,6 +40,8 @@ public class BoardScript : MonoBehaviour
     // Start is called before the first frame update
     private void Start()
     {
+        Application.targetFrameRate = targetFramerate;
+
         trans = GetComponent<Transform>();
 
         TOTAL_SIZE = size * chunkSize;
@@ -163,6 +165,8 @@ public class BoardScript : MonoBehaviour
         Destroy(BASE_CHUNK);
         Destroy(BASE_TILE);
         Destroy(BASE_DEST);
+        BASE_CANVAS.SetActive(false);
+        BASE_CAMERA.SetActive(false);
 
 
         // Set neighbors for chunks and their tiles
@@ -197,8 +201,35 @@ public class BoardScript : MonoBehaviour
         players = new Player[playerCount];
         for (int i = 0; i < playerCount; i++)
         {
-            players[i] = new Player(handScript, cameraScript, TOTAL_SIZE, i);
+            // Each player gets their own camera and canvas
+            GameObject canvasObj = Instantiate(BASE_CANVAS);
+            canvasObj.SetActive(true);
+            canvasObj.name = "Canvas " + (i + 1);
+
+            GameObject cameraObj = Instantiate(BASE_CAMERA);
+            cameraObj.SetActive(true);
+            cameraObj.name = "Camera " + (i + 1);
+            Camera cam = cameraObj.GetComponent<Camera>();
+
+            canvasObj.GetComponent<Canvas>().worldCamera = cam;
+
+            // Set up cameras to be split-screen depending on player count
+            if (playerCount == 2)
+            {
+                if (i == 0) cam.rect = new Rect(0, 0, 0.5F, 1);
+                else cam.rect = new Rect(0.5F, 0, 0.5F, 1);
+            }
+
+            players[i] = new Player(
+                canvasObj.GetComponent<HandScript>(),
+                cameraObj.GetComponent<CameraScript>(),
+                selectionParticles,
+                TOTAL_SIZE, i);
         }
+
+        // Destroy remaining base objects
+        Destroy(BASE_CANVAS);
+        Destroy(BASE_CAMERA);
 
         // Testing
         AddPiece(tiles[0, 0]);

@@ -5,8 +5,6 @@ using UnityEngine;
 public class CameraScript : MonoBehaviour
 {
     [SerializeField]
-    private int targetFramerate;
-    [SerializeField]
     private float speed;
     [SerializeField]
     private int cursorRadius;
@@ -20,12 +18,15 @@ public class CameraScript : MonoBehaviour
 
     private bool movesOnInput = true;
     public bool MovesOnInput { set { movesOnInput = value; } }
+    private int layerMask;
+    public int LayerMask
+    {
+        set { layerMask = 0b_0011_1111 + (value * 64); }
+    }
 
     // Start is called before the first frame update
     void Start()
     {
-        Application.targetFrameRate = targetFramerate;
-
         trans = GetComponent<Transform>();
         cam = GetComponent<Camera>();
 
@@ -50,6 +51,8 @@ public class CameraScript : MonoBehaviour
         rayVecs[Coord.UP] = new Vector3(0.5F, rayVecDirs[Coord.UP], 0);
         rayVecs[Coord.DOWN] = new Vector3(0.5F, rayVecDirs[Coord.DOWN], 0);
         rayVecs[4] = new Vector3(0.5F, 0.5F, 0);
+
+        cam.cullingMask = layerMask;
     }
 
     public Piece GetHoveredPiece(List<Piece> pieces)
@@ -111,6 +114,7 @@ public class CameraScript : MonoBehaviour
             for (int i = 0; i < ray.Length; i++)
             {
                 ray[i] = cam.ViewportPointToRay(rayVecs[i]);
+                // ray[i] = cam.ViewportPointToRay(GetRayVec(i));
             }
         }
         else if (state == StateEnum.TILE || state == StateEnum.CHUNK)

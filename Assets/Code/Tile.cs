@@ -22,9 +22,9 @@ public class Tile
     public int X { get { return COORD.X; } }
     public int Y { get { return COORD.Y; } }
 
-    public Tile(Coord[] coords, int chunkSize)
+    public Tile(Coord coord, int chunkSize)
     {
-        COORD = coords[0];
+        COORD = coord;
     }
 
     public bool IsNeighbor(Tile tile)

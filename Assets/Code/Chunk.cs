@@ -42,13 +42,8 @@ public class Chunk
         {
             for (int i = 0; i < chunkSize; i++)
             {
-                Coord[] tileCoords = new Coord[coords.Length];
-                for (int a = 0; a < coords.Length; a++)
-                {
-                    tileCoords[a] = (coords[a] * chunkSize) + Coord._(i, j);
-                }
-
-                tiles[i, j] = new Tile(tileCoords, chunkSize);
+                Coord tileCoord = Coord._(i, j) + (coords[0] * chunkSize);
+                tiles[i, j] = new Tile(tileCoord, chunkSize);
             }
         }
 
