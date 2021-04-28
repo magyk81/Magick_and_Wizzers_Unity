@@ -8,7 +8,6 @@ public class Piece
     private readonly GameObject obj;
     private readonly GameObject[] objs_piece = new GameObject[4];
     private readonly Transform[] trans_piece = new Transform[4];
-    private readonly Transform[][] trans_dest;
     private Tile tilePrev, tileCurr, tileNext;
     private Tile[] destinations;
     private readonly int PERC_NEXT_MAX = 300;
@@ -16,8 +15,7 @@ public class Piece
     private int boardSize = 0;
     public int BoardSize { set { if (boardSize == 0) boardSize = value; } }
 
-    public Piece(Tile tile, Transform trans_board, GameObject obj_piece,
-        Transform[][] trans_dest)
+    public Piece(Tile tile, Transform trans_board, GameObject obj_piece)
     {
         obj = new GameObject();
         obj.name = "Piece";
@@ -34,16 +32,14 @@ public class Piece
         }
         trans_piece[0].localPosition = tile.Coord.ToVec3();
 
-        this.trans_dest = trans_dest;
-
         tileCurr = tile; tilePrev = tile; tileNext = tile;
 
-        destinations = new Tile[BoardScript.MAX_DESTINATIONS];
+        destinations = new Tile[Player.MAX_DESTINATIONS];
     }
 
-    public void SetDestinationObjects(bool show)
+    public void SetDestinationObjects(bool show, Transform[][] trans_dest)
     {
-        for (int i = 0; i < BoardScript.MAX_DESTINATIONS; i++)
+        for (int i = 0; i < Player.MAX_DESTINATIONS; i++)
         {
             if (!show || destinations[i] == null)
             {
@@ -80,7 +76,7 @@ public class Piece
 
     public void AddDestination(Tile destination)
     {
-        for (int j = 0; j < BoardScript.MAX_DESTINATIONS; j++)
+        for (int j = 0; j < Player.MAX_DESTINATIONS; j++)
         {
             if (destinations[j] == null)
             {
@@ -101,13 +97,13 @@ public class Piece
         if (destinations[0] == null) return true;
         if (tileCurr.Equals(destinations[0]))
         {
-            for (int j = 1; j < BoardScript.MAX_DESTINATIONS; j++)
+            for (int j = 1; j < Player.MAX_DESTINATIONS; j++)
             {
                 destinations[j - 1] = null;
                 destinations[j - 1] = destinations[j];
                 //SetDestinationObjects(j - 1);
             }
-            destinations[BoardScript.MAX_DESTINATIONS - 1] = null;
+            destinations[Player.MAX_DESTINATIONS - 1] = null;
         }
         PrintDestinations();
         return destinations[0] == null;

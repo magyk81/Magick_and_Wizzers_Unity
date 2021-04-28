@@ -34,11 +34,14 @@ public class Player
     private Gamepad gamepad = null;
 
     private readonly int MAX_SELECTIONS = 10;
+    public static readonly int MAX_DESTINATIONS = 3;
     private ParticleSystemRenderer[][] particleSystemRends;
     private Transform[][] particleSystemTrans;
+    private Transform[][] trans_dest;
 
     public Player(HandScript handScript, CameraScript cameraScript,
-        Transform particleSysParent, int totalBoardSize, int idx)
+        Transform particleSysParent, Transform destinationParent,
+        int totalBoardSize, int idx)
     {
         this.handScript = handScript;
         this.cameraScript = cameraScript;
@@ -147,6 +150,31 @@ public class Player
         }
         else Debug.LogError("Particle system gameObject child missing from "
             + particleSysParent);
+
+        // Create destination gameObjects and transforms
+        Transform obj_dest = destinationParent.GetChild(0);
+        GameObject[][] objs_dest = new GameObject[MAX_DESTINATIONS][];
+        trans_dest = new Transform[MAX_DESTINATIONS][];
+        for (int j = 0; j < MAX_DESTINATIONS; j++)
+        {
+            objs_dest[j] = new GameObject[4];
+            trans_dest[j] = new Transform[4];
+            for (int i = 0; i < 4; i++)
+            {
+                objs_dest[j][i] = Object.Instantiate(obj_dest.gameObject,
+                    destinationParent);
+                objs_dest[j][i].name = "Destination " + idx + " [" + j + "]"
+                    + (i == 0 ? " _" : "");
+                trans_dest[j][i] = objs_dest[j][i].GetComponent<Transform>();
+
+                // Set the layer so that the particles can only be seen by
+                // its player's camera.
+                objs_dest[j][i].layer = idx + 6;
+                // 6 layers before "Player 1" layer
+
+                objs_dest[j][i].SetActive(false);
+            }
+        }
         
         cameraScript.LayerMask = idx + 1;
     }
@@ -246,13 +274,13 @@ public class Player
                 {
                     // Turn off particle system before setting to null.
                     //hoveredPiece.ToggleParticles(false);
-                    hoveredPiece.SetDestinationObjects(false);
+                    hoveredPiece.SetDestinationObjects(false, trans_dest);
                     hoveredPiece = null;
                 }
                 if (hoveredPiece != null)
                 {
                     // Position the destination gameObjects.
-                    hoveredPiece.SetDestinationObjects(true);
+                    hoveredPiece.SetDestinationObjects(true, trans_dest);
 
                     // Turn on the hovered piece's particle system.
                     //hoveredPiece.ToggleParticles(true);

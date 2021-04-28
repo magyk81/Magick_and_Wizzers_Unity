@@ -33,10 +33,6 @@ public class BoardScript : MonoBehaviour
         }
     }
 
-    public static readonly int MAX_DESTINATIONS = 3;
-    private GameObject[][] objs_dest;
-    private Transform[][] trans_dest;
-
     // Start is called before the first frame update
     private void Start()
     {
@@ -135,40 +131,6 @@ public class BoardScript : MonoBehaviour
             }
         }
 
-        
-        // Parent gameObject to keep destinations
-        GameObject destinations_parent = new GameObject("Destinations");
-        Transform destinations_parent_trans
-            = destinations_parent.GetComponent<Transform>();
-        destinations_parent_trans.SetParent(trans);
-
-        // Create destination gameObjects and transforms
-        objs_dest = new GameObject[MAX_DESTINATIONS][];
-        trans_dest = new Transform[MAX_DESTINATIONS][];
-        for (int j = 0; j < MAX_DESTINATIONS; j++)
-        {
-            objs_dest[j] = new GameObject[4];
-            trans_dest[j] = new Transform[4];
-            for (int i = 0; i < 4; i++)
-            {
-                objs_dest[j][i] = Instantiate(BASE_DEST,
-                    destinations_parent_trans);
-                objs_dest[j][i].name = "Destination_ " + j + " [" + i + "]"
-                    + (i == 0 ? " _" : "");
-                trans_dest[j][i] = objs_dest[j][i].GetComponent<Transform>();
-                objs_dest[j][i].SetActive(false);
-            }
-        }
-
-        // BASE_PIECE still needed for adding new pieces
-        BASE_PIECE.SetActive(false);
-        Destroy(BASE_CHUNK);
-        Destroy(BASE_TILE);
-        Destroy(BASE_DEST);
-        BASE_CANVAS.SetActive(false);
-        BASE_CAMERA.SetActive(false);
-
-
         // Set neighbors for chunks and their tiles
         for (int i = 0; i < TOTAL_SIZE; i++)
         {
@@ -197,6 +159,14 @@ public class BoardScript : MonoBehaviour
             }
         }
 
+        // Parent gameObject to keep destinations
+        GameObject destinations_parent = new GameObject("Destinations");
+        Transform destinations_parent_trans
+            = destinations_parent.GetComponent<Transform>();
+        destinations_parent_trans.SetParent(trans);
+        BASE_DEST.GetComponent<Transform>()
+            .SetParent(destinations_parent_trans);
+
         // Set up players
         players = new Player[playerCount];
         for (int i = 0; i < playerCount; i++)
@@ -219,24 +189,41 @@ public class BoardScript : MonoBehaviour
                 if (i == 0) cam.rect = new Rect(0, 0, 0.5F, 1);
                 else cam.rect = new Rect(0.5F, 0, 0.5F, 1);
             }
+            else if (playerCount == 3)
+            {
+                if (i == 0) cam.rect = new Rect(0, 0, 1, 0.5F);
+                else if (i == 1) cam.rect = new Rect(0, 0.5F, 0.5F, 0.5F);
+                else if (i == 2) cam.rect = new Rect(0.5F, 0.5F, 0.5F, 0.5F);
+            }
+            else if (playerCount == 4)
+            {
+                if (i == 0) cam.rect = new Rect(0, 0.5F, 0.5F, 0.5F);
+                else if (i == 1) cam.rect = new Rect(0.5F, 0.5F, 0.5F, 0.5F);
+                else if (i == 2) cam.rect = new Rect(0, 0, 0.5F, 0.5F);
+                else if (i == 3) cam.rect = new Rect(0.5F, 0, 0.5F, 0.5F);
+            }
 
             players[i] = new Player(
                 canvasObj.GetComponent<HandScript>(),
                 cameraObj.GetComponent<CameraScript>(),
                 selectionParticles,
+                destinations_parent_trans,
                 TOTAL_SIZE, i);
         }
 
-        // Destroy remaining base objects
+        // BASE_PIECE still needed for adding new pieces
+        BASE_PIECE.SetActive(false);
+        Destroy(BASE_CHUNK);
+        Destroy(BASE_TILE);
+        Destroy(BASE_DEST);
         Destroy(BASE_CANVAS);
-        Destroy(BASE_CAMERA);
+        Destroy(BASE_CAMERA);        
 
         // Testing
         AddPiece(tiles[0, 0]);
         pieces[0].AddDestination(tiles[2, 2]);
         pieces[0].AddDestination(tiles[1, 1]);
         pieces[0].AddDestination(tiles[0, 0]);
-        //SelectPiece(pieces[0]);
     }
 
     Tile GetTile(int x, int y)
@@ -266,7 +253,7 @@ public class BoardScript : MonoBehaviour
     private List<Piece> pieces = new List<Piece>();
     public void AddPiece(Tile tile)
     {
-        pieces.Add(new Piece(tile, trans, BASE_PIECE, trans_dest)
+        pieces.Add(new Piece(tile, trans, BASE_PIECE)
             { BoardSize = TOTAL_SIZE });
     }
 

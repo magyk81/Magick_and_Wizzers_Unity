@@ -181,7 +181,7 @@ MonoBehaviour:
   selectionParticles: {fileID: 1755170347}
   size: 6
   chunkSize: 4
-  playerCount: 2
+  playerCount: 4
 --- !u!1 &392239190
 GameObject:
   m_ObjectHideFlags: 0
