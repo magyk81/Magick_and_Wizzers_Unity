@@ -181,7 +181,7 @@ MonoBehaviour:
   selectionParticles: {fileID: 1755170347}
   size: 6
   chunkSize: 4
-  playerCount: 4
+  playerCount: 3
 --- !u!1 &392239190
 GameObject:
   m_ObjectHideFlags: 0
@@ -376,12 +376,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ef001a158d20340418fa42f971383758, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  cameraScript: {fileID: 963194229}
   cursors:
   - {fileID: 606007597}
   - {fileID: 1617721471}
   tint: {fileID: 711155588}
   drawMoveSpeed: 10
+  toggleMoveSpeed: 2
   BASE_CARD: {fileID: 1052393315}
 --- !u!114 &539490250
 MonoBehaviour:

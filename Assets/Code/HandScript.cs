@@ -6,13 +6,12 @@ using UnityEngine.UI;
 public class HandScript : MonoBehaviour
 {
     [SerializeField]
-    private CameraScript cameraScript;
-    [SerializeField]
     private Image[] cursors;
     [SerializeField]
     private RawImage tint;
     [SerializeField]
-    private int drawMoveSpeed;
+    private int drawMoveSpeed, toggleMoveSpeed;
+
     private int[][] alignments = new int[4][] {
         new int[] { 7, 7 },
         new int[] { 20, 10 },
@@ -27,12 +26,14 @@ public class HandScript : MonoBehaviour
     private readonly Stack<Card> DECK = new Stack<Card>();
     private readonly Stack<Card> HAND = new Stack<Card>();
     private readonly int MAX_HAND_SIZE = 60;
+    private int width = Screen.width, height = Screen.height;
+    private bool halfSizeWidgets = false;
 
     // targetPos_disp will be set to equal (targetPos - dispDist)
     private Vector2[] targetPos, targetPos_disp;
     private float cardDispMult, cardDimRatio;
 
-    private float dispDist = Screen.height;
+    private float dispDist;
     private readonly int DISP_DIST_PERC_MAX = 100;
     private int dispDistPerc;
 
@@ -47,13 +48,14 @@ public class HandScript : MonoBehaviour
     }
 
     private enum CursorType { NORMAL, DOT }
-    //private CursorType cursorType = CursorType.NORMAL;
 
     private void Start()
     {
+        dispDist = height;
+
         // It's not quite big enough without * 1.1F because z-pos is different.
         tint.GetComponent<RectTransform>().sizeDelta
-            = new Vector2(Screen.width * 1.1F, Screen.height * 1.1F);
+            = new Vector2(width * 1.1F, height * 1.1F);
         tint.gameObject.SetActive(false);
 
         dispDistPerc = DISP_DIST_PERC_MAX;
@@ -88,6 +90,7 @@ public class HandScript : MonoBehaviour
         {
             objs_card[i] = Instantiate(BASE_CARD, trans);
             objs_card[i].name = "Card Object";
+            objs_card[i].SetActive(false);
         }
 
         targetPos = new Vector2[MAX_HAND_SIZE];
@@ -100,14 +103,37 @@ public class HandScript : MonoBehaviour
 
         BASE_CARD.SetActive(false);
 
-        // Set up cursors
-        int cursorRadius = cameraScript.CursorRadius;
-        cursors[(int) CursorType.NORMAL].GetComponent<RectTransform>().sizeDelta
-            = new Vector2(cursorRadius * 2F, cursorRadius * 2F);
-        cursors[(int) CursorType.DOT].GetComponent<RectTransform>().sizeDelta
-            = new Vector2(cursorRadius / 10F, cursorRadius / 10F);
-
         UpdateCardPositions();
+    }
+
+    // This should only be called if there is multiplayer split-screen.
+    public void SetDims(int width, int height, int orientation = 0)
+    {
+        this.width = width;
+        this.height = height;
+
+        dispDist = height;
+        tint.GetComponent<RectTransform>().sizeDelta
+            = new Vector2(width * 1.1F, height * 1.1F);
+        
+        if (orientation == 1) // wide
+        {
+            alignments = new int[3][] {
+                new int[] { 10, 10 },
+                new int[] { 30, 15 },
+                new int[] { 60, 20 } };
+        }
+        else if (orientation == 2) // tall
+        {
+            alignments = new int[5][] {
+                new int[] { 5, 5 },
+                new int[] { 14, 7 },
+                new int[] { 27, 9 },
+                new int[] { 33, 11 },
+                new int[] { 60, 12 } };
+        }
+
+        halfSizeWidgets = true;
     }
 
     public void DrawCards(int num)
@@ -139,7 +165,7 @@ public class HandScript : MonoBehaviour
             // See which alignment is appropriate based on hand size.
             if (HAND.Count <= alignments[i][0])
             {
-                targetSpacing = (Screen.width / (alignments[i][1] + 2));
+                targetSpacing = (width / (alignments[i][1] + 2));
                 float targetSpacingVert = targetSpacing * cardDimRatio;
                 // targetWidth will be slightly smaller than targetSpacing.
                 float targetWidth = targetSpacing * cardDispMult;
@@ -156,7 +182,7 @@ public class HandScript : MonoBehaviour
                         handArrayR[j].SetToObj(objs_card[j], targetWidth);
 
                         float xPlace = targetSpacing;
-                        float yPlace = Screen.height / (i + 2);
+                        float yPlace = (height / 2) - (i * targetSpacingVert / 2);
 
                         for (int k = i; k >= 0; k--)
                         {
@@ -185,7 +211,7 @@ public class HandScript : MonoBehaviour
                             xPlace, yPlace);
                         // Cards that were just added go off screen to the right.
                         else pos = new Vector2(
-                            Screen.width + targetSpacing, yPlace);
+                            width + targetSpacing, yPlace);
 
                         objs_card[j].GetComponent<RectTransform>()
                             .anchoredPosition = pos;
@@ -311,9 +337,7 @@ public class HandScript : MonoBehaviour
 
                 if (pos.x > targetPos[i].x)
                 {
-                    // Multiplying Screen.width twice makes it seem like
-                    // fullscreen is a similar speed as windowed.
-                    float val = drawMoveSpeed * Screen.width;
+                    float val = drawMoveSpeed * width;
                     rt.anchoredPosition = new Vector2(
                         pos.x - (val / 1000F), targetPos_disp[i].y);
                     
@@ -342,8 +366,19 @@ public class HandScript : MonoBehaviour
     {
         if (press) MoveSelection(dir);
     }
+
+    // Called from Player once in the constructor before Update is called.
+    public void SetupCursors(int cursorRadius)
+    {
+        if (!halfSizeWidgets) cursorRadius *= 2;
+        cursors[(int) CursorType.NORMAL].GetComponent<RectTransform>().sizeDelta
+            = new Vector2(cursorRadius, cursorRadius);
+        cursors[(int) CursorType.DOT].GetComponent<RectTransform>().sizeDelta
+            = new Vector2(cursorRadius / 20F, cursorRadius / 20F);
+    }
     
-    // Update which cursor(s) is being displayed
+    // Update which cursor(s) is being displayed.
+    // Called from Player everytime state is changed.
     public void SetCursor(StateEnum state)
     {
         bool useNormalCursor = (state == StateEnum.PIECE
@@ -359,7 +394,7 @@ public class HandScript : MonoBehaviour
         if (showing)
         {
             // Increment/decrement dispPerc
-            if (dispDistPerc > 0) dispDistPerc--;
+            if (dispDistPerc > 0) dispDistPerc -= toggleMoveSpeed;
             foreach (Image cursor in cursors)
                 cursor.gameObject.SetActive(false);
             
@@ -367,11 +402,12 @@ public class HandScript : MonoBehaviour
         }
         else
         {
-            if (dispDistPerc < DISP_DIST_PERC_MAX) dispDistPerc++;
+            if (dispDistPerc < DISP_DIST_PERC_MAX)
+                dispDistPerc += toggleMoveSpeed;
 
             // Only update card display movement if cards are in sight.
             if (dispDistPerc != DISP_DIST_PERC_MAX) UpdateCardPositions();
         }
-        dispDist = Screen.height * ((float) dispDistPerc) / DISP_DIST_PERC_MAX;
+        dispDist = height * ((float) dispDistPerc) / DISP_DIST_PERC_MAX;
     }
 }

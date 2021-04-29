@@ -8,7 +8,26 @@ public class CameraScript : MonoBehaviour
     private float speed;
     [SerializeField]
     private int cursorRadius;
+    private int cursorRadius_orig;
     public int CursorRadius { get { return cursorRadius; } }
+    private bool halfSizeWidgets = false;
+    public bool HalfSizeWidgets
+    {
+        set
+        {
+            halfSizeWidgets = value;
+
+            // Only update stuff if Start has already been called.
+            if (ray != null)
+            {
+                if (value) cursorRadius = cursorRadius_orig / 2;
+                else cursorRadius = cursorRadius_orig;
+
+                // Setup rays again using new cursorRadius value.
+                SetupRays();
+            }
+        }
+    }
     private int x = 0, z = 0, y = 6;
     private bool[] pressing = { false, false, false, false };
 
@@ -30,9 +49,19 @@ public class CameraScript : MonoBehaviour
         trans = GetComponent<Transform>();
         cam = GetComponent<Camera>();
 
+        cursorRadius_orig = cursorRadius;
+        if (halfSizeWidgets) cursorRadius /= 2;
+
         // Setup rays
         ray = new Ray[5];
         rayVecs = new Vector3[ray.Length];
+        SetupRays();
+
+        cam.cullingMask = layerMask;
+    }
+
+    private void SetupRays()
+    {
         float[] rayVecDirs = new float[rayVecs.Length];
         rayVecDirs[Coord.LEFT]
             = ((float) ((cam.pixelWidth / 2) - cursorRadius))
@@ -51,8 +80,6 @@ public class CameraScript : MonoBehaviour
         rayVecs[Coord.UP] = new Vector3(0.5F, rayVecDirs[Coord.UP], 0);
         rayVecs[Coord.DOWN] = new Vector3(0.5F, rayVecDirs[Coord.DOWN], 0);
         rayVecs[4] = new Vector3(0.5F, 0.5F, 0);
-
-        cam.cullingMask = layerMask;
     }
 
     public Piece GetHoveredPiece(List<Piece> pieces)

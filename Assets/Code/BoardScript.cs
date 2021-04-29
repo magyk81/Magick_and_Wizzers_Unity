@@ -167,17 +167,15 @@ public class BoardScript : MonoBehaviour
         BASE_DEST.GetComponent<Transform>()
             .SetParent(destinations_parent_trans);
 
-        // Set up players
+        // Setup players
         players = new Player[playerCount];
         for (int i = 0; i < playerCount; i++)
         {
             // Each player gets their own camera and canvas
             GameObject canvasObj = Instantiate(BASE_CANVAS);
-            canvasObj.SetActive(true);
             canvasObj.name = "Canvas " + (i + 1);
 
             GameObject cameraObj = Instantiate(BASE_CAMERA);
-            cameraObj.SetActive(true);
             cameraObj.name = "Camera " + (i + 1);
             Camera cam = cameraObj.GetComponent<Camera>();
 
@@ -188,12 +186,19 @@ public class BoardScript : MonoBehaviour
             {
                 if (i == 0) cam.rect = new Rect(0, 0, 0.5F, 1);
                 else cam.rect = new Rect(0.5F, 0, 0.5F, 1);
+
+                canvasObj.GetComponent<HandScript>().SetDims(
+                    Screen.width / 2, Screen.height, 2);
             }
             else if (playerCount == 3)
             {
                 if (i == 0) cam.rect = new Rect(0, 0, 1, 0.5F);
                 else if (i == 1) cam.rect = new Rect(0, 0.5F, 0.5F, 0.5F);
                 else if (i == 2) cam.rect = new Rect(0.5F, 0.5F, 0.5F, 0.5F);
+
+                canvasObj.GetComponent<HandScript>().SetDims(
+                    Screen.width / (i == 0 ? 1 : 2), Screen.height / 2,
+                    i == 0 ? 1 : 0);
             }
             else if (playerCount == 4)
             {
@@ -201,7 +206,13 @@ public class BoardScript : MonoBehaviour
                 else if (i == 1) cam.rect = new Rect(0.5F, 0.5F, 0.5F, 0.5F);
                 else if (i == 2) cam.rect = new Rect(0, 0, 0.5F, 0.5F);
                 else if (i == 3) cam.rect = new Rect(0.5F, 0, 0.5F, 0.5F);
+
+                canvasObj.GetComponent<HandScript>().SetDims(
+                    Screen.width / 2, Screen.height / 2);
             }
+
+            if (playerCount > 1)
+                cameraObj.GetComponent<CameraScript>().HalfSizeWidgets = true;
 
             players[i] = new Player(
                 canvasObj.GetComponent<HandScript>(),

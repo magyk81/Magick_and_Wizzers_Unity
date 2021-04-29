@@ -46,6 +46,7 @@ public class Player
         this.handScript = handScript;
         this.cameraScript = cameraScript;
 
+        handScript.SetupCursors(cameraScript.CursorRadius);
         cameraScript.SetBounds(-0.5F, totalBoardSize - 0.5F);
 
         // idx value determines if using keyboard or gamepad
@@ -102,6 +103,17 @@ public class Player
             // audio listener that isn't the first one.
             cameraScript.gameObject.GetComponent<AudioListener>()
                 .enabled = false;
+
+            // For debugging
+            InputAction key_H = new InputAction();
+            key_H.AddBinding("<Keyboard>/h");
+            key_H.performed += ctx => ToggleHand();
+            key_H.Enable();
+
+            InputAction key_SPACE = new InputAction();
+            key_SPACE.AddBinding("<Keyboard>/space");
+            key_SPACE.performed += ctx => handScript.DrawCards(3);
+            key_SPACE.Enable();
         }
 
         // Setup particle systems
