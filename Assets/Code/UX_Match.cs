@@ -42,6 +42,8 @@ public class UX_Match
                     for (int c = 0; c < 9; c++)
                         InstantiateChunk(chunkTra, i, x, z, c);
                 }
+
+            chunkObj.SetActive(false);
         }
 
         // Generate cameras
@@ -65,23 +67,26 @@ public class UX_Match
         int i, int x, int z, int c)
     {
         chunks[i][x, z, c] = GameObject.Instantiate(chunkObj, boardTra);
+        chunks[i][x, z, c].GetComponent<Transform>()
+            .localScale = new Vector3(Board.CHUNK_SIZE, Board.CHUNK_SIZE, 1);
         int _c = c - 1;
         if (c == 0) chunks[i][x, z, c].name = "Real Chunk";
         else chunks[i][x, z, c].name = "Clone Chunk - "
             + Util.DirToString(_c);
 
-        int _x = x, _z = z;
+        int _x = x * Board.CHUNK_SIZE, _z = z * Board.CHUNK_SIZE,
+            fullSize = boardSizes[i] * Board.CHUNK_SIZE;
         if (_c == Util.UP || _c == Util.UP_LEFT || _c == Util.UP_RIGHT)
-            _z += boardSizes[i];
-        else if (_c == Util.DOWN || _c == Util.DOWN_LEFT
-            || _c == Util.DOWN_RIGHT) _z -= boardSizes[i];
+            _z += fullSize;
+        else if (_c == Util.DOWN || _c == Util.DOWN_LEFT || _c == Util.DOWN_RIGHT)
+            _z -= fullSize;
         if (_c == Util.RIGHT || _c == Util.UP_RIGHT || _c == Util.DOWN_RIGHT)
-            _x += boardSizes[i];
+            _x += fullSize;
         else if (_c == Util.LEFT || _c == Util.UP_LEFT || _c == Util.DOWN_LEFT)
-            _x -= boardSizes[i];
+            _x -= fullSize;
 
         // Move the chunk far away if it's another board.
-        _x += i * 20; // 20 is a magic number.
+        _x += i * 20 * Board.CHUNK_SIZE; // 20 is a magic number.
 
         chunks[i][x, z, c].GetComponent<Transform>()
             .localPosition = new Vector3(_x, 0, _z);
