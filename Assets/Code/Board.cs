@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class Board
 {
-    public static readonly int CHUNK_SIZE = 5;
+    public static readonly int CHUNK_SIZE = 6;
     private readonly int SIZE;
     private readonly int TILE_MAX;
     private List<Piece> pieces = new List<Piece>();
@@ -12,5 +12,7 @@ public class Board
 
     public int GetSize() { return SIZE; }
 
+    // Should only be called from Match.
+    public void AddPiece(Piece piece) { pieces.Add(piece); }
     void MovePiece(int idx, int dir, int dist) { pieces[idx].Move(dir, dist); }
 }

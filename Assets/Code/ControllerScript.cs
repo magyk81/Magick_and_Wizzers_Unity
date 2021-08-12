@@ -8,12 +8,13 @@ public class ControllerScript : MonoBehaviour
     private UX_Match uxMatch;
 
     [SerializeField]
-    private GameObject BASE_CHUNK, BASE_PIECE, BASE_CAMERA;
+    private GameObject BASE_CHUNK, BASE_PIECE, BASE_WAYPOINT, BASE_CAMERA;
 
     // Start is called before the first frame update
     void Start()
     {
-        uxMatch = new UX_Match(BASE_CHUNK, BASE_CAMERA);
+        uxMatch = new UX_Match(
+            BASE_CHUNK, BASE_PIECE, BASE_WAYPOINT, BASE_CAMERA);
     }
 
     // Update is called once per frame
