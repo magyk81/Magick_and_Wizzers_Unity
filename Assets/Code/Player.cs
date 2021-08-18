@@ -6,8 +6,9 @@ public class Player
 {
     public enum Interface { PLAIN, WAYPOINT, HAND, DETAIL, SURRENDER, PAUSE }
     private Interface currInterface = Interface.PLAIN;
-    private List<Piece> pieces = new List<Piece>();
-    public Player(){}
+    private Piece pieceHovered;
+    private List<Piece> pieceSelected = new List<Piece>();
+    public Player() { }
 
     public void Input(int input)
     {
@@ -15,5 +16,10 @@ public class Player
         {
             if (input == 0) {}
         }
+    }
+
+    public void HoverPiece(GameObject obj)
+    {
+        
     }
 }
