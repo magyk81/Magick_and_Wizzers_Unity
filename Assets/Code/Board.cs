@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class Board
 {
-    public static readonly int CHUNK_SIZE = 5;
+    public static readonly int CHUNK_SIZE = 6;
     private readonly int SIZE;
     private readonly int TILE_MAX;
     private List<Piece> pieces = new List<Piece>();

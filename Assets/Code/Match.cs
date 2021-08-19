@@ -43,6 +43,7 @@ public class Match
         for (int i = 0; i < playerCount; i++)
         {
             Master initialMaster = new Master(i, 0, masterStartPos[i]);
+            Debug.Log(masterStartPos[i].X);
             AddPiece(initialMaster);
         }
     }
