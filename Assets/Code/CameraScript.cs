@@ -5,25 +5,16 @@ using UnityEngine;
 public class CameraScript : MonoBehaviour
 {
     [SerializeField]
-    private Canvas BASE_CANVAS;
-    [SerializeField]
     private RectTransform reticle;
     private Ray[] ray;private RaycastHit raycastHit;private Vector3[] rayVecs;
-    private Canvas canv; private Camera cam;
+    private Camera cam;
+    private Transform tra;
 
     // Start is called before the first frame update
     void Start()
     {
-    }
-
-    public void Setup(int idx)
-    {
         cam = GetComponent<Camera>();
-        GameObject canvObj = Instantiate(
-            BASE_CANVAS.gameObject, GetComponent<Transform>().parent);
-        canvObj.name = "Canvas " + idx;
-        canv = canvObj.GetComponent<Canvas>();
-        canv.worldCamera = GetComponent<Camera>();
+        tra = GetComponent<Transform>();
         int reticleRad = (int) reticle.sizeDelta.x / 2;
 
         // Setup rays
@@ -52,6 +43,25 @@ public class CameraScript : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        
+        if (Input.GetKeyDown(KeyCode.A)) tra.localPosition = new Vector3(
+            tra.localPosition.x - 0.2F, tra.localPosition.y, tra.localPosition.z);
     }
+
+    private float[][] bounds;
+    public float[][] Bounds
+    {
+        get { return bounds; }
+        set
+        {
+            bounds = new float[value.Length][];
+            for (int i = 0; i < value.Length; i++)
+            {
+                bounds[i] = new float[4];
+                for (int j = 0; j < 4; j++) { bounds[i][j] = value[i][j]; }
+            }
+        }
+    }
+
+    private int boardIdx = 0;
+    public int BoardIdx { get { return boardIdx; } set { boardIdx = value; } }
 }

@@ -12,7 +12,8 @@ public class Match
     {
         UX_MATCH = uxMatch;
         players = new Player[playerCount];
-        for (int i = 0; i < playerCount; i++) { players[i] = new Player(); }
+        players[0] = new Player(Player.Type.LOCAL_PLAYER);
+        players[1] = new Player(Player.Type.BOT);
 
         // Manually decide number of boards and their size.
         int boardSizeChunks = 2; // 2 here is magic for debugging.
@@ -28,6 +29,7 @@ public class Match
 
         // Start each player with her initial master
         Coord[] masterStartPos = new Coord[playerCount];
+        
         if (playerCount == 2) masterStartPos = new Coord[] {
             Coord._(boardSize / 4    , boardSize / 4),
             Coord._(boardSize / 4 * 3, boardSize / 4 * 3) };
@@ -43,7 +45,6 @@ public class Match
         for (int i = 0; i < playerCount; i++)
         {
             Master initialMaster = new Master(i, 0, masterStartPos[i]);
-            Debug.Log(masterStartPos[i].X);
             AddPiece(initialMaster);
         }
     }
@@ -58,4 +59,16 @@ public class Match
     {
         players[playerIdx].Input(input);
     }
+
+    // Terrains
+    public static readonly TerrainBase NORMAL = new TerrainBase(TerrainBase.Type.NORMAL);
+    public static readonly TerrainBase GROVE = new TerrainBase(TerrainBase.Type.GROVE);
+    public static readonly TerrainBase LAKE = new TerrainBase(TerrainBase.Type.LAKE);
+    public static readonly TerrainBase PEAK = new TerrainBase(TerrainBase.Type.PEAK);
+    public static readonly TerrainBase MEADOW = new TerrainBase(TerrainBase.Type.MEADOW);
+    public static readonly TerrainBase FEN = new TerrainBase(TerrainBase.Type.FEN);
+    public static readonly TerrainBase WASTE = new TerrainBase(TerrainBase.Type.WASTE);
+    public static readonly TerrainBase TOON = new TerrainBase(TerrainBase.Type.TOON);
+    public static readonly TerrainCombo WOOD = new TerrainCombo("Wood", new TerrainBase.Type[]{TerrainBase.Type.GROVE}, true);
+    public static readonly TerrainCombo FOREST = new TerrainCombo("Forest", new TerrainBase.Type[]{TerrainBase.Type.GROVE}, false);
 }

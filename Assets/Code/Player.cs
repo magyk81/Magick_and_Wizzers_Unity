@@ -8,7 +8,9 @@ public class Player
     private Interface currInterface = Interface.PLAIN;
     private Piece pieceHovered;
     private List<Piece> pieceSelected = new List<Piece>();
-    public Player() { }
+    public enum Type { LOCAL_PLAYER, REMOTE_PLAYER, BOT }
+    private readonly Type playerType;
+    public Player(Type playerType) { this.playerType = playerType; }
 
     public void Input(int input)
     {

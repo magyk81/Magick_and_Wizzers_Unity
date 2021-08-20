@@ -18,7 +18,6 @@ public class UX_Match
     
     // [boardIdx][x, z]
     private UX_Chunk[][,] chunks;
-    private GameObject[] cameras;
     private List<UX_Piece> pieces = new List<UX_Piece>();
     private GameObject[,] waypoints;
 
@@ -87,22 +86,18 @@ public class UX_Match
             }
         }
 
-        // Generate cameras
-        GameObject cameraGroupObj = new GameObject("Cameras");
-        Transform cameraGroupTra = cameraGroupObj.GetComponent<Transform>();
-        cameras = new GameObject[playerCount];
-        for (int i = 0; i < playerCount; i++)
+        // Set physical boundaries for camera
+        int boardCount = boardSizes.Length;
+        float[][] bounds = new float[boardCount][];
+        for (int i = 0; i < boardCount; i++)
         {
-            cameraObj.SetActive(false);
-            cameras[i] = GameObject.Instantiate(cameraObj, cameraGroupTra);
-            cameras[i].name = "Camera " + (i + 1);
-            if (i > 0)
-                cameras[i].GetComponent<AudioListener>().enabled = false;
-            cameras[i].GetComponent<Camera>().rect = new Rect(
-                ((float) i) / playerCount, 0, 1F / playerCount, 1);
-            cameras[i].SetActive(true);
-            cameras[i].GetComponent<CameraScript>().Setup(i);
+            bounds[i] = new float[4];
+            bounds[i][Util.UP] = chunks[i][0, boardSizes[i] - 1].GetEdge(Util.UP);
+            bounds[i][Util.DOWN] = chunks[i][0, 0].GetEdge(Util.DOWN);
+            bounds[i][Util.RIGHT] = chunks[i][boardSizes[i] - 1, 0].GetEdge(Util.RIGHT);
+            bounds[i][Util.LEFT] = chunks[i][0, 0].GetEdge(Util.LEFT);
         }
+        cameraObj.GetComponent<CameraScript>().Bounds = bounds;
 
         baseChunk.gameObject.SetActive(false);
         basePiece.gameObject.SetActive(false);

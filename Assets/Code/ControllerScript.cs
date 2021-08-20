@@ -13,6 +13,8 @@ public class ControllerScript : MonoBehaviour
     private UX_Chunk BASE_CHUNK;
     [SerializeField]
     private UX_Piece BASE_PIECE;
+    [SerializeField]
+    private int playerCount;
 
     // Start is called before the first frame update
     void Start()
@@ -27,7 +29,7 @@ public class ControllerScript : MonoBehaviour
         // For debugging
         if (Input.GetKeyDown(KeyCode.Return))
         {
-            if (match  == null) match = new Match(uxMatch, 2);
+            if (match  == null) match = new Match(uxMatch, playerCount);
         }
     }
 }

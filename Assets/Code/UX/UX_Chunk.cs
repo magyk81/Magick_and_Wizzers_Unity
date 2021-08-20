@@ -15,6 +15,17 @@ public class UX_Chunk : MonoBehaviour
         
     }
 
+    public float GetEdge(int dir)
+    {
+        float chunkSizeHalf = ((float) Board.CHUNK_SIZE) / 2F;
+        Vector3 pos = real.GetComponent<Transform>().localPosition;
+        if (dir == Util.UP) return pos.z + chunkSizeHalf;
+        else if (dir == Util.DOWN) return pos.z - chunkSizeHalf;
+        else if (dir == Util.LEFT) return pos.x - chunkSizeHalf;
+        else if (dir == Util.RIGHT) return pos.x + chunkSizeHalf;
+        return 0;
+    }
+
     public void Init(int fullBoardSize, int distBetweenBoards,
             int boardIdx, int x, int z)
     {
