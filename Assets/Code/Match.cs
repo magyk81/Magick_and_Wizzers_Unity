@@ -60,7 +60,7 @@ public class Match
         players[playerIdx].Input(input);
     }
 
-    // Terrains
+    #region Terrains
     public static readonly TerrainBase NORMAL = new TerrainBase(
         TerrainBase.Type.NORMAL);
     public static readonly TerrainBase GROVE = new TerrainBase(
@@ -165,4 +165,54 @@ public class Match
             TerrainBase.Type.GROVE, TerrainBase.Type.PEAK,
             TerrainBase.Type.LAKE},
         TerrainCombo.Adjacency.FLEXIBLE);
+    public static readonly TerrainCombo GRAVEYARD = new TerrainCombo(
+        "Graveyard", new TerrainBase.Type[] {
+            TerrainBase.Type.FEN, TerrainBase.Type.PEAK,
+            TerrainBase.Type.LAKE, TerrainBase.Type.WASTE},
+        TerrainCombo.Adjacency.FLEXIBLE);
+    public static readonly TerrainCombo ÆTHER = new TerrainCombo(
+        "Æther", new TerrainBase.Type[] {
+            TerrainBase.Type.MEADOW, TerrainBase.Type.FEN,
+            TerrainBase.Type.LAKE},
+        TerrainCombo.Adjacency.FLEXIBLE);
+    public static readonly TerrainCombo BAD = new TerrainCombo(
+        "Bad", new TerrainBase.Type[] {
+            TerrainBase.Type.MEADOW, TerrainBase.Type.FEN,
+            TerrainBase.Type.PEAK, TerrainBase.Type.WASTE},
+        TerrainCombo.Adjacency.FLEXIBLE);
+    public static readonly TerrainCombo QUESTION_6 = new TerrainCombo(
+        "???", new TerrainBase.Type[] {
+            TerrainBase.Type.GROVE, TerrainBase.Type.PEAK,
+            TerrainBase.Type.LAKE},
+        TerrainCombo.Adjacency.FLEXIBLE);
+    public static readonly TerrainCombo QUESTION_7 = new TerrainCombo(
+        "???", new TerrainBase.Type[] {
+            TerrainBase.Type.GROVE, TerrainBase.Type.FEN,
+            TerrainBase.Type.MEADOW},
+        TerrainCombo.Adjacency.FLEXIBLE);
+    public static readonly TerrainCombo JUNGLE = new TerrainCombo(
+        "Jungle", new TerrainBase.Type[] {
+            TerrainBase.Type.GROVE, TerrainBase.Type.FEN,
+            TerrainBase.Type.LAKE},
+        TerrainCombo.Adjacency.FLEXIBLE);
+    public static readonly TerrainCombo TUNDRA = new TerrainCombo(
+        "Tundra", new TerrainBase.Type[] {
+            TerrainBase.Type.MEADOW, TerrainBase.Type.PEAK,
+            TerrainBase.Type.LAKE, TerrainBase.Type.WASTE},
+        TerrainCombo.Adjacency.FLEXIBLE);
+    public static readonly TerrainCombo EARTH_POWER = new TerrainCombo(
+        "Earth Power", new TerrainBase.Type[] {
+            TerrainBase.Type.GROVE, TerrainBase.Type.TOON},
+        TerrainCombo.Adjacency.RIGID);
+    public static readonly TerrainCombo OUIJA = new TerrainCombo(
+        "Ouija", new TerrainBase.Type[] {
+            TerrainBase.Type.PEAK, TerrainBase.Type.FEN,
+            TerrainBase.Type.TOON},
+        TerrainCombo.Adjacency.FLEXIBLE);
+    public static readonly TerrainCombo GREEN = new TerrainCombo(
+        "Green", new TerrainBase.Type[] {
+            TerrainBase.Type.NORMAL, TerrainBase.Type.FEN,
+            TerrainBase.Type.TOON, TerrainBase.Type.LAKE},
+        TerrainCombo.Adjacency.RIGID);
+    #endregion
 }

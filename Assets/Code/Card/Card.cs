@@ -4,5 +4,9 @@ using UnityEngine;
 
 public abstract class Card
 {
-    Card(string name, UnityEngine.UI.RawImage art, int level, Terrain terrain) {}
+    protected Card(string name, UnityEngine.UI.RawImage art, int level,
+        GameTerrain terrain)
+    {
+
+    }
 }
