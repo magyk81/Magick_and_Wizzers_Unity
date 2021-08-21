@@ -5,10 +5,13 @@ using UnityEngine;
 public class TerrainCombo : GameTerrain
 {
     private TerrainBase.Type[] baseTypes;
-    private bool isTwo;
-    public TerrainCombo(string name, TerrainBase.Type[] baseTypes, bool isTwo)
+    public enum Adjacency { TWIN, FLEXIBLE, RIGID }
+    private Adjacency adjacency;
+    public TerrainCombo(string name, TerrainBase.Type[] baseTypes,
+        Adjacency adjacency)
     {
+        this.baseTypes = new TerrainBase.Type[baseTypes.Length];
         System.Array.Copy(baseTypes, this.baseTypes, baseTypes.Length);
-        this.isTwo = isTwo;
+        this.adjacency = adjacency;
     }
 }
