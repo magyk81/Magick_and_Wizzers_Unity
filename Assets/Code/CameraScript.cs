@@ -10,6 +10,10 @@ public class CameraScript : MonoBehaviour
     private Camera cam;
     private Transform tra;
 
+    [SerializeField]
+    private float speed;
+    private float x = 0, z = 0, y = 5;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -40,13 +44,83 @@ public class CameraScript : MonoBehaviour
         rayVecs[4] = new Vector3(0.5F, 0.5F, 0);
     }
 
+    public void Move(int x_move, int z_move)
+    {
+        if (x_move == 0 && z_move == 0) return;
+
+        x += x_move * speed;
+        z += z_move * speed;
+
+        if (x < bounds[boardIdx][Util.LEFT])
+            x += boardSize_horiz[boardIdx];
+        if (x > bounds[boardIdx][Util.RIGHT])
+            x -= boardSize_horiz[boardIdx];
+        if (z < bounds[boardIdx][Util.DOWN])
+            z += boardSize_vert[boardIdx];
+        if (z > bounds[boardIdx][Util.UP])
+            z -= boardSize_vert[boardIdx];
+
+        tra.localPosition = new Vector3(x, y, z);
+    }
+
     // Update is called once per frame
     void Update()
     {
-        if (Input.GetKeyDown(KeyCode.A)) tra.localPosition = new Vector3(
-            tra.localPosition.x - 0.2F, tra.localPosition.y, tra.localPosition.z);
+        // React to input and move/relocate camera accordingly
+        // if (moveOnInput)
+        // {
+        //     if (pressing[Util.LEFT]) x -= speed;
+        //     if (pressing[Util.RIGHT]) x += speed;
+        //     if (pressing[Util.UP]) z += speed;
+        //     if (pressing[Util.DOWN]) z -= speed;
+
+        //     // Relocate camera if it goes into clone zone
+        //     bool shouldRelocate = false;
+        //     if (x < bounds[boardIdx][Util.LEFT])
+        //     {
+        //         x += speed;
+        //         shouldRelocate = true;
+        //     }
+        //     else if (x > bounds[boardIdx][Util.RIGHT])
+        //     {
+        //         x -= speed;
+        //         shouldRelocate = true;
+        //     }
+        //     if (z < bounds[boardIdx][Util.DOWN])
+        //     {
+        //         z += speed;
+        //         shouldRelocate = true;
+        //     }
+        //     else if (z > bounds[boardIdx][Util.UP])
+        //     {
+        //         z -= speed;
+        //         shouldRelocate = true;
+        //     }
+
+        //     if (shouldRelocate)
+        //     {
+        //         tra.localPosition = new Vector3(x, y, z);
+        //     }
+        //     else
+        //     {
+        //         foreach (bool _ in pressing)
+        //         {
+        //             if (_)
+        //             {
+        //                 tra.localPosition = new Vector3(x, y, z);
+        //                 break;
+        //             }
+        //         }
+        //     }
+        // }
     }
 
+    // public void PressDirection(int dir, bool press)
+    // {
+    //     pressing[dir] = press;
+    // }
+
+    private float[] boardSize_horiz, boardSize_vert;
     private float[][] bounds;
     public float[][] Bounds
     {
@@ -54,14 +128,22 @@ public class CameraScript : MonoBehaviour
         set
         {
             bounds = new float[value.Length][];
+            boardSize_horiz = new float[value.Length];
+            boardSize_vert = new float[value.Length];
+
             for (int i = 0; i < value.Length; i++)
             {
                 bounds[i] = new float[4];
                 for (int j = 0; j < 4; j++) { bounds[i][j] = value[i][j]; }
+
+                boardSize_horiz[i]
+                    = bounds[i][Util.RIGHT] - bounds[i][Util.LEFT];
+                boardSize_vert[i]
+                    = bounds[i][Util.UP] - bounds[i][Util.DOWN];
             }
         }
     }
 
     private int boardIdx = 0;
-    public int BoardIdx { get { return boardIdx; } set { boardIdx = value; } }
+    public int BoardIdx { set { boardIdx = value; } }
 }

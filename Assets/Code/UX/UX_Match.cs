@@ -4,14 +4,14 @@ using UnityEngine;
 
 public class UX_Match
 {
-    private readonly int MAX_GAMEPADS = 6;
     private int[] boardSizes;
     private int[] fullSizes;
     private readonly int DIST_BETWEEN_BOARDS = 20;
     private readonly int MAX_WAYPOINTS = 5;
 
-    Gamepad[] gamepads;
-    private readonly GameObject waypointObj, cameraObj;
+    private Gamepad[] gamepads;
+    private readonly CameraScript cam;
+    private readonly GameObject waypointObj;
     private readonly UX_Chunk baseChunk;
     private readonly UX_Piece basePiece;
     private Transform boardTra;
@@ -23,15 +23,15 @@ public class UX_Match
 
     private Material debugPieceMat, debugPieceHoverMat, debugPieceSelectMat;
 
-    public UX_Match(UX_Chunk baseChunk, UX_Piece basePiece,
-        GameObject waypointObj, GameObject cameraObj)
+    public UX_Match(Gamepad[] gamepads, UX_Chunk baseChunk, UX_Piece basePiece,
+        GameObject waypointObj, CameraScript cam)
     {
-        gamepads = new Gamepad[MAX_GAMEPADS];
-        gamepads[0] = new Gamepad(true);
+        this.gamepads = gamepads;
+
         this.baseChunk = baseChunk;
         this.basePiece = basePiece;
         this.waypointObj = waypointObj;
-        this.cameraObj = cameraObj;
+        this.cam = cam;
 
         // Load debugging materials
         debugPieceMat = Resources.Load<Material>("Materials/Debug Piece");
@@ -59,7 +59,8 @@ public class UX_Match
             for (int x = 0; x < boardSizes[i]; x++)
                 for (int z = 0; z < boardSizes[i]; z++)
                 {
-                    chunks[i][x, z] = GameObject.Instantiate(baseChunk, boardTra);
+                    chunks[i][x, z] = GameObject.Instantiate(
+                        baseChunk, boardTra);
                     chunks[i][x, z].Init(fullSizes[i], DIST_BETWEEN_BOARDS,
                         i, x, z);
                 }
@@ -92,12 +93,16 @@ public class UX_Match
         for (int i = 0; i < boardCount; i++)
         {
             bounds[i] = new float[4];
-            bounds[i][Util.UP] = chunks[i][0, boardSizes[i] - 1].GetEdge(Util.UP);
-            bounds[i][Util.DOWN] = chunks[i][0, 0].GetEdge(Util.DOWN);
-            bounds[i][Util.RIGHT] = chunks[i][boardSizes[i] - 1, 0].GetEdge(Util.RIGHT);
-            bounds[i][Util.LEFT] = chunks[i][0, 0].GetEdge(Util.LEFT);
+            bounds[i][Util.UP]
+                = chunks[i][0, boardSizes[i] - 1].GetEdge(Util.UP);
+            bounds[i][Util.DOWN]
+                = chunks[i][0, 0].GetEdge(Util.DOWN);
+            bounds[i][Util.RIGHT]
+                = chunks[i][boardSizes[i] - 1, 0].GetEdge(Util.RIGHT);
+            bounds[i][Util.LEFT]
+                = chunks[i][0, 0].GetEdge(Util.LEFT);
         }
-        cameraObj.GetComponent<CameraScript>().Bounds = bounds;
+        cam.Bounds = bounds;
 
         baseChunk.gameObject.SetActive(false);
         basePiece.gameObject.SetActive(false);
@@ -113,9 +118,10 @@ public class UX_Match
     }
 
     // QueryGamepad is called once per frame
-    int QueryGamepad(int idx)
+    public int[] QueryGamepad(int idx)
     {
-        if (gamepads[idx] != null) return gamepads[idx].GetInput();
-        return -1;
+        if (idx < gamepads.Length && gamepads[idx] != null)
+            return gamepads[idx].PadInput;
+        return null;
     }
 }

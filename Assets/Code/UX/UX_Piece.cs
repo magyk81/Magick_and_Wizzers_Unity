@@ -65,6 +65,7 @@ public class UX_Piece : MonoBehaviour
             _x = __x;
             _z = __z;
         }
+        if (Board.CHUNK_SIZE % 2 == 0) { _x += 0.5F; _z += 0.5F; }
 
         realTra.localPosition = new Vector3(_x, 0.1F, _z);
     }

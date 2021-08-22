@@ -452,8 +452,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: be0983df9d3ca7a4ebae0efee0a14179, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  BASE_CAMERA: {fileID: 963194229}
   BASE_WAYPOINT: {fileID: 898851236}
-  BASE_CAMERA: {fileID: 963194225}
   BASE_CHUNK: {fileID: 567624771}
   BASE_PIECE: {fileID: 1486404157}
   playerCount: 2
@@ -668,8 +668,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 337d83a471e3e5b41b5e06a0cb04f73e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  BASE_CANVAS: {fileID: 1594257809}
   reticle: {fileID: 1205314362}
+  speed: 0.001
 --- !u!1 &1205314361
 GameObject:
   m_ObjectHideFlags: 0
@@ -939,7 +939,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: ec93054791a79f942b4fd3e8b3727eac, type: 2}
+  - {fileID: 2100000, guid: d5ed082a986843b43be06e067bdf7712, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
