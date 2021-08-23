@@ -5,8 +5,8 @@ using UnityEngine;
 public class CameraScript : MonoBehaviour
 {
     [SerializeField]
-    private RectTransform reticle;
-    private Ray[] ray;private RaycastHit raycastHit;private Vector3[] rayVecs;
+    private RectTransform reticle, darkScreen;
+    private Ray[] ray;private RaycastHit rayHit;private Vector3[] rayVecs;
     private Camera cam;
     private Transform tra;
 
@@ -20,6 +20,9 @@ public class CameraScript : MonoBehaviour
         cam = GetComponent<Camera>();
         tra = GetComponent<Transform>();
         int reticleRad = (int) reticle.sizeDelta.x / 2;
+        darkScreen.sizeDelta = new Vector2(
+            cam.pixelWidth * 1.5F, cam.pixelHeight * 1.5F);
+        darkScreen.gameObject.SetActive(false);
 
         // Setup rays
         ray = new Ray[5];
@@ -63,62 +66,45 @@ public class CameraScript : MonoBehaviour
         tra.localPosition = new Vector3(x, y, z);
     }
 
+    public List<Collider> GetDetectedColliders()
+    {
+        List<Collider> collidersDetected = new List<Collider>();
+        // The last element of ray is the middle of the reticle, which is what
+        // we want to check first
+        for (int i = ray.Length - 1; i >= 0; i--)
+        {
+            ray[i] = cam.ViewportPointToRay(rayVecs[i]);
+            if (Physics.Raycast(ray[i], out rayHit))
+            {
+                Collider hitCollider = rayHit.collider;
+                if (hitCollider != null)
+                {
+                    if (!collidersDetected.Contains(hitCollider))
+                        collidersDetected.Add(hitCollider);                        
+                }
+            }
+        }
+        return collidersDetected;
+    }
+
+    // Toggle dark screen
+    public void SetMode(Player.Mode mode)
+    {
+        if (mode == Player.Mode.HAND)
+        {
+            darkScreen.gameObject.SetActive(true);
+        }
+        else
+        {
+            darkScreen.gameObject.SetActive(false);
+        }
+    }
+
     // Update is called once per frame
     void Update()
     {
-        // React to input and move/relocate camera accordingly
-        // if (moveOnInput)
-        // {
-        //     if (pressing[Util.LEFT]) x -= speed;
-        //     if (pressing[Util.RIGHT]) x += speed;
-        //     if (pressing[Util.UP]) z += speed;
-        //     if (pressing[Util.DOWN]) z -= speed;
-
-        //     // Relocate camera if it goes into clone zone
-        //     bool shouldRelocate = false;
-        //     if (x < bounds[boardIdx][Util.LEFT])
-        //     {
-        //         x += speed;
-        //         shouldRelocate = true;
-        //     }
-        //     else if (x > bounds[boardIdx][Util.RIGHT])
-        //     {
-        //         x -= speed;
-        //         shouldRelocate = true;
-        //     }
-        //     if (z < bounds[boardIdx][Util.DOWN])
-        //     {
-        //         z += speed;
-        //         shouldRelocate = true;
-        //     }
-        //     else if (z > bounds[boardIdx][Util.UP])
-        //     {
-        //         z -= speed;
-        //         shouldRelocate = true;
-        //     }
-
-        //     if (shouldRelocate)
-        //     {
-        //         tra.localPosition = new Vector3(x, y, z);
-        //     }
-        //     else
-        //     {
-        //         foreach (bool _ in pressing)
-        //         {
-        //             if (_)
-        //             {
-        //                 tra.localPosition = new Vector3(x, y, z);
-        //                 break;
-        //             }
-        //         }
-        //     }
-        // }
+        
     }
-
-    // public void PressDirection(int dir, bool press)
-    // {
-    //     pressing[dir] = press;
-    // }
 
     private float[] boardSize_horiz, boardSize_vert;
     private float[][] bounds;

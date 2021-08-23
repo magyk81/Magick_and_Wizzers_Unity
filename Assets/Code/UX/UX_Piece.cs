@@ -4,7 +4,8 @@ using UnityEngine;
 
 public class UX_Piece : MonoBehaviour
 {
-    private Piece _;
+    private Piece __;
+    public Piece _ { get { return __; } }
     [SerializeField]
     private GameObject real;
     private GameObject[] clones = new GameObject[8];
@@ -18,10 +19,10 @@ public class UX_Piece : MonoBehaviour
         
     }
 
-    public void Init(Piece _,
+    public void Init(Piece __,
             int fullBoardSize, int distBetweenBoards)
     {
-        this._ = _;
+        this.__ = __;
         this.fullBoardSize = fullBoardSize;
         this.distBetweenBoards = distBetweenBoards;
 
@@ -68,6 +69,16 @@ public class UX_Piece : MonoBehaviour
         if (Board.CHUNK_SIZE % 2 == 0) { _x += 0.5F; _z += 0.5F; }
 
         realTra.localPosition = new Vector3(_x, 0.1F, _z);
+    }
+
+    public bool IsCollider(Collider collider)
+    {
+        foreach (GameObject clone in clones)
+        {
+            if (clone == collider.gameObject) return true;
+        }
+        if (real == collider.gameObject) return true;
+        return false;
     }
 
     // Update is called once per frame

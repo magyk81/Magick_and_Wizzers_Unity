@@ -117,6 +117,18 @@ public class UX_Match
         newUxPiece.UpdatePosition();
     }
 
+    public Piece GetPiece(List<Collider> colliders)
+    {
+        foreach (Collider collider in colliders)
+        {
+            foreach (UX_Piece piece in pieces)
+            {
+                if (piece.IsCollider(collider)) return piece._;
+            }
+        }
+        return null;
+    }
+
     // QueryGamepad is called once per frame
     public int[] QueryGamepad(int idx)
     {

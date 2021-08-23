@@ -34,8 +34,8 @@ public class ControllerScript : MonoBehaviour
 
         // Set up players
         Player[] players = new Player[playerCount];
-        players[0] = new Player(Player.Type.LOCAL_PLAYER);
-        players[1] = new Player(Player.Type.BOT);
+        players[0] = new Player("Haylee", Player.Type.LOCAL_PLAYER);
+        players[1] = new Player("Brooke", Player.Type.BOT);
 
         // Set up gamepads
         Gamepad[] gamepads = new Gamepad[MAX_GAMEPADS];

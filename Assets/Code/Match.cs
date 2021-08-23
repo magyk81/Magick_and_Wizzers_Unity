@@ -47,7 +47,8 @@ public class Match
             Coord._(boardSize / 4 * 3, boardSize / 4 * 3) };
         for (int i = 0; i < players.Length; i++)
         {
-            Master initialMaster = new Master(i, 0, masterStartPos[i]);
+            Master initialMaster = new Master(
+                players[i], i, 0, masterStartPos[i]);
             AddPiece(initialMaster);
         }
     }
@@ -55,6 +56,19 @@ public class Match
     // Update is called once per frame
     public void Update()
     {
+        for (int i = 0; i < players.Length; i++)
+        {
+            if (players[i].PlayerType == Player.Type.LOCAL_PLAYER)
+            {
+                // Get colliders detected by this player's camera.
+                List<Collider> collidersDetected
+                    = CAMERA_BINDING[players[i]].GetDetectedColliders();
+                
+                Piece hoveredPiece = UX_MATCH.GetPiece(collidersDetected);
+                players[i].HoverPiece(hoveredPiece);
+            }
+        }
+
         for (int i = 0; i < ControllerScript.MAX_GAMEPADS; i++)
         {
             int[] padInput = UX_MATCH.QueryGamepad(i);
