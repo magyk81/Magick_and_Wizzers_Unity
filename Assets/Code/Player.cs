@@ -36,7 +36,8 @@ public class Player
 
             // Go to HAND mode if hovering a master
             if (pieceHovered != null
-                && pieceHovered.GetType() == typeof(Master))
+                && pieceHovered.GetType() == typeof(Master)
+                && masters.Contains((Master) pieceHovered))
             {
                 bool x_button = padInput[(int) Gamepad.Button.X] > 0;
                 if (x_button) currMode = Mode.HAND;

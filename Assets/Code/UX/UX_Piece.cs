@@ -7,11 +7,26 @@ public class UX_Piece : MonoBehaviour
     private Piece __;
     public Piece _ { get { return __; } }
     [SerializeField]
+    private GameObject[] realParts;
+    private enum Part {
+        ART, FRAME, ATTACK, DEFENSE, LIFE, HOVER, SELECT, TARGET, COUNT };
+    [SerializeField]
     private GameObject real;
     private GameObject[] clones = new GameObject[8];
+    private GameObject[][] cloneParts = new GameObject[8][];
     private Transform realTra;
     private Transform[] clonesTra = new Transform[8];
     private int boardIdx, fullBoardSize, distBetweenBoards;
+
+    private void OnValidate()
+    {
+        int partCount = (int) Part.COUNT;
+        if (realParts.Length != partCount)
+        {
+            Debug.LogWarning("Real Parts array size must be " + partCount);
+            System.Array.Resize(ref realParts, partCount);
+        }
+    }
 
     // Start is called before the first frame update
     void Start()
@@ -37,6 +52,19 @@ public class UX_Piece : MonoBehaviour
             clones[i].SetActive(true);
         }
         realTra = real.GetComponent<Transform>();
+
+        for (int i = 0; i < cloneParts.Length; i++)
+        {
+            cloneParts[i] = new GameObject[realParts.Length];
+            foreach (Transform child in clonesTra[i])
+            {
+                for (int j = 0; j < realParts.Length; j++)
+                {
+                    if (realParts[j].name == child.name)
+                        cloneParts[i][j] = child.gameObject;
+                }
+            }
+        }
 
         gameObject.SetActive(true);
     }
@@ -79,6 +107,16 @@ public class UX_Piece : MonoBehaviour
         }
         if (real == collider.gameObject) return true;
         return false;
+    }
+
+    public void Hover()
+    {
+
+    }
+
+    public void Unhover()
+    {
+
     }
 
     // Update is called once per frame

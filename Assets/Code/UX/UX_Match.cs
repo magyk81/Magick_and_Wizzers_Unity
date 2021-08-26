@@ -19,6 +19,7 @@ public class UX_Match
     // [boardIdx][x, z]
     private UX_Chunk[][,] chunks;
     private List<UX_Piece> pieces = new List<UX_Piece>();
+    private UX_Piece hoveredPiece;
     private GameObject[,] waypoints;
 
     private Material debugPieceMat, debugPieceHoverMat, debugPieceSelectMat;
@@ -117,16 +118,27 @@ public class UX_Match
         newUxPiece.UpdatePosition();
     }
 
-    public Piece GetPiece(List<Collider> colliders)
+    public UX_Piece GetPiece(List<Collider> colliders)
     {
         foreach (Collider collider in colliders)
         {
             foreach (UX_Piece piece in pieces)
             {
-                if (piece.IsCollider(collider)) return piece._;
+                if (piece.IsCollider(collider)) return piece;
             }
         }
         return null;
+    }
+
+    public void HoverPiece(UX_Piece piece)
+    {
+        if (hoveredPiece != null && piece != hoveredPiece)
+            hoveredPiece.Unhover();
+        if (piece != null)
+        {
+            hoveredPiece = piece;
+            hoveredPiece.Hover();
+        }
     }
 
     // QueryGamepad is called once per frame

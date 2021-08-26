@@ -64,8 +64,17 @@ public class Match
                 List<Collider> collidersDetected
                     = CAMERA_BINDING[players[i]].GetDetectedColliders();
                 
-                Piece hoveredPiece = UX_MATCH.GetPiece(collidersDetected);
-                players[i].HoverPiece(hoveredPiece);
+                UX_Piece hoveredPiece = UX_MATCH.GetPiece(collidersDetected);
+                if (hoveredPiece != null)
+                {
+                    players[i].HoverPiece(hoveredPiece._);
+                    UX_MATCH.HoverPiece(hoveredPiece);
+                }
+                else
+                {
+                    players[i].HoverPiece(null);
+                    UX_MATCH.HoverPiece(null);
+                }                
             }
         }
 
