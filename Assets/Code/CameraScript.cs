@@ -88,9 +88,9 @@ public class CameraScript : MonoBehaviour
     }
 
     // Toggle dark screen
-    public void SetMode(Player.Mode mode)
+    public void SetMode(UX_Player.Mode mode)
     {
-        if (mode == Player.Mode.HAND)
+        if (mode == UX_Player.Mode.HAND)
         {
             darkScreen.gameObject.SetActive(true);
         }

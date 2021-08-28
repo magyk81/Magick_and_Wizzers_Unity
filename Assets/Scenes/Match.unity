@@ -456,7 +456,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 517043819}
-  - component: {fileID: 517043816}
   m_Layer: 0
   m_Name: Real Piece
   m_TagString: Untagged
@@ -464,20 +463,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!64 &517043816
-MeshCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 517043815}
-  m_Material: {fileID: 0}
-  m_IsTrigger: 0
-  m_Enabled: 1
-  serializedVersion: 4
-  m_Convex: 0
-  m_CookingOptions: 30
-  m_Mesh: {fileID: 10210, guid: 0000000000000000e000000000000000, type: 0}
 --- !u!4 &517043819
 Transform:
   m_ObjectHideFlags: 0
@@ -530,7 +515,7 @@ Transform:
   m_Children:
   - {fileID: 1651430509}
   m_Father: {fileID: 0}
-  m_RootOrder: 3
+  m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &567624771
 MonoBehaviour:
@@ -740,6 +725,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   BASE_CAMERA: {fileID: 963194229}
+  BASE_CANVAS: {fileID: 1594257809}
   BASE_WAYPOINT: {fileID: 898851236}
   BASE_CHUNK: {fileID: 567624771}
   BASE_PIECE: {fileID: 1486404157}
@@ -756,7 +742,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 2
+  m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &898851236
 GameObject:
@@ -852,7 +838,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 5
+  m_RootOrder: 4
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &917503402
 GameObject:
@@ -948,7 +934,7 @@ GameObject:
   - component: {fileID: 963194226}
   - component: {fileID: 963194229}
   m_Layer: 0
-  m_Name: Camera
+  m_Name: Base Camera
   m_TagString: MainCamera
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1017,7 +1003,7 @@ RectTransform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 1
+  m_RootOrder: 5
   m_LocalEulerAnglesHint: {x: 90, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
@@ -1221,15 +1207,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 534b9c9ba99a32a4db124bbe0931919f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  realParts:
-  - {fileID: 1779907972}
-  - {fileID: 2035278043}
-  - {fileID: 917503402}
-  - {fileID: 1461990532}
-  - {fileID: 1777336192}
-  - {fileID: 512284202}
-  - {fileID: 21209509}
-  - {fileID: 334766717}
+  art: {fileID: 1779907972}
+  frame: {fileID: 2035278043}
+  attackBar: {fileID: 917503402}
+  defenseBar: {fileID: 1461990532}
+  lifeBar: {fileID: 1777336192}
+  hover: {fileID: 512284202}
+  select: {fileID: 21209509}
+  target: {fileID: 334766717}
   real: {fileID: 517043815}
 --- !u!4 &1486404158
 Transform:
@@ -1244,7 +1229,7 @@ Transform:
   m_Children:
   - {fileID: 517043819}
   m_Father: {fileID: 0}
-  m_RootOrder: 4
+  m_RootOrder: 3
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1594257806
 GameObject:
@@ -1259,7 +1244,7 @@ GameObject:
   - component: {fileID: 1594257808}
   - component: {fileID: 1594257807}
   m_Layer: 5
-  m_Name: Canvas
+  m_Name: Base Canvas
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1692,6 +1677,7 @@ GameObject:
   - component: {fileID: 2035278044}
   - component: {fileID: 2035278047}
   - component: {fileID: 2035278046}
+  - component: {fileID: 2035278045}
   m_Layer: 0
   m_Name: Frame
   m_TagString: Untagged
@@ -1713,6 +1699,20 @@ Transform:
   m_Father: {fileID: 517043819}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!64 &2035278045
+MeshCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2035278043}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 1
+  serializedVersion: 4
+  m_Convex: 0
+  m_CookingOptions: 30
+  m_Mesh: {fileID: 10210, guid: 0000000000000000e000000000000000, type: 0}
 --- !u!23 &2035278046
 MeshRenderer:
   m_ObjectHideFlags: 0

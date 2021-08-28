@@ -7,7 +7,8 @@ public class UX_Piece : MonoBehaviour
     private Piece __;
     public Piece _ { get { return __; } }
     [SerializeField]
-    private GameObject[] realParts;
+    private GameObject art, frame, attackBar, defenseBar, lifeBar, hover,
+        select, target;
     private enum Part {
         ART, FRAME, ATTACK, DEFENSE, LIFE, HOVER, SELECT, TARGET, COUNT };
     [SerializeField]
@@ -17,16 +18,6 @@ public class UX_Piece : MonoBehaviour
     private Transform realTra;
     private Transform[] clonesTra = new Transform[8];
     private int boardIdx, fullBoardSize, distBetweenBoards;
-
-    private void OnValidate()
-    {
-        int partCount = (int) Part.COUNT;
-        if (realParts.Length != partCount)
-        {
-            Debug.LogWarning("Real Parts array size must be " + partCount);
-            System.Array.Resize(ref realParts, partCount);
-        }
-    }
 
     // Start is called before the first frame update
     void Start()
@@ -40,6 +31,16 @@ public class UX_Piece : MonoBehaviour
         this.__ = __;
         this.fullBoardSize = fullBoardSize;
         this.distBetweenBoards = distBetweenBoards;
+
+        if (__.GetType() != typeof(Master))
+        {
+            lifeBar.SetActive(false);
+        }
+        attackBar.SetActive(false);
+        defenseBar.SetActive(false);
+        hover.SetActive(false);
+        select.SetActive(false);
+        target.SetActive(false);
 
         gameObject.name = "Piece - " + _.Name;
         Transform tra = GetComponent<Transform>();
@@ -55,13 +56,27 @@ public class UX_Piece : MonoBehaviour
 
         for (int i = 0; i < cloneParts.Length; i++)
         {
-            cloneParts[i] = new GameObject[realParts.Length];
+            cloneParts[i] = new GameObject[(int) Part.COUNT];
             foreach (Transform child in clonesTra[i])
             {
-                for (int j = 0; j < realParts.Length; j++)
+                for (int j = 0; j < (int) Part.COUNT; j++)
                 {
-                    if (realParts[j].name == child.name)
-                        cloneParts[i][j] = child.gameObject;
+                    if (child.name == art.name)
+                        cloneParts[i][(int) Part.ART] = child.gameObject;
+                    else if (child.name == frame.name)
+                        cloneParts[i][(int) Part.FRAME] = child.gameObject;
+                    else if (child.name == attackBar.name)
+                        cloneParts[i][(int) Part.ATTACK] = child.gameObject;
+                    else if (child.name == defenseBar.name)
+                        cloneParts[i][(int) Part.DEFENSE] = child.gameObject;
+                    else if (child.name == lifeBar.name)
+                        cloneParts[i][(int) Part.LIFE] = child.gameObject;
+                    else if (child.name == hover.name)
+                        cloneParts[i][(int) Part.HOVER] = child.gameObject;
+                    else if (child.name == select.name)
+                        cloneParts[i][(int) Part.SELECT] = child.gameObject;
+                    else if (child.name == target.name)
+                        cloneParts[i][(int) Part.TARGET] = child.gameObject;
                 }
             }
         }
@@ -101,22 +116,41 @@ public class UX_Piece : MonoBehaviour
 
     public bool IsCollider(Collider collider)
     {
-        foreach (GameObject clone in clones)
+        if (frame == collider.gameObject) return true;
+        foreach (GameObject[] clonePart in cloneParts)
         {
-            if (clone == collider.gameObject) return true;
+            if (clonePart[(int) Part.FRAME] == collider.gameObject)
+                return true;
         }
-        if (real == collider.gameObject) return true;
         return false;
     }
 
     public void Hover()
     {
-
+        SetActive(Part.HOVER, true);
+        SetActive(Part.FRAME, false);
     }
 
     public void Unhover()
     {
+        SetActive(Part.HOVER, false);
+        SetActive(Part.FRAME, true);
+    }
 
+    public void Select() { SetActive(Part.SELECT, true); }
+    public void Unselect() { SetActive(Part.SELECT, false); }
+
+    private void SetActive(Part part, bool active)
+    {
+        if (part == Part.FRAME)
+            frame.GetComponent<MeshRenderer>().enabled = active;
+        else if (part == Part.HOVER) hover.SetActive(active);
+        else if (part == Part.SELECT) select.SetActive(active);
+        else if (part == Part.TARGET) target.SetActive(active);
+        foreach (GameObject[] clonePart in cloneParts)
+        {
+            clonePart[(int) part].SetActive(active);
+        }
     }
 
     // Update is called once per frame

@@ -6,13 +6,15 @@ public class ControllerScript : MonoBehaviour
 {
     private Match match;
     private UX_Match uxMatch;
-    private Dictionary<int, Player> gamepadBinding
-        = new Dictionary<int, Player>();
+    private Dictionary<Player, Gamepad> gamepadBinding
+        = new Dictionary<Player, Gamepad>();
     private Dictionary<Player, CameraScript> cameraBinding
         = new Dictionary<Player, CameraScript>();
 
     [SerializeField]
     private CameraScript BASE_CAMERA;
+    [SerializeField]
+    private Canvas BASE_CANVAS;
     [SerializeField]
     private GameObject BASE_WAYPOINT;
     [SerializeField]
@@ -28,31 +30,15 @@ public class ControllerScript : MonoBehaviour
     {
         Application.targetFrameRate = 60;
 
-        // The contents in this region should have been set while the user(s)
-        // was in the lobby prior to the match starting.
-        #region lobby setup
-
         // Set up players
         Player[] players = new Player[playerCount];
         players[0] = new Player("Haylee", Player.Type.LOCAL_PLAYER);
         players[1] = new Player("Brooke", Player.Type.BOT);
 
-        // Set up gamepads
-        Gamepad[] gamepads = new Gamepad[MAX_GAMEPADS];
-        gamepads[0] = new Gamepad(true);
-
-        // Set up gamepad-to-player binding
-        gamepadBinding.Add(0, players[0]);
-
-        // Set up player-to-camera binding
-        cameraBinding.Add(players[0], BASE_CAMERA);
-
-        #endregion
-
-        uxMatch = new UX_Match(gamepads,
-            BASE_CHUNK, BASE_PIECE, BASE_WAYPOINT, BASE_CAMERA);
+        uxMatch = new UX_Match(BASE_CHUNK, BASE_PIECE, BASE_WAYPOINT,
+            BASE_CAMERA, BASE_CANVAS);
         
-        match = new Match(uxMatch, gamepadBinding, cameraBinding, players);
+        match = new Match(uxMatch, players);
     }
 
     // Update is called once per frame
