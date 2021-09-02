@@ -43,9 +43,7 @@ public class UX_Player
             }
 
             // Go to HAND mode if hovering a master
-            if (hoveredPiece != null
-                && hoveredPiece.GetType() == typeof(Master)
-                && __.HasMaster(hoveredPiece._))
+            if (hoveredPiece != null && __.HasMaster(hoveredPiece._))
             {
                 bool x_button = padInput[(int) Gamepad.Button.X] > 0;
                 if (x_button) mode = Mode.HAND;
@@ -59,11 +57,20 @@ public class UX_Player
             if (b_button) mode = Mode.PLAIN;
         }
 
-        if (oldMode != mode) CAM.SetMode(mode);
+        if (oldMode != mode)
+        {
+            CAM.SetMode(mode);
+            Debug.Log("Set Mode: " + mode);
+        }
     }
 
     public void QueryCamera(List<UX_Piece> pieces)
     {
+        foreach (UX_Piece ux_piece in pieces)
+        {
+            ux_piece.Unhover();
+        }
+
         // Get colliders detected by this player's camera.
         List<Collider> collidersDetected = CAM.GetDetectedColliders();
         foreach (Collider collider in collidersDetected)

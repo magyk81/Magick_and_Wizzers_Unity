@@ -18,6 +18,7 @@ public class UX_Piece : MonoBehaviour
     private Transform realTra;
     private Transform[] clonesTra = new Transform[8];
     private int boardIdx, fullBoardSize, distBetweenBoards;
+    private bool hovered, selected;
 
     // Start is called before the first frame update
     void Start()
@@ -127,18 +128,32 @@ public class UX_Piece : MonoBehaviour
 
     public void Hover()
     {
+        if (hovered) return;
         SetActive(Part.HOVER, true);
         SetActive(Part.FRAME, false);
+        hovered = true;
     }
 
     public void Unhover()
     {
+        if (!hovered) return;
         SetActive(Part.HOVER, false);
         SetActive(Part.FRAME, true);
+        hovered = false;
     }
 
-    public void Select() { SetActive(Part.SELECT, true); }
-    public void Unselect() { SetActive(Part.SELECT, false); }
+    public void Select()
+    {
+        if (selected) return;
+        SetActive(Part.SELECT, true);
+        selected = true;
+    }
+    public void Unselect()
+    {
+        if (!selected) return;
+        SetActive(Part.SELECT, false);
+        selected = false;
+    }
 
     private void SetActive(Part part, bool active)
     {

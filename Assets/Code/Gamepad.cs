@@ -64,10 +64,16 @@ public class Gamepad
 
     private bool GetInput(KeyCode keyCode, Button button, int mult = 1)
     {
-        if (Input.GetKey(keyCode))
+        // mult != 1 when it's the stick
+        if ((mult != 1 && Input.GetKey(keyCode))
+            || Input.GetKeyDown(keyCode))
         {
             padInput[(int) button] = mult;
             return true;
+        }
+        else if (Input.GetKeyUp(keyCode))
+        {
+            padInput[(int) button] = -mult;
         }
         
         padInput[(int) button] = 0;

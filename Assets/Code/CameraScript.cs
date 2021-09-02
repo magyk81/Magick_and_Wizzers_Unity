@@ -4,11 +4,10 @@ using UnityEngine;
 
 public class CameraScript : MonoBehaviour
 {
-    [SerializeField]
-    private RectTransform reticle, darkScreen;
     private Ray[] ray;private RaycastHit rayHit;private Vector3[] rayVecs;
     private Camera cam;
     private Transform tra;
+    private CanvasScript canv;
 
     [SerializeField]
     private float speed;
@@ -17,12 +16,19 @@ public class CameraScript : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        
+    }
+
+    public void InitCamObjs(CanvasScript canv)
+    {
         cam = GetComponent<Camera>();
         tra = GetComponent<Transform>();
-        int reticleRad = (int) reticle.sizeDelta.x / 2;
-        darkScreen.sizeDelta = new Vector2(
-            cam.pixelWidth * 1.5F, cam.pixelHeight * 1.5F);
-        darkScreen.gameObject.SetActive(false);
+        this.canv = canv;
+
+        float reticleRad = canv.Reticle.sizeDelta.x / 2;
+        canv.DarkScreen.sizeDelta = new Vector2(
+            cam.pixelWidth, cam.pixelHeight);
+        canv.DarkScreen.gameObject.SetActive(false);
 
         // Setup rays
         ray = new Ray[5];
@@ -92,11 +98,11 @@ public class CameraScript : MonoBehaviour
     {
         if (mode == UX_Player.Mode.HAND)
         {
-            darkScreen.gameObject.SetActive(true);
+            canv.DarkScreen.gameObject.SetActive(true);
         }
         else
         {
-            darkScreen.gameObject.SetActive(false);
+            canv.DarkScreen.gameObject.SetActive(false);
         }
     }
 

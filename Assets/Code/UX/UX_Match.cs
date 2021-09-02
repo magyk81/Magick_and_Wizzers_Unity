@@ -134,6 +134,9 @@ public class UX_Match
                 canvasClone.name = "Canvas - Player " + (i + 1);
                 canvasClone.GetComponent<Canvas>().worldCamera
                     = camClone.GetComponent<Camera>();
+                
+                camClone.GetComponent<CameraScript>().InitCamObjs(
+                    canvasClone.GetComponent<CanvasScript>());
 
                 this.players[j] = new UX_Player(players[i], gamepad,
                     camClone.GetComponent<CameraScript>());
