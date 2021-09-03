@@ -24,11 +24,11 @@ public class CameraScript : MonoBehaviour
         cam = GetComponent<Camera>();
         tra = GetComponent<Transform>();
         this.canv = canv;
+        canv.InitCanvObjs(cam.pixelWidth, cam.pixelHeight);
 
         float reticleRad = canv.Reticle.sizeDelta.x / 2;
         canv.DarkScreen.sizeDelta = new Vector2(
             cam.pixelWidth, cam.pixelHeight);
-        canv.DarkScreen.gameObject.SetActive(false);
 
         // Setup rays
         ray = new Ray[5];

@@ -4,10 +4,13 @@ using UnityEngine;
 
 public abstract class Card
 {
-    protected Card(string name, UnityEngine.UI.RawImage art, int level,
+    private Texture art;
+    public Texture Art { get { return art; } }
+
+    protected Card(string name, Texture art, int level,
         GameTerrain terrain)
     {
-
+        this.art = art;
     }
 
     public static Card[] cards = {

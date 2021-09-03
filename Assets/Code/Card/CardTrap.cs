@@ -6,7 +6,7 @@ public class CardTrap : Card
 {
     private int attackPoints, defensePoints;
     
-    public CardTrap(string name, UnityEngine.UI.RawImage art, int level,
+    public CardTrap(string name, Texture art, int level,
         GameTerrain terrain, int attackPoints, int defensePoints)
         : base(name, art, level, terrain)
     {
