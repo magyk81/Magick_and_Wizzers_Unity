@@ -1,4 +1,5 @@
 using System;
+using UnityEngine;
 
 public struct Coord
 {
@@ -10,6 +11,7 @@ public struct Coord
         Z = z;
     }
     public Coord Copy() { return new Coord(X, Z); }
+    public Vector2 ToVec2() { return new Vector2(X, Z); }
     public static bool operator ==(Coord a, Coord b)
     {
         return a.X == b.X && a.Z == b.Z;

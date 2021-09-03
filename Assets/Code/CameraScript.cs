@@ -99,11 +99,18 @@ public class CameraScript : MonoBehaviour
         if (mode == UX_Player.Mode.HAND)
         {
             canv.DarkScreen.gameObject.SetActive(true);
+            canv.ShowHand();
         }
         else
         {
             canv.DarkScreen.gameObject.SetActive(false);
+            canv.HideHand();
         }
+    }
+
+    public void SetHand()
+    {
+
     }
 
     // Update is called once per frame

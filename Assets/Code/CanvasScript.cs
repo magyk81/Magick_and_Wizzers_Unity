@@ -9,13 +9,14 @@ public class CanvasScript : MonoBehaviour
     [SerializeField]
     private float cursorToCardRatio;
     private float cardCursorWidth, cardCursorHeight, cardWidth, cardHeight;
-    private RectTransform reticle, darkScreen, card;
+    private RectTransform reticle, darkScreen, baseCard;
     public RectTransform Reticle { get { return reticle; } }
     public RectTransform DarkScreen { get { return darkScreen; } }
 
-    private readonly float CARD_DIM_RATIO = 1.4F;
-    private readonly int MAX_HAND_CARDS = 60, CARDS_PER_ROW = 5;
-    private RectTransform[] handCards;
+    private static readonly float CARD_DIM_RATIO = 1.4F;
+    private static readonly int MAX_HAND_CARDS = 60, CARDS_PER_ROW = 5;
+    private HandCard[] handCards;
+    private RectTransform handCardsParent;
     private class CardPos
     {
         private Coord prev, next, curr;
@@ -33,6 +34,34 @@ public class CanvasScript : MonoBehaviour
             next = coord.Copy();
         }
     }
+    private class HandCard
+    {
+        private int idx, row, column;
+        private CardPos cardPos, initPos;
+        public Coord Next { set { cardPos.Next = value; } }
+        public Coord Curr { get { return cardPos.Curr; } }
+        private RectTransform rectTran;
+        private RawImage art;
+        public HandCard(int idx, RectTransform baseCard, RectTransform parent,
+            float width, float height, Coord initPos)
+        {
+            this.idx = idx;
+
+            rectTran = Instantiate(baseCard.gameObject, parent)
+                .GetComponent<RectTransform>();
+            rectTran.gameObject.name = "Card " + ((idx < 9) ? "0" : "") + (idx + 1);
+            rectTran.sizeDelta = new Vector2(width, height);
+            rectTran.gameObject.SetActive(false);
+
+            art = rectTran.gameObject.GetComponent<RawImage>();
+
+            cardPos = new CardPos(initPos);
+            this.initPos = new CardPos(initPos);
+        }
+        public void Show() { rectTran.gameObject.SetActive(true); }
+        public void Hide() { rectTran.gameObject.SetActive(false); }
+        public void SetArt(Card card) { art.texture = card.Art; }
+    }
     private int cardHoverIdx = 0;
 
     private readonly int MAX_TICK_COUNT = 100;
@@ -49,8 +78,20 @@ public class CanvasScript : MonoBehaviour
                 reticle = child.gameObject.GetComponent<RectTransform>();
             else if (child.gameObject.name == "Dark Screen")
                 darkScreen = child.gameObject.GetComponent<RectTransform>();
-            else if (child.gameObject.name == "Card")
-                card = child.gameObject.GetComponent<RectTransform>();
+            else if (child.gameObject.name == "Hand Cards")
+            {
+                handCardsParent = child.gameObject
+                    .GetComponent<RectTransform>();
+                foreach (
+                    Transform handCardsChild in handCardsParent)
+                {
+                    if (handCardsChild.gameObject.name == "Card")
+                    {
+                        baseCard = handCardsChild.gameObject
+                            .GetComponent<RectTransform>();
+                    }
+                }
+            }
         }
 
         darkScreen.gameObject.SetActive(false);
@@ -60,21 +101,26 @@ public class CanvasScript : MonoBehaviour
         cardWidth = cardCursorWidth / cursorToCardRatio;
         cardCursorHeight = cardCursorWidth * CARD_DIM_RATIO;
         cardHeight = cardWidth * CARD_DIM_RATIO;
+        Debug.Log("width: " + cardWidth + ", height: " + cardHeight);
 
-        handCards = new RectTransform[MAX_HAND_CARDS];
-        Transform handCardsGroup = new GameObject().GetComponent<Transform>();
-        handCardsGroup.gameObject.name = "Hand Cards";
-        handCardsGroup.SetParent(GetComponent<Transform>());
+        Coord initCardPos = Coord._(
+            (int) (camWidth + cardWidth + 1) / 2,
+            camHeight / 2);
+
+        handCards = new HandCard[MAX_HAND_CARDS];
+        handCardsParent.SetParent(GetComponent<RectTransform>());
         for (int i = 0; i < MAX_HAND_CARDS; i++)
         {
-            handCards[i] = Instantiate(card, handCardsGroup);
-            handCards[i].name = "Card " + ((i < 9) ? "0" : "") + (i + 1);
-            handCards[i].sizeDelta = new Vector2(cardWidth, cardHeight);
-            handCards[i].gameObject.SetActive(false);
+            handCards[i] = new HandCard(i, baseCard, handCardsParent,
+                cardWidth, cardHeight, initCardPos);
         }
 
-        card.gameObject.SetActive(false);
+        HideHand();
+        baseCard.gameObject.SetActive(false);
     }
+
+    public void ShowHand() { handCardsParent.gameObject.SetActive(true); }
+    public void HideHand() { handCardsParent.gameObject.SetActive(false); }
 
     public void SetCardArt(Card[] cards)
     {
@@ -82,18 +128,21 @@ public class CanvasScript : MonoBehaviour
         {
             if (i < cards.Length)
             {
-                handCards[i].gameObject.GetComponent<RawImage>().texture
-                    = cards[i].Art;
+                handCards[i].SetArt(cards[i]);
+                handCards[i].Show();
             }
-            else handCards[i].gameObject.SetActive(false);
+            else handCards[i].Hide();
         }
     }
 
-    private void SetCardPositions()
-    {
-        int cardHoverRow = cardHoverIdx / CARDS_PER_ROW,
-            cardHoverColumn = cardHoverIdx - (cardHoverIdx * CARDS_PER_ROW);
+    // private void SetCardPositions()
+    // {
+    //     int cardHoverRow = cardHoverIdx / CARDS_PER_ROW,
+    //         cardHoverColumn = cardHoverIdx - (cardHoverIdx * CARDS_PER_ROW);
         
-        //for (int i = 0; i < )
-    }
+    //     for (int i = 0; i < MAX_HAND_CARDS; i++)
+    //     {
+
+    //     }
+    // }
 }
