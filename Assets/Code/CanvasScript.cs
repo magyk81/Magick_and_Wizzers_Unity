@@ -19,29 +19,45 @@ public class CanvasScript : MonoBehaviour
     private RectTransform handCardsParent;
     private class CardPos
     {
+        private bool inGridYet;
+        public bool InGridYet { get { return inGridYet; } }
         private Coord prev, next, curr;
         public Coord Next { set { prev = value; } }
         public Coord Curr { get { return curr; } }
-        public void Lerp(float dist)
+        public bool Lerp(float dist)
         {
             curr = Coord.Lerp(prev, next, dist);
-            if (curr == next) prev = curr.Copy();
+            if (curr == next)
+            {
+                prev = curr.Copy();
+                inGridYet = true;
+            }
+            return inGridYet;
         }
         public CardPos(Coord coord)
         {
             prev = coord.Copy();
             curr = coord.Copy();
             next = coord.Copy();
+            inGridYet = false;
         }
     }
     private class HandCard
     {
         private int idx, row, column;
-        private CardPos cardPos, initPos;
-        public Coord Next { set { cardPos.Next = value; } }
+        private CardPos cardPos;
+        private Coord initPos;
+        private readonly int MAX_TICK_COUNT = 100;
+        public Coord Next { set
+            {
+                cardPos.Next = value;
+                if (tickCountdown <= 0 && value != Curr)
+                    tickCountdown = MAX_TICK_COUNT;
+            } }
         public Coord Curr { get { return cardPos.Curr; } }
         private RectTransform rectTran;
         private RawImage art;
+        private int tickCountdown = 0;
         public HandCard(int idx, RectTransform baseCard, RectTransform parent,
             float width, float height, Coord initPos)
         {
@@ -56,16 +72,36 @@ public class CanvasScript : MonoBehaviour
             art = rectTran.gameObject.GetComponent<RawImage>();
 
             cardPos = new CardPos(initPos);
-            this.initPos = new CardPos(initPos);
+            this.initPos = initPos;
         }
         public void Show() { rectTran.gameObject.SetActive(true); }
-        public void Hide() { rectTran.gameObject.SetActive(false); }
+        public void Hide()
+        {
+            if (rectTran.gameObject.activeSelf)
+            {
+                cardPos = new CardPos(initPos);
+                rectTran.gameObject.SetActive(false);
+            }
+        }
         public void SetArt(Card card) { art.texture = card.Art; }
+        public bool Update(bool otherOutGridAlreadyUpdated)
+        {
+            // Another hand card that's NOT in the grid yes has moved
+            if (otherOutGridAlreadyUpdated) return false;
+
+            // It's already in the grid and/or has not been assigned to move.
+            if (tickCountdown <= 0) return true;
+
+            tickCountdown--;
+            int invTickCountdown = MAX_HAND_CARDS - tickCountdown;
+            bool inGridYet = cardPos.Lerp(
+                (float) invTickCountdown / (float) MAX_TICK_COUNT);
+            rectTran.anchoredPosition = Curr.ToVec2();
+
+            return inGridYet;
+        }
     }
     private int cardHoverIdx = 0;
-
-    private readonly int MAX_TICK_COUNT = 100;
-    private int tickCountdown = 0;
 
     public void InitCanvObjs(int camWidth, int camHeight)
     {
@@ -101,7 +137,6 @@ public class CanvasScript : MonoBehaviour
         cardWidth = cardCursorWidth / cursorToCardRatio;
         cardCursorHeight = cardCursorWidth * CARD_DIM_RATIO;
         cardHeight = cardWidth * CARD_DIM_RATIO;
-        Debug.Log("width: " + cardWidth + ", height: " + cardHeight);
 
         Coord initCardPos = Coord._(
             (int) (camWidth + cardWidth + 1) / 2,
@@ -122,7 +157,7 @@ public class CanvasScript : MonoBehaviour
     public void ShowHand() { handCardsParent.gameObject.SetActive(true); }
     public void HideHand() { handCardsParent.gameObject.SetActive(false); }
 
-    public void SetCardArt(Card[] cards)
+    public void SetHandCards(Card[] cards)
     {
         for (int i = 0; i < MAX_HAND_CARDS; i++)
         {
@@ -130,19 +165,19 @@ public class CanvasScript : MonoBehaviour
             {
                 handCards[i].SetArt(cards[i]);
                 handCards[i].Show();
+                handCards[i].Next = Coord._(camWidth, camHeight / 2);
             }
             else handCards[i].Hide();
         }
     }
 
-    // private void SetCardPositions()
-    // {
-    //     int cardHoverRow = cardHoverIdx / CARDS_PER_ROW,
-    //         cardHoverColumn = cardHoverIdx - (cardHoverIdx * CARDS_PER_ROW);
-        
-    //     for (int i = 0; i < MAX_HAND_CARDS; i++)
-    //     {
-
-    //     }
-    // }
+    public void UpdateHandCards()
+    {
+        bool otherOutGridAlreadyUpdated = false;
+        foreach (HandCard handCard in handCards)
+        {
+            bool inGridYet = handCard.Update(otherOutGridAlreadyUpdated);
+            if (!inGridYet) otherOutGridAlreadyUpdated = true;
+        }
+    }
 }

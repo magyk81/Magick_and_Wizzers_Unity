@@ -35,16 +35,20 @@ public class UX_Player
             if (l_vert != 0) z_move = l_vert;
             CAM.Move(x_move, z_move);
 
-            // Select piece if hovering a piece
+            
             if (hoveredPiece != null)
             {
+                // Select piece if hovering a piece
                 bool a_button = padInput[(int) Gamepad.Button.A] > 0;
                 if (a_button) SelectPiece(hoveredPiece);
             }
 
-            // Go to HAND mode if hovering a master
+            
             if (hoveredPiece != null && __.HasMaster(hoveredPiece._))
             {
+                CAM.SetHandCards(((Master) hoveredPiece._).Hand);
+
+                // Go to HAND mode if hovering a master
                 bool x_button = padInput[(int) Gamepad.Button.X] > 0;
                 if (x_button) mode = Mode.HAND;
             }

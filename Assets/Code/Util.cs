@@ -19,4 +19,15 @@ public class Util
         else if (dir == 7) return "DOWN_LEFT";
         return "NONE";
     }
+
+    public static string ReplaceSpaces(string s)
+    {
+        char[] chars = new char[s.Length];
+        for (int i = 0; i < s.Length; i++)
+        {
+            if (s[i] == ' ') chars[i] = '_';
+            else chars[i] = s[i];
+        }
+        return new string(chars);
+    }
 }

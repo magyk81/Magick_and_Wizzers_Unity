@@ -44,7 +44,16 @@ public class Match
             Master initialMaster = new Master(
                 players[i], i, 0, masterStartPos[i]);
             AddPiece(initialMaster);
+
+            // The 5 cards that players start with at the beginning of a match.
+            DrawCards(initialMaster, 5);
         }
+    }
+
+    private void DrawCards(Master master, int count)
+    {
+        master.DrawCards(count);
+        //UX_MATCH
     }
 
     public void AddPiece(Piece piece, int boardIdx = 0)

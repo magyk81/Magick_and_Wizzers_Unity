@@ -8,6 +8,7 @@ public class CameraScript : MonoBehaviour
     private Camera cam;
     private Transform tra;
     private CanvasScript canv;
+    private UX_Player.Mode mode = UX_Player.Mode.PLAIN;
 
     [SerializeField]
     private float speed;
@@ -96,6 +97,7 @@ public class CameraScript : MonoBehaviour
     // Toggle dark screen
     public void SetMode(UX_Player.Mode mode)
     {
+        this.mode = mode;
         if (mode == UX_Player.Mode.HAND)
         {
             canv.DarkScreen.gameObject.SetActive(true);
@@ -108,15 +110,15 @@ public class CameraScript : MonoBehaviour
         }
     }
 
-    public void SetHand()
+    public void SetHandCards(Card[] cards)
     {
-
+        canv.SetHandCards(cards);
     }
 
     // Update is called once per frame
     void Update()
     {
-        
+        if (mode == UX_Player.Mode.HAND) canv.UpdateHandCards();
     }
 
     private float[] boardSize_horiz, boardSize_vert;
