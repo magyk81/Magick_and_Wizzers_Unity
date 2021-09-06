@@ -34,7 +34,6 @@ public class UX_Player
             if (l_horiz != 0) x_move = l_horiz;
             if (l_vert != 0) z_move = l_vert;
             CAM.Move(x_move, z_move);
-
             
             if (hoveredPiece != null)
             {
@@ -42,7 +41,6 @@ public class UX_Player
                 bool a_button = padInput[(int) Gamepad.Button.A] > 0;
                 if (a_button) SelectPiece(hoveredPiece);
             }
-
             
             if (hoveredPiece != null && __.HasMaster(hoveredPiece._))
             {
@@ -59,6 +57,14 @@ public class UX_Player
             // Go to PLAIN mode
             bool b_button = padInput[(int) Gamepad.Button.B] > 0;
             if (b_button) mode = Mode.PLAIN;
+
+            int x_move = -1, y_move = -1;
+            if (padInput[(int) Gamepad.Button.LEFT] == 1) x_move = Util.LEFT;
+            else if (padInput[(int) Gamepad.Button.RIGHT] == 1)
+                x_move = Util.RIGHT;
+            if (padInput[(int) Gamepad.Button.DOWN] == 1) y_move = Util.DOWN;
+            else if (padInput[(int) Gamepad.Button.UP] == 1) y_move = Util.UP;
+            CAM.HandMove(x_move, y_move);
         }
 
         if (oldMode != mode)

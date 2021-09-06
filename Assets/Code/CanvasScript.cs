@@ -7,9 +7,10 @@ public class CanvasScript : MonoBehaviour
 {
     private int camWidth, camHeight;
     [SerializeField]
-    private float cursorToCardRatio;
-    private float cardCursorWidth, cardCursorHeight, cardWidth, cardHeight;
-    private RectTransform reticle, darkScreen, baseCard;
+    private float cursorThickness;
+    private float cardWidth, cardHeight,
+        cardSlotWidth, cardSlotHeight;
+    private RectTransform reticle, darkScreen, baseCard, cardCursor;
     public RectTransform Reticle { get { return reticle; } }
     public RectTransform DarkScreen { get { return darkScreen; } }
 
@@ -22,7 +23,7 @@ public class CanvasScript : MonoBehaviour
         private bool inGridYet;
         public bool InGridYet { get { return inGridYet; } }
         private Coord prev, next, curr;
-        public Coord Next { set { prev = value; } }
+        public Coord Next { set { next = value; } }
         public Coord Curr { get { return curr; } }
         public bool Lerp(float dist)
         {
@@ -40,6 +41,10 @@ public class CanvasScript : MonoBehaviour
             curr = coord.Copy();
             next = coord.Copy();
             inGridYet = false;
+        }
+        public void SetCursor(RectTransform cursor)
+        {
+            cursor.anchoredPosition = next.ToVec2();
         }
     }
     private class HandCard
@@ -73,6 +78,11 @@ public class CanvasScript : MonoBehaviour
 
             cardPos = new CardPos(initPos);
             this.initPos = initPos;
+            rectTran.anchoredPosition = Curr.ToVec2();
+        }
+        public void SetCursor(RectTransform cursor)
+        {
+            cardPos.SetCursor(cursor);
         }
         public void Show() { rectTran.gameObject.SetActive(true); }
         public void Hide()
@@ -93,7 +103,7 @@ public class CanvasScript : MonoBehaviour
             if (tickCountdown <= 0) return true;
 
             tickCountdown--;
-            int invTickCountdown = MAX_HAND_CARDS - tickCountdown;
+            int invTickCountdown = MAX_TICK_COUNT - tickCountdown;
             bool inGridYet = cardPos.Lerp(
                 (float) invTickCountdown / (float) MAX_TICK_COUNT);
             rectTran.anchoredPosition = Curr.ToVec2();
@@ -101,7 +111,7 @@ public class CanvasScript : MonoBehaviour
             return inGridYet;
         }
     }
-    private int cardHoverIdx = 0;
+    private int cardCursorIdx = 0, cardCount = 0;
 
     public void InitCanvObjs(int camWidth, int camHeight)
     {
@@ -128,19 +138,21 @@ public class CanvasScript : MonoBehaviour
                     }
                 }
             }
+            else if (child.gameObject.name == "Card Cursor")
+                cardCursor = child.gameObject.GetComponent<RectTransform>();
         }
 
         darkScreen.gameObject.SetActive(false);
 
         // Set up hand cards
-        cardCursorWidth = ((float) camWidth) / (CARDS_PER_ROW + 2);
-        cardWidth = cardCursorWidth / cursorToCardRatio;
-        cardCursorHeight = cardCursorWidth * CARD_DIM_RATIO;
+        cardWidth = ((float) camWidth) / (CARDS_PER_ROW + 2);
         cardHeight = cardWidth * CARD_DIM_RATIO;
 
+        cardCursor.sizeDelta = new Vector2(
+            cardWidth + cursorThickness, cardHeight + cursorThickness);
+
         Coord initCardPos = Coord._(
-            (int) (camWidth + cardWidth + 1) / 2,
-            camHeight / 2);
+            (int) (camWidth + cardWidth + 1) / 2, 0);
 
         handCards = new HandCard[MAX_HAND_CARDS];
         handCardsParent.SetParent(GetComponent<RectTransform>());
@@ -150,25 +162,81 @@ public class CanvasScript : MonoBehaviour
                 cardWidth, cardHeight, initCardPos);
         }
 
+        cardCursor.anchoredPosition = Coord._(
+            (-camWidth / 2) + (int) (cardWidth * 1.5F), 0).ToVec2();
+
         HideHand();
+        cardCursor.gameObject.SetActive(false);
         baseCard.gameObject.SetActive(false);
     }
 
-    public void ShowHand() { handCardsParent.gameObject.SetActive(true); }
-    public void HideHand() { handCardsParent.gameObject.SetActive(false); }
+    public void ShowHand()
+    {
+        handCardsParent.gameObject.SetActive(true);
+        cardCursor.gameObject.SetActive(cardCount > 0);
+    }
+    public void HideHand()
+    {
+        handCardsParent.gameObject.SetActive(false);
+        cardCursor.gameObject.SetActive(false);
+    }
 
     public void SetHandCards(Card[] cards)
     {
+        cardCount = cards.Length;
+        if (cardCursorIdx >= cardCount) cardCursorIdx = cardCount - 1;
+        else if (cardCount > 0 && cardCursorIdx == -1) cardCursorIdx = 0;
+        cardCursor.gameObject.SetActive(cardCount > 0
+            && handCardsParent.gameObject.activeSelf);
+
         for (int i = 0; i < MAX_HAND_CARDS; i++)
         {
             if (i < cards.Length)
             {
                 handCards[i].SetArt(cards[i]);
                 handCards[i].Show();
-                handCards[i].Next = Coord._(camWidth, camHeight / 2);
+
+                int posX = (-camWidth / 2)
+                    + (int) (cardWidth * (1.5F + (i % CARDS_PER_ROW)));
+                int posY = (int) (-cardHeight * ((i - cardCursorIdx) / CARDS_PER_ROW));
+                handCards[i].Next = Coord._(posX, posY);
             }
             else handCards[i].Hide();
         }
+    }
+
+    public void MoveCursor(int x_move, int y_move)
+    {
+        if (cardCount == 0) return;
+
+        if (x_move == Util.LEFT)
+        {
+            // Cursor is a progressive woke marxist punk radical feminist
+            if (cardCursorIdx % CARDS_PER_ROW == 0)
+            {
+                // Turn the cursor into an evil capitalist
+                cardCursorIdx += CARDS_PER_ROW - 1;
+                if (cardCursorIdx >= cardCount) cardCursorIdx = cardCount - 1;
+            }
+            else cardCursorIdx--;
+        }
+        else if (x_move == Util.RIGHT)
+        {
+            // Cursor is a white cishet 22-inch cock slung over his shoulder
+            if (cardCursorIdx % CARDS_PER_ROW == CARDS_PER_ROW - 1)
+            {
+                // Turn the cursor into an LGBTQA+ woke-folk ally
+                cardCursorIdx -= CARDS_PER_ROW - 1;
+            }
+            // When the right ain't right
+            else if (cardCursorIdx == cardCount - 1)
+            {
+                cardCursorIdx -= (cardCount % CARDS_PER_ROW) - 1;
+            }
+            else cardCursorIdx++;
+        }
+
+        handCards[cardCursorIdx].SetCursor(cardCursor);
     }
 
     public void UpdateHandCards()

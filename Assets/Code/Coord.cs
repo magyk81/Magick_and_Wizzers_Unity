@@ -37,4 +37,5 @@ public struct Coord
             (int) Math.Round(zDist) + a.Z);
     }
     public static Coord _(int x, int z) { return new Coord(x, z); }
+    public override string ToString() { return "[" + X + ", " + Z + "]"; }
 }

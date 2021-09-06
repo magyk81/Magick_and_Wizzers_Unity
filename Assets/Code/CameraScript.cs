@@ -73,6 +73,12 @@ public class CameraScript : MonoBehaviour
         tra.localPosition = new Vector3(x, y, z);
     }
 
+    public void HandMove(int x_move, int y_move)
+    {
+        if (x_move == -1 && y_move == -1) return;
+        canv.MoveCursor(x_move, y_move);
+    }
+
     public List<Collider> GetDetectedColliders()
     {
         List<Collider> collidersDetected = new List<Collider>();
