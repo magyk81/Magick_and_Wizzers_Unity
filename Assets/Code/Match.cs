@@ -46,7 +46,7 @@ public class Match
             AddPiece(initialMaster);
 
             // The 5 cards that players start with at the beginning of a match.
-            DrawCards(initialMaster, 7);
+            DrawCards(initialMaster, 20);
         }
     }
 

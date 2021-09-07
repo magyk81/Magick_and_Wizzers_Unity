@@ -11,6 +11,7 @@ public class UX_Player
     private readonly CameraScript CAM;
     private UX_Piece hoveredPiece;
     private List<UX_Piece> selectedPieces = new List<UX_Piece>();
+    private Card cardBeingPlayed;
     public UX_Player(Player __, Gamepad gamepad,
         CameraScript cam)
     {
@@ -35,20 +36,27 @@ public class UX_Player
             if (l_vert != 0) z_move = l_vert;
             CAM.Move(x_move, z_move);
             
-            if (hoveredPiece != null)
+            if (cardBeingPlayed != null)
             {
-                // Select piece if hovering a piece
-                bool a_button = padInput[(int) Gamepad.Button.A] > 0;
-                if (a_button) SelectPiece(hoveredPiece);
-            }
-            
-            if (hoveredPiece != null && __.HasMaster(hoveredPiece._))
-            {
-                CAM.SetHandCards(((Master) hoveredPiece._).Hand);
 
-                // Go to HAND mode if hovering a master
-                bool x_button = padInput[(int) Gamepad.Button.X] > 0;
-                if (x_button) mode = Mode.HAND;
+            }
+            else
+            {
+                if (hoveredPiece != null)
+                {
+                    // Select piece if hovering a piece
+                    bool a_button = padInput[(int) Gamepad.Button.A] > 0;
+                    if (a_button) SelectPiece(hoveredPiece);
+                }
+                
+                if (hoveredPiece != null && __.HasMaster(hoveredPiece._))
+                {
+                    CAM.SetHandCards(hoveredPiece._);
+
+                    // Go to HAND mode if hovering a master
+                    bool x_button = padInput[(int) Gamepad.Button.X] > 0;
+                    if (x_button) mode = Mode.HAND;
+                }
             }
         }
 
@@ -57,6 +65,19 @@ public class UX_Player
             // Go to PLAIN mode
             bool b_button = padInput[(int) Gamepad.Button.B] > 0;
             if (b_button) mode = Mode.PLAIN;
+
+            // Play the hovered card
+            bool a_button = padInput[(int) Gamepad.Button.A] > 0;
+            if (a_button)
+            {
+                cardBeingPlayed
+                    = CAM.GetHandPiece().GetCardFromHand(CAM.GetHandCard());
+                if (cardBeingPlayed != null)
+                {
+                    CAM.DisplayPlayCard(CAM.GetHandCard());
+                    mode = Mode.PLAIN;
+                }
+            }
 
             int x_move = -1, y_move = -1;
             if (padInput[(int) Gamepad.Button.LEFT] == 1) x_move = Util.LEFT;
@@ -74,12 +95,26 @@ public class UX_Player
         }
     }
 
+    public void QueryCamera(UX_Chunk[][,] chunks)
+    {
+        // Hover tiles
+
+        if (cardBeingPlayed == null) return;
+
+        UX_Chunk chunkDetected = null;
+        
+    }
+
     public void QueryCamera(List<UX_Piece> pieces)
     {
         foreach (UX_Piece ux_piece in pieces)
         {
             ux_piece.Unhover();
         }
+
+        if (cardBeingPlayed != null) return;
+
+        // Hover pieces
 
         // Get colliders detected by this player's camera.
         List<Collider> collidersDetected = CAM.GetDetectedColliders();

@@ -78,6 +78,9 @@ public class CameraScript : MonoBehaviour
         if (x_move == -1 && y_move == -1) return;
         canv.MoveCursor(x_move, y_move);
     }
+    public int GetHandCard() { return canv.GetHoverIdx(); }
+    public void DisplayPlayCard(int idx) { canv.DisplayPlayCard(idx); }
+    public Piece GetHandPiece() { return canv.GetHandPiece(); }
 
     public List<Collider> GetDetectedColliders()
     {
@@ -116,9 +119,9 @@ public class CameraScript : MonoBehaviour
         }
     }
 
-    public void SetHandCards(Card[] cards)
+    public void SetHandCards(Piece handPiece)
     {
-        canv.SetHandCards(cards);
+        canv.SetHandPiece(handPiece);
     }
 
     // Update is called once per frame

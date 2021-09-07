@@ -11,6 +11,16 @@ public class Piece
     private Coord pos;
     public int X { get { return pos.X; } }
     public int Z { get { return pos.Z; } }
+    protected Deck deck;
+    private List<Card> hand = new List<Card>();
+    private bool handUpdated = false;
+    public Card[] Hand { get
+    {
+        bool _handUpdated = handUpdated;
+        handUpdated = false;
+        if (_handUpdated) return hand.ToArray();
+        return null;
+    } }
     public Piece(string name, int playerIdx, int boardIdx, Coord initPos)
     {
         this.name = name;
@@ -22,5 +32,18 @@ public class Piece
     public void Move(int dir, int dist)
     {
 
+    }
+    public void DrawCards(int count)
+    {
+        for (int i = 0; i < count; i++) { AddToHand(deck.DrawCard()); }
+    }
+    public Card GetCardFromHand(int idx)
+    {
+        return hand[idx];
+    }
+    private void AddToHand(Card card)
+    {
+        hand.Add(card);
+        handUpdated = true;
     }
 }

@@ -4,9 +4,6 @@ using UnityEngine;
 
 public class Master : Piece
 {
-    private Deck deck;
-    private List<Card> hand = new List<Card>();
-    public Card[] Hand { get { return hand.ToArray(); } }
     private int playerIdx;
     private Coord pos;
 
@@ -18,10 +15,5 @@ public class Master : Piece
         // Debug-deck
         deck = new Deck(Card.friend_cards);
         deck.Shuffle();
-    }
-
-    public void DrawCards(int count)
-    {
-        for (int i = 0; i < count; i++) { hand.Add(deck.DrawCard()); }
     }
 }
