@@ -13,4 +13,9 @@ public class CardTrap : Card
         this.attackPoints = attackPoints;
         this.defensePoints = defensePoints;
     }
+
+    public override UX_Player.Mode GetPlayMode()
+    {
+        return UX_Player.Mode.TARGET_TILE;
+    }
 }

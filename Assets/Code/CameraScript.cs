@@ -5,6 +5,7 @@ using UnityEngine;
 public class CameraScript : MonoBehaviour
 {
     private Ray[] ray;private RaycastHit rayHit;private Vector3[] rayVecs;
+    public static readonly int MIDDLE_RAY_IDX = 4;
     private Camera cam;
     private Transform tra;
     private CanvasScript canv;
@@ -51,7 +52,7 @@ public class CameraScript : MonoBehaviour
         rayVecs[Util.RIGHT] = new Vector3(rayVecDirs[Util.RIGHT], 0.5F, 0);
         rayVecs[Util.UP] = new Vector3(0.5F, rayVecDirs[Util.UP], 0);
         rayVecs[Util.DOWN] = new Vector3(0.5F, rayVecDirs[Util.DOWN], 0);
-        rayVecs[4] = new Vector3(0.5F, 0.5F, 0);
+        rayVecs[MIDDLE_RAY_IDX] = new Vector3(0.5F, 0.5F, 0);
     }
 
     public void Move(int x_move, int z_move)
@@ -102,6 +103,16 @@ public class CameraScript : MonoBehaviour
         }
         return collidersDetected;
     }
+    public Collider GetDetectedCollider()
+    {
+        ray[MIDDLE_RAY_IDX] = cam.ViewportPointToRay(rayVecs[MIDDLE_RAY_IDX]);
+        if (Physics.Raycast(ray[MIDDLE_RAY_IDX], out rayHit))
+        {
+            Collider hitCollider = rayHit.collider;
+            return hitCollider;
+        }
+        return null;
+    }
 
     // Toggle dark screen
     public void SetMode(UX_Player.Mode mode)
@@ -111,12 +122,18 @@ public class CameraScript : MonoBehaviour
         {
             canv.DarkScreen.gameObject.SetActive(true);
             canv.ShowHand();
+            canv.HideReticleCrosshair();
         }
         else
         {
             canv.DarkScreen.gameObject.SetActive(false);
             canv.HideHand();
         }
+
+        if (mode == UX_Player.Mode.TARGET_PIECE
+            || mode == UX_Player.Mode.PLAIN) canv.ShowReticle();
+        else if (mode == UX_Player.Mode.TARGET_CHUNK
+            || mode == UX_Player.Mode.TARGET_TILE) canv.ShowCrosshair();
     }
 
     public void SetHandCards(Piece handPiece)

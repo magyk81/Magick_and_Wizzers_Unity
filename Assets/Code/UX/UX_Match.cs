@@ -164,8 +164,7 @@ public class UX_Match
         foreach (UX_Player player in players)
         {
             player.QueryGamepad();
-            player.QueryCamera(chunks);
-            player.QueryCamera(pieces);
+            player.QueryCamera(chunks, pieces);
         }
     }
 }

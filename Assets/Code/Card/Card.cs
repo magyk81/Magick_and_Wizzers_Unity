@@ -23,6 +23,8 @@ public abstract class Card
         }
     }
 
+    public abstract UX_Player.Mode GetPlayMode();
+
     public static Card[] friend_cards = {
         new CardSummon("Aidan Hendrickson", null, 1, null, 100, 100),
         new CardSummon("Alan Gatica", null, 1, null, 100, 100),

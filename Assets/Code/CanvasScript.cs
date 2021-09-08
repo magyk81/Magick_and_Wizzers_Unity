@@ -11,15 +11,15 @@ public class CanvasScript : MonoBehaviour
     private float cursorThickness;
     private float cardWidth, cardHeight,
         cardSlotWidth, cardSlotHeight;
-    private RectTransform reticle, darkScreen, baseCard, cardCursor,
-        cardBeingPlayed;
+    [SerializeField]
+    private RectTransform reticle, crosshair, darkScreen, baseCard, cardCursor,
+        cardBeingPlayed, handCardsParent;
     public RectTransform Reticle { get { return reticle; } }
     public RectTransform DarkScreen { get { return darkScreen; } }
 
     private static readonly float CARD_DIM_RATIO = 1.4F;
     private static readonly int MAX_HAND_CARDS = 60, CARDS_PER_ROW = 5;
     private HandCard[] handCards;
-    private RectTransform handCardsParent;
     private class CardPos
     {
         private bool inGridYet;
@@ -117,27 +117,29 @@ public class CanvasScript : MonoBehaviour
 
         foreach (Transform child in GetComponent<Transform>())
         {
-            if (child.gameObject.name == "Reticle")
+            if (child.gameObject.name == reticle.name)
                 reticle = child.gameObject.GetComponent<RectTransform>();
-            else if (child.gameObject.name == "Dark Screen")
+            else if (child.gameObject.name == crosshair.name)
+                crosshair = child.gameObject.GetComponent<RectTransform>();
+            else if (child.gameObject.name == darkScreen.name)
                 darkScreen = child.gameObject.GetComponent<RectTransform>();
-            else if (child.gameObject.name == "Hand Cards")
+            else if (child.gameObject.name == handCardsParent.name)
             {
                 handCardsParent = child.gameObject
                     .GetComponent<RectTransform>();
                 foreach (
                     Transform handCardsChild in handCardsParent)
                 {
-                    if (handCardsChild.gameObject.name == "Card")
+                    if (handCardsChild.gameObject.name == baseCard.name)
                     {
                         baseCard = handCardsChild.gameObject
                             .GetComponent<RectTransform>();
                     }
                 }
             }
-            else if (child.gameObject.name == "Card Cursor")
+            else if (child.gameObject.name == cardCursor.name)
                 cardCursor = child.gameObject.GetComponent<RectTransform>();
-            else if (child.gameObject.name == "Card Being Played")
+            else if (child.gameObject.name == cardBeingPlayed.name)
                 cardBeingPlayed = child.gameObject.GetComponent<RectTransform>();
         }
 
@@ -165,7 +167,7 @@ public class CanvasScript : MonoBehaviour
 
         cardCursor.anchoredPosition = GetCardPos(0).ToVec2();
         cardBeingPlayed.anchoredPosition
-            = Coord._(0, GetCardPos(0).Z).ToVec2();
+            = Coord._(0, (int) (camHeight - cardHeight) / 2).ToVec2();
 
         HideHand();
         cardCursor.gameObject.SetActive(false);
@@ -182,6 +184,21 @@ public class CanvasScript : MonoBehaviour
     {
         handCardsParent.gameObject.SetActive(false);
         cardCursor.gameObject.SetActive(false);
+    }
+    public void ShowReticle()
+    {
+        reticle.gameObject.SetActive(true);
+        crosshair.gameObject.SetActive(false);
+    }
+    public void ShowCrosshair()
+    {
+        reticle.gameObject.SetActive(false);
+        crosshair.gameObject.SetActive(true);
+    }
+    public void HideReticleCrosshair()
+    {
+        reticle.gameObject.SetActive(false);
+        crosshair.gameObject.SetActive(false);
     }
 
     public void SetHandPiece(Piece handPiece)
@@ -256,7 +273,7 @@ public class CanvasScript : MonoBehaviour
 
             // Cursor is a Russian
             if (cardCursorIdx < 0) cardCursorIdx
-                += cardCount + (cardCount % CARDS_PER_ROW) + 1;
+                += cardCount + (cardCount % CARDS_PER_ROW);
             if (cardCursorIdx >= cardCount) cardCursorIdx -= CARDS_PER_ROW;
         }
         else if (y_move == Util.DOWN)
@@ -265,7 +282,7 @@ public class CanvasScript : MonoBehaviour
 
             // Cursor is an American
             if (cardCursorIdx >= cardCount) cardCursorIdx
-                -= cardCount + (cardCount % CARDS_PER_ROW) + 1;
+                -= cardCount + (cardCount % CARDS_PER_ROW);
             if (cardCursorIdx < 0) cardCursorIdx += CARDS_PER_ROW;
         }
 

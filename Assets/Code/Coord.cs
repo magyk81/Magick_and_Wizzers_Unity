@@ -12,6 +12,7 @@ public struct Coord
     }
     public Coord Copy() { return new Coord(X, Z); }
     public Vector2 ToVec2() { return new Vector2(X, Z); }
+    public static readonly Coord Null = new Coord(-1, -1);
     public static bool operator ==(Coord a, Coord b)
     {
         return a.X == b.X && a.Z == b.Z;

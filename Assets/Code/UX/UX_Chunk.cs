@@ -6,8 +6,10 @@ public class UX_Chunk : MonoBehaviour
 {
     private int boardIdx, x, z;
     [SerializeField]
-    private GameObject real;
+    private GameObject real, baseTile;
     private GameObject[] clones = new GameObject[8];
+    private Dictionary<GameObject, Coord> tileCoords
+        = new Dictionary<GameObject, Coord>();
 
     // Start is called before the first frame update
     void Start()
@@ -44,6 +46,8 @@ public class UX_Chunk : MonoBehaviour
             SetupChunk(clones[i],
                 fullBoardSize, distBetweenBoards, i);
         }
+
+        Destroy(baseTile);
     }
 
     private void SetupChunk(GameObject obj,
@@ -72,6 +76,77 @@ public class UX_Chunk : MonoBehaviour
         _x += boardIdx * distBetweenBoards * Board.CHUNK_SIZE;
 
         childTra.localPosition = new Vector3(_x, 0, _z);
+
+        // Set up tiles
+        if (cloneIdx == -1)
+        {
+            for (int i = 0; i < Board.CHUNK_SIZE; i++)
+            {
+                for (int j = 0; j < Board.CHUNK_SIZE; j++)
+                {
+                    GameObject tile = Instantiate(baseTile, childTra);
+                    tile.name = "[" + i + ", " + j + "]";
+                    Transform tileTra = tile.GetComponent<Transform>();
+                    float tileSize = 1F / Board.CHUNK_SIZE;
+                    tileTra.localPosition = new Vector3(
+                        (i + 0.5F) * tileSize - 0.5F,
+                        (j + 0.5F) * tileSize - 0.5F, 0);
+                    tileTra.localScale = new Vector3(tileSize, tileSize, 1);
+                    tileCoords.Add(tile, Coord._(i, j));
+                }
+            }
+        }
+        else
+        {
+            foreach (Transform tile in childTra)
+            {
+                int num1 = 0, num2 = 0;
+
+                int strIdx = 0;
+                string str = tile.gameObject.name;
+                bool reachedComma = false;
+
+                char curr = str[strIdx];
+                while (strIdx < str.Length - 1)
+                {
+                    if (curr == ',') reachedComma = true;
+
+                    if (Util.IsNum(curr))
+                    {
+                        if (reachedComma)
+                        {
+                            num2 *= 10;
+                            num2 += Util.CharToNum(curr);
+                        }
+                        else
+                        {
+                            num1 *= 10;
+                            num1 += Util.CharToNum(curr);
+                        }
+                    }
+
+                    strIdx++;
+                    curr = str[strIdx];
+                }
+
+                tileCoords.Add(tile.gameObject, Coord._(num1, num2));
+            }
+        }
+    }
+
+    public bool IsCollider(Collider collider)
+    {
+        return (tileCoords.ContainsKey(collider.gameObject));
+        // if (real == collider.gameObject) return true;
+        // foreach (GameObject clone in clones)
+        // {
+        //     if (clone == collider.gameObject) return true;
+        // }
+        // return false;
+    }
+    public Coord GetTileCoord(Collider collider)
+    {
+        return tileCoords[collider.gameObject].Copy();
     }
 
     // Update is called once per frame

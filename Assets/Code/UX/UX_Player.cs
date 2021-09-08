@@ -5,7 +5,8 @@ using UnityEngine;
 public class UX_Player
 {
     private readonly Player __;
-    public enum Mode { PLAIN, WAYPOINT, HAND, DETAIL, SURRENDER, PAUSE }
+    public enum Mode { PLAIN, WAYPOINT, TARGET_PIECE, TARGET_CHUNK,
+        TARGET_TILE, HAND, DETAIL, SURRENDER, PAUSE }
     private Mode mode = Mode.PLAIN;
     private readonly Gamepad GAMEPAD;
     private readonly CameraScript CAM;
@@ -18,6 +19,8 @@ public class UX_Player
         this.__ = __;
         GAMEPAD = gamepad;
         CAM = cam;
+
+        CAM.SetMode(mode);
     }
 
     public void QueryGamepad()
@@ -26,7 +29,8 @@ public class UX_Player
 
         Mode oldMode = mode;
 
-        if (mode == Mode.PLAIN)
+        if (mode == Mode.PLAIN || mode == Mode.TARGET_CHUNK
+            || mode == Mode.TARGET_PIECE || mode == Mode.TARGET_TILE)
         {
             // Move camera
             int x_move = 0, z_move = 0,
@@ -36,11 +40,7 @@ public class UX_Player
             if (l_vert != 0) z_move = l_vert;
             CAM.Move(x_move, z_move);
             
-            if (cardBeingPlayed != null)
-            {
-
-            }
-            else
+            if (mode == Mode.PLAIN)
             {
                 if (hoveredPiece != null)
                 {
@@ -48,7 +48,7 @@ public class UX_Player
                     bool a_button = padInput[(int) Gamepad.Button.A] > 0;
                     if (a_button) SelectPiece(hoveredPiece);
                 }
-                
+                    
                 if (hoveredPiece != null && __.HasMaster(hoveredPiece._))
                 {
                     CAM.SetHandCards(hoveredPiece._);
@@ -75,7 +75,7 @@ public class UX_Player
                 if (cardBeingPlayed != null)
                 {
                     CAM.DisplayPlayCard(CAM.GetHandCard());
-                    mode = Mode.PLAIN;
+                    mode = cardBeingPlayed.GetPlayMode();
                 }
             }
 
@@ -95,38 +95,51 @@ public class UX_Player
         }
     }
 
-    public void QueryCamera(UX_Chunk[][,] chunks)
+    public void QueryCamera(UX_Chunk[][,] chunks, List<UX_Piece> pieces)
     {
-        // Hover tiles
-
-        if (cardBeingPlayed == null) return;
-
-        UX_Chunk chunkDetected = null;
-        
-    }
-
-    public void QueryCamera(List<UX_Piece> pieces)
-    {
-        foreach (UX_Piece ux_piece in pieces)
+        if (mode == Mode.TARGET_CHUNK || mode == Mode.TARGET_TILE)
         {
-            ux_piece.Unhover();
-        }
+            // Get middle collider detected by this player's camera.
+            Collider colliderDetected = CAM.GetDetectedCollider();
 
-        if (cardBeingPlayed != null) return;
-
-        // Hover pieces
-
-        // Get colliders detected by this player's camera.
-        List<Collider> collidersDetected = CAM.GetDetectedColliders();
-        foreach (Collider collider in collidersDetected)
-        {
-            foreach (UX_Piece ux_piece in pieces)
+            // Get chunk and tile being hovered.
+            UX_Chunk chunkDetected = null;
+            Coord tileDetected = Coord.Null;
+            foreach (UX_Chunk[,] ux_chunk_board in chunks)
             {
-                if (ux_piece.IsCollider(collider))
+                foreach (UX_Chunk ux_chunk in ux_chunk_board)
                 {
-                    hoveredPiece = ux_piece;
-                    hoveredPiece.Hover();
-                    return;
+                    if (ux_chunk.IsCollider(colliderDetected))
+                        chunkDetected = ux_chunk;
+                    
+                    if (chunkDetected != null)
+                    {
+                        tileDetected = chunkDetected.GetTileCoord(
+                            colliderDetected);
+                        break;
+                    }
+                }
+                if (chunkDetected != null) break;
+            }
+        }
+        else if (mode == Mode.TARGET_PIECE || mode == Mode.PLAIN)
+        {
+            foreach (UX_Piece ux_piece in pieces) { ux_piece.Unhover(); }
+
+            // Get colliders detected by this player's camera.
+            List<Collider> collidersDetected = CAM.GetDetectedColliders();
+
+            // Get piece being hovered.
+            foreach (Collider collider in collidersDetected)
+            {
+                foreach (UX_Piece ux_piece in pieces)
+                {
+                    if (ux_piece.IsCollider(collider))
+                    {
+                        hoveredPiece = ux_piece;
+                        hoveredPiece.Hover();
+                        return;
+                    }
                 }
             }
         }
