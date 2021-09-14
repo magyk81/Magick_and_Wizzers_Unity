@@ -10,6 +10,9 @@ public class UX_Chunk : MonoBehaviour
     private GameObject[] clones = new GameObject[8];
     private Dictionary<GameObject, Coord> tileCoords
         = new Dictionary<GameObject, Coord>();
+    private MeshCollider[] tileColls;
+    
+    private bool hovered = true;
 
     // Start is called before the first frame update
     void Start()
@@ -38,6 +41,7 @@ public class UX_Chunk : MonoBehaviour
         clones = new GameObject[8];
         gameObject.name = "Chunk [" + x + ", " + z + "]";
         Transform tra = GetComponent<Transform>();
+        tileColls = new MeshCollider[Board.CHUNK_SIZE * Board.CHUNK_SIZE * 9];
 
         SetupChunk(real, fullBoardSize, distBetweenBoards);
         for (int i = 0; i < 8; i++)
@@ -48,6 +52,7 @@ public class UX_Chunk : MonoBehaviour
         }
 
         Destroy(baseTile);
+        Unhover();
     }
 
     private void SetupChunk(GameObject obj,
@@ -93,6 +98,8 @@ public class UX_Chunk : MonoBehaviour
                         (j + 0.5F) * tileSize - 0.5F, 0);
                     tileTra.localScale = new Vector3(tileSize, tileSize, 1);
                     tileCoords.Add(tile, Coord._(i, j));
+                    tileColls[j + i * Board.CHUNK_SIZE]
+                        = tile.GetComponent<MeshCollider>();
                 }
             }
         }
@@ -130,23 +137,69 @@ public class UX_Chunk : MonoBehaviour
                 }
 
                 tileCoords.Add(tile.gameObject, Coord._(num1, num2));
+                //Debug.Log((num1 + (num2 * Board.CHUNK_SIZE)) * (cloneIdx + 1));
+                tileColls[(num1 + (num2 * Board.CHUNK_SIZE))
+                    + ((cloneIdx + 1) * Board.CHUNK_SIZE * Board.CHUNK_SIZE)]
+                    = tile.GetComponent<MeshCollider>();
             }
         }
     }
 
     public bool IsCollider(Collider collider)
     {
-        return (tileCoords.ContainsKey(collider.gameObject));
-        // if (real == collider.gameObject) return true;
-        // foreach (GameObject clone in clones)
-        // {
-        //     if (clone == collider.gameObject) return true;
-        // }
-        // return false;
+        if (hovered) return (tileCoords.ContainsKey(collider.gameObject));
+
+        if (real == collider.gameObject) return true;
+        foreach (GameObject clone in clones)
+        {
+            if (clone == collider.gameObject) return true;
+        }
+        return false;
     }
     public Coord GetTileCoord(Collider collider)
     {
-        return tileCoords[collider.gameObject].Copy();
+        if (tileCoords.ContainsKey(collider.gameObject))
+            return tileCoords[collider.gameObject].Copy();
+        return Coord.Null;
+    }
+
+    public void Hover(UX_Chunk[][,] allChunks)
+    {
+        if (hovered) return;
+
+        real.GetComponent<MeshCollider>().enabled = false;
+        foreach (GameObject clone in clones)
+        {
+            clone.GetComponent<MeshCollider>().enabled = false;
+        }
+        foreach (MeshCollider tileColl in tileColls)
+        {
+            tileColl.enabled = true;
+        }
+        foreach (UX_Chunk[,] _ in allChunks)
+        {
+            foreach (UX_Chunk chunk in _)
+            {
+                if (chunk != this) chunk.Unhover();
+            }
+        }
+        hovered = true;
+    }
+
+    public void Unhover()
+    {
+        if (!hovered) return;
+
+        real.GetComponent<MeshCollider>().enabled = true;
+        foreach (GameObject clone in clones)
+        {
+            clone.GetComponent<MeshCollider>().enabled = true;
+        }
+        foreach (MeshCollider tileColl in tileColls)
+        {
+            tileColl.enabled = false;
+        }
+        hovered = false;
     }
 
     // Update is called once per frame

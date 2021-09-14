@@ -116,11 +116,14 @@ public class UX_Player
                     {
                         tileDetected = chunkDetected.GetTileCoord(
                             colliderDetected);
+                        chunkDetected.Hover(chunks);
                         break;
                     }
                 }
                 if (chunkDetected != null) break;
             }
+
+            Debug.Log(tileDetected);
         }
         else if (mode == Mode.TARGET_PIECE || mode == Mode.PLAIN)
         {

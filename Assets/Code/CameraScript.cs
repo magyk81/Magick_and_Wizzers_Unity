@@ -91,7 +91,7 @@ public class CameraScript : MonoBehaviour
         for (int i = ray.Length - 1; i >= 0; i--)
         {
             ray[i] = cam.ViewportPointToRay(rayVecs[i]);
-            if (Physics.Raycast(ray[i], out rayHit))
+            if (Physics.Raycast(ray[i], out rayHit, Mathf.Infinity, 1 << 0))
             {
                 Collider hitCollider = rayHit.collider;
                 if (hitCollider != null)
