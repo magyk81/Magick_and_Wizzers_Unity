@@ -19,6 +19,7 @@ public class UX_Piece : MonoBehaviour
     private Transform[] clonesTra = new Transform[8];
     private int boardIdx, fullBoardSize, distBetweenBoards;
     private bool hovered, selected;
+    private readonly static float LIFT_DIST = 0.1F;
 
     // Start is called before the first frame update
     void Start()
@@ -105,14 +106,14 @@ public class UX_Piece : MonoBehaviour
             else if (i == Util.LEFT || i == Util.UP_LEFT
                 || i == Util.DOWN_LEFT) _x -= fullBoardSize;
                 
-            clonesTra[i].localPosition = new Vector3(_x, 0.1F, _z);
+            clonesTra[i].localPosition = new Vector3(_x, LIFT_DIST, _z);
 
             _x = __x;
             _z = __z;
         }
         if (Board.CHUNK_SIZE % 2 == 0) { _x += 0.5F; _z += 0.5F; }
 
-        realTra.localPosition = new Vector3(_x, 0.1F, _z);
+        realTra.localPosition = new Vector3(_x, LIFT_DIST, _z);
     }
 
     public bool IsCollider(Collider collider)

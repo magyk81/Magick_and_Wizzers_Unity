@@ -23,7 +23,7 @@ public class ControllerScript : MonoBehaviour
     private UX_Piece BASE_PIECE;
     [SerializeField]
     private int playerCount;
-    public static readonly int MAX_GAMEPADS = 6;
+    public static readonly int MAX_GAMEPADS = 4;
 
     // Start is called before the first frame update
     void Start()

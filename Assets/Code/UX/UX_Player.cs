@@ -97,6 +97,8 @@ public class UX_Player
 
     public void QueryCamera(UX_Chunk[][,] chunks, List<UX_Piece> pieces)
     {
+        foreach (UX_Piece ux_piece in pieces) { ux_piece.Unhover(); }
+
         if (mode == Mode.TARGET_CHUNK || mode == Mode.TARGET_TILE)
         {
             // Get middle collider detected by this player's camera.
@@ -124,11 +126,10 @@ public class UX_Player
             }
 
             Debug.Log(tileDetected);
+            chunkDetected.ShowTiles(tileDetected);
         }
         else if (mode == Mode.TARGET_PIECE || mode == Mode.PLAIN)
         {
-            foreach (UX_Piece ux_piece in pieces) { ux_piece.Unhover(); }
-
             // Get colliders detected by this player's camera.
             List<Collider> collidersDetected = CAM.GetDetectedColliders();
 

@@ -134,7 +134,7 @@ GameObject:
   - component: {fileID: 21209510}
   - component: {fileID: 21209512}
   - component: {fileID: 21209511}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Select Crown
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -414,7 +414,7 @@ GameObject:
   - component: {fileID: 334766721}
   - component: {fileID: 334766720}
   - component: {fileID: 334766719}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Target Crown
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -581,7 +581,7 @@ GameObject:
   - component: {fileID: 512284203}
   - component: {fileID: 512284205}
   - component: {fileID: 512284204}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Hover Crown
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -660,7 +660,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 517043819}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Real Piece
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1129,7 +1129,7 @@ GameObject:
   - component: {fileID: 917503403}
   - component: {fileID: 917503406}
   - component: {fileID: 917503405}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Attack Points Bar
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1456,7 +1456,7 @@ GameObject:
   - component: {fileID: 1461990533}
   - component: {fileID: 1461990536}
   - component: {fileID: 1461990535}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Defense Points Bar
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1608,7 +1608,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1486404158}
   - component: {fileID: 1486404157}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Base Piece
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1885,7 +1885,7 @@ GameObject:
   - component: {fileID: 1777336196}
   - component: {fileID: 1777336195}
   - component: {fileID: 1777336194}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Life Points Bar
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1980,7 +1980,7 @@ GameObject:
   - component: {fileID: 1779907973}
   - component: {fileID: 1779907975}
   - component: {fileID: 1779907974}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Art
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2123,7 +2123,7 @@ GameObject:
   - component: {fileID: 2035278047}
   - component: {fileID: 2035278046}
   - component: {fileID: 2035278045}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Frame
   m_TagString: Untagged
   m_Icon: {fileID: 0}

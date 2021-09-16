@@ -11,8 +11,10 @@ public class UX_Chunk : MonoBehaviour
     private Dictionary<GameObject, Coord> tileCoords
         = new Dictionary<GameObject, Coord>();
     private MeshCollider[] tileColls;
+    private MeshRenderer[] tileRends;
     
     private bool hovered = true;
+    private readonly static float LIFT_DIST = 0.05F;
 
     // Start is called before the first frame update
     void Start()
@@ -42,6 +44,7 @@ public class UX_Chunk : MonoBehaviour
         gameObject.name = "Chunk [" + x + ", " + z + "]";
         Transform tra = GetComponent<Transform>();
         tileColls = new MeshCollider[Board.CHUNK_SIZE * Board.CHUNK_SIZE * 9];
+        tileRends = new MeshRenderer[Board.CHUNK_SIZE * Board.CHUNK_SIZE * 9];
 
         SetupChunk(real, fullBoardSize, distBetweenBoards);
         for (int i = 0; i < 8; i++)
@@ -95,11 +98,13 @@ public class UX_Chunk : MonoBehaviour
                     float tileSize = 1F / Board.CHUNK_SIZE;
                     tileTra.localPosition = new Vector3(
                         (i + 0.5F) * tileSize - 0.5F,
-                        (j + 0.5F) * tileSize - 0.5F, 0);
+                        (j + 0.5F) * tileSize - 0.5F, -LIFT_DIST);
                     tileTra.localScale = new Vector3(tileSize, tileSize, 1);
                     tileCoords.Add(tile, Coord._(i, j));
                     tileColls[j + i * Board.CHUNK_SIZE]
                         = tile.GetComponent<MeshCollider>();
+                    tileRends[j + i * Board.CHUNK_SIZE]
+                        = tile.GetComponent<MeshRenderer>();
                 }
             }
         }
@@ -137,10 +142,12 @@ public class UX_Chunk : MonoBehaviour
                 }
 
                 tileCoords.Add(tile.gameObject, Coord._(num1, num2));
-                //Debug.Log((num1 + (num2 * Board.CHUNK_SIZE)) * (cloneIdx + 1));
                 tileColls[(num1 + (num2 * Board.CHUNK_SIZE))
                     + ((cloneIdx + 1) * Board.CHUNK_SIZE * Board.CHUNK_SIZE)]
                     = tile.GetComponent<MeshCollider>();
+                tileRends[(num1 + (num2 * Board.CHUNK_SIZE))
+                    + ((cloneIdx + 1) * Board.CHUNK_SIZE * Board.CHUNK_SIZE)]
+                    = tile.GetComponent<MeshRenderer>();
             }
         }
     }
@@ -200,6 +207,33 @@ public class UX_Chunk : MonoBehaviour
             tileColl.enabled = false;
         }
         hovered = false;
+    }
+
+    public void ShowTiles(Coord coord)
+    {
+        int[] tileIndices = GetTileIndices(coord);
+        foreach (int idx in tileIndices)
+        {
+            tileRends[idx].enabled = true;
+        }
+    }
+    public void HideTiles()
+    {
+        foreach (MeshRenderer tileRend in tileRends)
+        {
+            tileRend.enabled = false;
+        }
+    }
+
+    private int[] GetTileIndices(Coord coord)
+    {
+        int[] indices = new int[9];
+        for (int i = 0; i < 9; i++)
+        {
+            indices[i] = (coord.Z + (coord.X * Board.CHUNK_SIZE))
+                + (i * Board.CHUNK_SIZE * Board.CHUNK_SIZE);
+        }
+        return indices;
     }
 
     // Update is called once per frame

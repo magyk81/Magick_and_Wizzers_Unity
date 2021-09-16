@@ -83,6 +83,7 @@ public class CameraScript : MonoBehaviour
     public void DisplayPlayCard(int idx) { canv.DisplayPlayCard(idx); }
     public Piece GetHandPiece() { return canv.GetHandPiece(); }
 
+    // Used for detecting pieces.
     public List<Collider> GetDetectedColliders()
     {
         List<Collider> collidersDetected = new List<Collider>();
@@ -91,22 +92,26 @@ public class CameraScript : MonoBehaviour
         for (int i = ray.Length - 1; i >= 0; i--)
         {
             ray[i] = cam.ViewportPointToRay(rayVecs[i]);
-            if (Physics.Raycast(ray[i], out rayHit, Mathf.Infinity, 1 << 0))
+            // The layer mask for Pieces is (1 << 6).
+            if (Physics.Raycast(ray[i], out rayHit, Mathf.Infinity, 1 << 6))
             {
                 Collider hitCollider = rayHit.collider;
                 if (hitCollider != null)
                 {
                     if (!collidersDetected.Contains(hitCollider))
-                        collidersDetected.Add(hitCollider);                        
+                        collidersDetected.Add(hitCollider);
                 }
             }
         }
         return collidersDetected;
     }
+
+    // Used for detecting chunks and tiles.
     public Collider GetDetectedCollider()
     {
         ray[MIDDLE_RAY_IDX] = cam.ViewportPointToRay(rayVecs[MIDDLE_RAY_IDX]);
-        if (Physics.Raycast(ray[MIDDLE_RAY_IDX], out rayHit))
+        if (Physics.Raycast(ray[MIDDLE_RAY_IDX], out rayHit,
+            Mathf.Infinity, 1 << 0))
         {
             Collider hitCollider = rayHit.collider;
             return hitCollider;
