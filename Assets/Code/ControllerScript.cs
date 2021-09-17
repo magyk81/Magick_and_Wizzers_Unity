@@ -32,8 +32,8 @@ public class ControllerScript : MonoBehaviour
 
         // Set up players
         Player[] players = new Player[playerCount];
-        players[0] = new Player("Brooke", Player.Type.LOCAL_PLAYER);
-        players[1] = new Player("Rachel", Player.Type.BOT);
+        players[0] = new Player("Brooke", 0, Player.Type.LOCAL_PLAYER);
+        players[1] = new Player("Rachel", 1, Player.Type.BOT);
 
         uxMatch = new UX_Match(BASE_CHUNK, BASE_PIECE, BASE_WAYPOINT,
             BASE_CAMERA, BASE_CANVAS);

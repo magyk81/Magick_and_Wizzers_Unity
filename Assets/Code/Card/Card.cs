@@ -8,6 +8,8 @@ public abstract class Card
     public string Name { get { return name; } }
     private Texture art;
     public Texture Art { get { return art; } }
+    private int level;
+    public int Level { get { return level; } }
 
     protected Card(string name, Texture art, int level,
         GameTerrain terrain)
@@ -21,6 +23,8 @@ public abstract class Card
             this.art = Resources.Load<Texture>(
                 "Textures/Debug_Card_Art/" + Util.ReplaceSpaces(name));
         }
+
+        this.level = level;
     }
 
     public abstract UX_Player.Mode GetPlayMode();

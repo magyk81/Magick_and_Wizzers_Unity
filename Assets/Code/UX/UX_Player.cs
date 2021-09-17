@@ -10,9 +10,74 @@ public class UX_Player
     private Mode mode = Mode.PLAIN;
     private readonly Gamepad GAMEPAD;
     private readonly CameraScript CAM;
+    
+    // Board being currently viewed by this player.
+    private int boardIdx = 0;
     private UX_Piece hoveredPiece;
     private List<UX_Piece> selectedPieces = new List<UX_Piece>();
     private Card cardBeingPlayed;
+    private Piece pieceBeingPlayedFrom;
+
+    private struct InfluenceRange
+    {
+        public Coord Origin { get; }
+        public Coord[] ValidTiles { get; }
+        public int Range { get; }
+        private InfluenceRange(Coord origin, int range)
+        {
+            Origin = origin.Copy();
+            Range = range;
+
+            if (range >= 0)
+            {
+                List<Coord> coords = new List<Coord>();
+                for (int i = -range; i <= range; i++)
+                {
+                    for (int j = -range; j <= range; j++)
+                    {
+                        int dist = Mathf.RoundToInt(
+                            Mathf.Sqrt((i * i) + (j * j)));
+                        if (dist <= range) coords.Add(Coord._(i, j));
+                    }
+                }
+                ValidTiles = coords.ToArray();
+            }
+            else ValidTiles = null;
+        }
+
+        public InfluenceRange Update(Piece piece)
+        {
+            // Avoid recalculating anything if the member variables have the
+            // same values as before.
+            if (piece.Pos == Origin && piece.Level == Range)
+                return InfluenceRange.Null;
+            else return _(piece);
+        }
+        public static InfluenceRange _(Piece piece)
+        {
+            return new InfluenceRange(piece.Pos.Copy(), piece.Level);
+        }
+        public readonly static InfluenceRange Null
+            = new InfluenceRange(Coord.Null, -1);
+        public static bool operator ==(InfluenceRange a, InfluenceRange b)
+        {
+            return a.Origin == b.Origin && a.Range == b.Range;
+        }
+        public static bool operator !=(InfluenceRange a, InfluenceRange b)
+        {
+            return a.Origin != b.Origin || a.Range != b.Range;
+        }
+        public override bool Equals(object obj)
+        {
+            return base.Equals(obj);
+        }
+        public override int GetHashCode()
+        {
+            return base.GetHashCode();
+        }
+    }
+    private InfluenceRange influenceRange = InfluenceRange.Null;
+
     public UX_Player(Player __, Gamepad gamepad,
         CameraScript cam)
     {
@@ -49,13 +114,17 @@ public class UX_Player
                     if (a_button) SelectPiece(hoveredPiece);
                 }
                     
-                if (hoveredPiece != null && __.HasMaster(hoveredPiece._))
+                if (hoveredPiece != null && __.Idx == hoveredPiece._.PlayerIdx)
                 {
                     CAM.SetHandCards(hoveredPiece._);
 
                     // Go to HAND mode if hovering a master
                     bool x_button = padInput[(int) Gamepad.Button.X] > 0;
-                    if (x_button) mode = Mode.HAND;
+                    if (x_button)
+                    {
+                        mode = Mode.HAND;
+                        pieceBeingPlayedFrom = hoveredPiece._;
+                    }
                 }
             }
         }
@@ -111,13 +180,13 @@ public class UX_Player
             {
                 foreach (UX_Chunk ux_chunk in ux_chunk_board)
                 {
-                    if (ux_chunk.IsCollider(colliderDetected))
+                    tileDetected = ux_chunk.GetTile(colliderDetected);
+                    if (tileDetected != Coord.Null
+                        || ux_chunk.IsCollider(colliderDetected))
                         chunkDetected = ux_chunk;
                     
                     if (chunkDetected != null)
                     {
-                        tileDetected = chunkDetected.GetTileCoord(
-                            colliderDetected);
                         chunkDetected.Hover(chunks);
                         break;
                     }
@@ -125,8 +194,37 @@ public class UX_Player
                 if (chunkDetected != null) break;
             }
 
-            Debug.Log(tileDetected);
-            chunkDetected.ShowTiles(tileDetected);
+            // Set influence range if it hasn't been set yet.
+            if (influenceRange == InfluenceRange.Null)
+                influenceRange = InfluenceRange._(pieceBeingPlayedFrom);
+            else
+            {
+                // Update influence range in case the pieceBeingPlayedFrom
+                // moved or its level changed.
+                InfluenceRange updatedIR
+                    = influenceRange.Update(pieceBeingPlayedFrom);
+                if (updatedIR != InfluenceRange.Null)
+                    influenceRange = updatedIR;
+            }
+
+            // Show influence range tiles.
+
+            
+
+            if (tileDetected != Coord.Null)
+            {
+                // See whether the detected tile is within the influence range
+                // to determine whether it should be shown as valid or invalid.
+                foreach (UX_Chunk chunk in chunks[boardIdx])
+                {
+
+                }
+
+                // Show hovered tile.
+                chunkDetected.ShowTiles(tileDetected,
+                    (int) UX_Chunk.TileDispType.INVALID, chunks[boardIdx]);
+            }
+            
         }
         else if (mode == Mode.TARGET_PIECE || mode == Mode.PLAIN)
         {

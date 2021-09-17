@@ -16,4 +16,6 @@ public class Master : Piece
         deck = new Deck(Card.friend_cards);
         deck.Shuffle();
     }
+
+    public override int Level { get { return 10; } }
 }
