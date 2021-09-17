@@ -68,7 +68,9 @@ public class UX_Chunk : MonoBehaviour
         }
     }
     private UX_Tile[,] tiles;
-    public enum TileDispType { VALID, INVALID, AVAILABLE, INFLUENCE }
+    public enum TileDispType { VALID, INVALID, AVAILABLE, INFLUENCE, COUNT }
+    private List<UX_Tile>[] tilesDisp
+        = new List<UX_Tile>[(int) TileDispType.COUNT];
 
     // Start is called before the first frame update
     void Start()
@@ -87,6 +89,14 @@ public class UX_Chunk : MonoBehaviour
         return 0;
     }
 
+    // Takes in board coord. Returns local coord.
+    public Coord BoardCoordToLocal(Coord boardCoord)
+    {
+        return Coord._(
+            boardCoord.X - (x * Board.CHUNK_SIZE),
+            boardCoord.Z - (z * Board.CHUNK_SIZE));
+    }
+
     public void Init(int fullBoardSize, int distBetweenBoards,
             int boardIdx, int x, int z)
     {
@@ -98,6 +108,10 @@ public class UX_Chunk : MonoBehaviour
         gameObject.name = "Chunk [" + x + ", " + z + "]";
         Transform tra = GetComponent<Transform>();
         tiles = new UX_Tile[Board.CHUNK_SIZE, Board.CHUNK_SIZE];
+        for (int i = 0; i < (int) TileDispType.COUNT; i++)
+        {
+            tilesDisp[i] = new List<UX_Tile>();
+        }
 
         SetupChunk(real, fullBoardSize, distBetweenBoards);
         for (int i = 0; i < 8; i++)
@@ -249,38 +263,116 @@ public class UX_Chunk : MonoBehaviour
         }
     } }
 
-    public void ShowTiles(Coord coord, int dispType, UX_Chunk[,] allChunks)
+    // Show 1 single tile and hide every other tile.
+    public void ShowTile(Coord coord, int dispType,
+        UX_Chunk[,] allChunks = null)
     {
-        foreach (UX_Chunk chunk in allChunks)
+        UX_Tile tile = tiles[coord.X, coord.Z];
+
+        // Do nothing if the tile is already being shown and it's the only one
+        // being shown.
+        if (tilesDisp[dispType].Count != 1 || tilesDisp[dispType][0] != tile)
         {
-            if (chunk == this)
+            HideTiles(dispType);
+            tile.Show(dispType);
+            tilesDisp[dispType].Add(tile);
+        }
+
+        if (allChunks != null)
+        {
+            // Hide every tile from other chunks.
+            foreach (UX_Chunk chunk in allChunks)
             {
-                foreach (UX_Tile tile in chunk.tiles)
-                {
-                    if (tile.Coord == coord) tile.Show(dispType);
-                    else tile.Hide(dispType);
-                }
-            }
-            else
-            {
-                foreach (UX_Tile tile in chunk.tiles)
-                {
-                    tile.Hide(dispType);
-                }
+                if (chunk != this) chunk.HideTiles(dispType);
             }
         }
     }
 
+    // Show tiles and hide every other tile.
+    public void ShowTiles(Coord[] coords, int dispType,
+        UX_Chunk[,] allChunks = null)
+    {
+        if (allChunks != null)
+        {
+            // Hide every tile from every chunk.
+            foreach (UX_Chunk chunk in allChunks)
+            {
+                chunk.HideTiles(dispType);
+            }
+        }
+
+        // Assume all tiles are hidden, so don't have to check if each tile is
+        // already being shown.
+        foreach (Coord coord in coords)
+        {
+            if (coord == Coord.Null) continue;
+            
+            UX_Tile tile = tiles[coord.X, coord.Z];
+            tile.Show(dispType);
+            tilesDisp[dispType].Add(tile);
+        }
+    }
+
+    // Show tiles around origin and hide every other tile.
     // Returns the array of tile coords adjusted by the origin.
-    public Coord[] ShowTiles(Coord origin, Coord[] coords, int distType,
+    // Can expect this function to only be called if the origin and coords are
+    // different from the last call.
+    public Coord[] ShowTiles(Coord origin, Coord[] coords, int dispType,
         UX_Chunk[,] allChunks)
     {
+        // Hide every tile from every chunk.
+        foreach (UX_Chunk chunk in allChunks)
+        {
+            chunk.HideTiles(dispType);
+        }
+        
+        List<List<Coord>> chunksToUpdate = new List<List<Coord>>();
+        for (int i = 0; i < coords.Length; i++)
+        {
+            // Calculate board coords based on origin.
+            Coord boardCoord = (origin + coords[i]).ToBounds(
+                Match.Boards[boardIdx].GetTileMax());
+            Coord chunkWithCoord = Match.Boards[boardIdx].TileToChunk(boardCoord);
+            
+            bool alreadyInList = false;
+            foreach (List<Coord> chunkToUpdate in chunksToUpdate)
+            {
+                if (chunkToUpdate[0] == chunkWithCoord)
+                {
+                    alreadyInList = true;
+
+                    // Convert board coord to tile coord that's local to the
+                    // chunk that it will be sent to.
+                    chunkToUpdate.Add(BoardCoordToLocal(boardCoord));
+                    break;
+                }
+            }
+            if (!alreadyInList)
+            {
+                List<Coord> newChunkToUpdate = new List<Coord>();
+                newChunkToUpdate.Add(chunkWithCoord);
+
+                // Convert board coord to tile coord that's local to the chunk
+                // that it will be sent to.
+                newChunkToUpdate.Add(BoardCoordToLocal(boardCoord));
+                chunksToUpdate.Add(newChunkToUpdate);
+            }
+        }
+        foreach (List<Coord> chunkToUpdate in chunksToUpdate)
+        {
+            Coord chunkCoord = chunkToUpdate[0].Copy();
+            chunkToUpdate[0] = Coord.Null;
+            allChunks[chunkCoord.X, chunkCoord.Z].ShowTiles(
+                chunkToUpdate.ToArray(), dispType);
+        }
+
         return null;
     }
 
     public void HideTiles(int dispType)
     {
-        foreach (UX_Tile tile in tiles) { tile.Hide(dispType); }
+        foreach (UX_Tile tile in tilesDisp[dispType]) { tile.Hide(dispType); }
+        tilesDisp[dispType].Clear();
     }
 
     // Update is called once per frame

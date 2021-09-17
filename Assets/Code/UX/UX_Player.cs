@@ -194,9 +194,15 @@ public class UX_Player
                 if (chunkDetected != null) break;
             }
 
+            // Determine if the INFLUENCE tiles need to be shown/updated.
+            bool showInfluenceRange = false;
+
             // Set influence range if it hasn't been set yet.
             if (influenceRange == InfluenceRange.Null)
+            {
                 influenceRange = InfluenceRange._(pieceBeingPlayedFrom);
+                showInfluenceRange = true;
+            }
             else
             {
                 // Update influence range in case the pieceBeingPlayedFrom
@@ -204,27 +210,41 @@ public class UX_Player
                 InfluenceRange updatedIR
                     = influenceRange.Update(pieceBeingPlayedFrom);
                 if (updatedIR != InfluenceRange.Null)
+                {
                     influenceRange = updatedIR;
+                    showInfluenceRange = true;
+                }
+                    
             }
 
             // Show influence range tiles.
+            if (showInfluenceRange)
+            {
+                chunkDetected.ShowTiles(
+                    influenceRange.Origin,
+                    influenceRange.ValidTiles,
+                    (int) UX_Chunk.TileDispType.INFLUENCE, chunks[boardIdx]);
+            }
 
-            
-
+            // Update tile display of types VALID and INVALID
             if (tileDetected != Coord.Null)
             {
                 // See whether the detected tile is within the influence range
-                // to determine whether it should be shown as valid or invalid.
+                // to determine whether it should be shown as VALID or INVALID.
                 foreach (UX_Chunk chunk in chunks[boardIdx])
                 {
 
                 }
 
                 // Show hovered tile.
-                chunkDetected.ShowTiles(tileDetected,
+                chunkDetected.ShowTile(tileDetected,
                     (int) UX_Chunk.TileDispType.INVALID, chunks[boardIdx]);
             }
-            
+            else
+            {
+                chunkDetected.HideTiles((int) UX_Chunk.TileDispType.VALID);
+                chunkDetected.HideTiles((int) UX_Chunk.TileDispType.INVALID);
+            }
         }
         else if (mode == Mode.TARGET_PIECE || mode == Mode.PLAIN)
         {

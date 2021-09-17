@@ -5,7 +5,8 @@ using UnityEngine;
 public class Match
 {
     private Player[] players;
-    private Board[] boards = new Board[1];
+    private static Board[] boards = new Board[1];
+    public static Board[] Boards { get { return boards; } }
     private readonly UX_Match UX_MATCH;
     public Match(UX_Match uxMatch, Player[] players)
     {
