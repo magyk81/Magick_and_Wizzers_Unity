@@ -77,6 +77,7 @@ public class UX_Player
         }
     }
     private InfluenceRange influenceRange = InfluenceRange.Null;
+    private Coord[] availableTiles = null;
 
     public UX_Player(Player __, Gamepad gamepad,
         CameraScript cam)
@@ -168,7 +169,7 @@ public class UX_Player
     {
         foreach (UX_Piece ux_piece in pieces) { ux_piece.Unhover(); }
 
-        if (mode == Mode.TARGET_CHUNK || mode == Mode.TARGET_TILE)
+        if (mode == Mode.TARGET_TILE)
         {
             // Get middle collider detected by this player's camera.
             Collider colliderDetected = CAM.GetDetectedCollider();
@@ -194,14 +195,14 @@ public class UX_Player
                 if (chunkDetected != null) break;
             }
 
-            // Determine if the INFLUENCE tiles need to be shown/updated.
-            bool showInfluenceRange = false;
+            // Determine if the AVAILABLE tiles need to be shown/updated.
+            bool showAvailableRange = false;
 
             // Set influence range if it hasn't been set yet.
             if (influenceRange == InfluenceRange.Null)
             {
                 influenceRange = InfluenceRange._(pieceBeingPlayedFrom);
-                showInfluenceRange = true;
+                showAvailableRange = true;
             }
             else
             {
@@ -212,35 +213,49 @@ public class UX_Player
                 if (updatedIR != InfluenceRange.Null)
                 {
                     influenceRange = updatedIR;
-                    showInfluenceRange = true;
+                    showAvailableRange = true;
                 }
                     
             }
 
             // Show influence range tiles.
-            if (showInfluenceRange)
+            if (showAvailableRange)
             {
-                chunkDetected.ShowTiles(
+                availableTiles = chunkDetected.ShowTiles(
                     influenceRange.Origin,
                     influenceRange.ValidTiles,
-                    (int) UX_Chunk.TileDispType.INFLUENCE, chunks[boardIdx]);
+                    (int) UX_Chunk.TileDispType.AVAILABLE, chunks[boardIdx]);
             }
 
-            // Update tile display of types VALID and INVALID
+            // Update tile display of types VALID and INVALID.
+            // Don't need to check if tileDetected isn't null. If tileDetected
+            // isn't null, chunkDetected isn't null either.
             if (tileDetected != Coord.Null)
             {
                 // See whether the detected tile is within the influence range
                 // to determine whether it should be shown as VALID or INVALID.
-                foreach (UX_Chunk chunk in chunks[boardIdx])
+                UX_Chunk.TileDispType tileDetectedShowDisp
+                    = UX_Chunk.TileDispType.INVALID;
+                UX_Chunk.TileDispType tileDetectedHideDisp
+                    = UX_Chunk.TileDispType.VALID;
+                foreach (Coord availableTile in availableTiles)
                 {
-
+                    if (chunkDetected.LocalCoordToBoard(tileDetected)
+                        == availableTile)
+                    {
+                        tileDetectedShowDisp = UX_Chunk.TileDispType.VALID;
+                        tileDetectedHideDisp
+                            = UX_Chunk.TileDispType.INVALID;
+                        break;
+                    }
                 }
 
                 // Show hovered tile.
                 chunkDetected.ShowTile(tileDetected,
-                    (int) UX_Chunk.TileDispType.INVALID, chunks[boardIdx]);
+                    (int) tileDetectedShowDisp, chunks[boardIdx]);
+                chunkDetected.HideTiles((int) tileDetectedHideDisp);
             }
-            else
+            else if (chunkDetected != null)
             {
                 chunkDetected.HideTiles((int) UX_Chunk.TileDispType.VALID);
                 chunkDetected.HideTiles((int) UX_Chunk.TileDispType.INVALID);

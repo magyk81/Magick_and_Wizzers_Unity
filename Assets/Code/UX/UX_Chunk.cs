@@ -19,10 +19,13 @@ public class UX_Chunk : MonoBehaviour
         private MeshRenderer[] rends = new MeshRenderer[9];
         private Coord coord;
         public Coord Coord { get { return coord.Copy(); } }
-        public UX_Tile(Coord coord, GameObject realObj)
+        private bool[] disp = new bool[(int) TileDispType.COUNT];
+        private Material[] mats;
+        public UX_Tile(Coord coord, GameObject realObj, Material[] mats)
         {
             this.coord = coord.Copy();
             SetObj(realObj, -1);
+            this.mats = mats;
         }
         public void SetObj(GameObject obj, int cloneIdx)
         {
@@ -54,13 +57,28 @@ public class UX_Chunk : MonoBehaviour
         }
         public void Show(int dispType)
         {
-            foreach (MeshRenderer rend in rends)
-            {
-                rend.enabled = true;
-            }
+            disp[dispType] = true;
+            UpdateRend();
         }
         public void Hide(int dispType)
         {
+            disp[dispType] = false;
+            UpdateRend();
+        }
+        private void UpdateRend()
+        {
+            for (int i = 0; i < disp.Length; i++)
+            {
+                if (disp[i])
+                {
+                    foreach (MeshRenderer rend in rends)
+                    {
+                        rend.enabled = true;
+                        rend.material = mats[i];
+                    }
+                    return;
+                }
+            }
             foreach (MeshRenderer rend in rends)
             {
                 rend.enabled = false;
@@ -71,11 +89,15 @@ public class UX_Chunk : MonoBehaviour
     public enum TileDispType { VALID, INVALID, AVAILABLE, INFLUENCE, COUNT }
     private List<UX_Tile>[] tilesDisp
         = new List<UX_Tile>[(int) TileDispType.COUNT];
+    [SerializeField]
+    private Material tileMatValid, tileMatInvalid, tileMatAvailable,
+        tileMatInfluence;
+    private Material[] tileMats;
 
     // Start is called before the first frame update
     void Start()
     {
-        
+
     }
 
     public float GetEdge(int dir)
@@ -96,6 +118,12 @@ public class UX_Chunk : MonoBehaviour
             boardCoord.X - (x * Board.CHUNK_SIZE),
             boardCoord.Z - (z * Board.CHUNK_SIZE));
     }
+    public Coord LocalCoordToBoard(Coord localCoord)
+    {
+        return Coord._(
+            localCoord.X + (x * Board.CHUNK_SIZE),
+            localCoord.Z + (z * Board.CHUNK_SIZE));
+    }
 
     public void Init(int fullBoardSize, int distBetweenBoards,
             int boardIdx, int x, int z)
@@ -112,6 +140,12 @@ public class UX_Chunk : MonoBehaviour
         {
             tilesDisp[i] = new List<UX_Tile>();
         }
+
+        tileMats = new Material[(int) TileDispType.COUNT];
+        tileMats[(int) TileDispType.VALID] = tileMatValid;
+        tileMats[(int) TileDispType.INVALID] = tileMatInvalid;
+        tileMats[(int) TileDispType.AVAILABLE] = tileMatAvailable;
+        tileMats[(int) TileDispType.INFLUENCE] = tileMatInfluence;
 
         SetupChunk(real, fullBoardSize, distBetweenBoards);
         for (int i = 0; i < 8; i++)
@@ -167,7 +201,7 @@ public class UX_Chunk : MonoBehaviour
                         (i + 0.5F) * tileSize - 0.5F,
                         (j + 0.5F) * tileSize - 0.5F, -LIFT_DIST);
                     tileTra.localScale = new Vector3(tileSize, tileSize, 1);
-                    tiles[i, j] = new UX_Tile(Coord._(i, j), tile);
+                    tiles[i, j] = new UX_Tile(Coord._(i, j), tile, tileMats);
                 }
             }
         }
@@ -327,11 +361,13 @@ public class UX_Chunk : MonoBehaviour
         }
         
         List<List<Coord>> chunksToUpdate = new List<List<Coord>>();
+        List<Coord> allBoardCoords = new List<Coord>();
         for (int i = 0; i < coords.Length; i++)
         {
             // Calculate board coords based on origin.
             Coord boardCoord = (origin + coords[i]).ToBounds(
                 Match.Boards[boardIdx].GetTileMax());
+            allBoardCoords.Add(boardCoord);
             Coord chunkWithCoord = Match.Boards[boardIdx].TileToChunk(boardCoord);
             
             bool alreadyInList = false;
@@ -343,7 +379,9 @@ public class UX_Chunk : MonoBehaviour
 
                     // Convert board coord to tile coord that's local to the
                     // chunk that it will be sent to.
-                    chunkToUpdate.Add(BoardCoordToLocal(boardCoord));
+                    chunkToUpdate.Add(
+                        allChunks[chunkWithCoord.X, chunkWithCoord.Z]
+                        .BoardCoordToLocal(boardCoord));
                     break;
                 }
             }
@@ -354,10 +392,13 @@ public class UX_Chunk : MonoBehaviour
 
                 // Convert board coord to tile coord that's local to the chunk
                 // that it will be sent to.
-                newChunkToUpdate.Add(BoardCoordToLocal(boardCoord));
+                newChunkToUpdate.Add(
+                    allChunks[chunkWithCoord.X, chunkWithCoord.Z]
+                    .BoardCoordToLocal(boardCoord));
                 chunksToUpdate.Add(newChunkToUpdate);
             }
         }
+
         foreach (List<Coord> chunkToUpdate in chunksToUpdate)
         {
             Coord chunkCoord = chunkToUpdate[0].Copy();
@@ -366,7 +407,7 @@ public class UX_Chunk : MonoBehaviour
                 chunkToUpdate.ToArray(), dispType);
         }
 
-        return null;
+        return allBoardCoords.ToArray();
     }
 
     public void HideTiles(int dispType)

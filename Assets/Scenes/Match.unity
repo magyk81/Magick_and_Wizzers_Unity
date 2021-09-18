@@ -736,6 +736,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   real: {fileID: 1651430505}
   baseTile: {fileID: 37153539}
+  tileMatValid: {fileID: 2100000, guid: 26d35393ceb769742a385f6d6a6f2f2c, type: 2}
+  tileMatInvalid: {fileID: 2100000, guid: 71db613729d10624cba0a836495f8a7f, type: 2}
+  tileMatAvailable: {fileID: 2100000, guid: 79f37cf02afe61c46b0efc380c66972f, type: 2}
+  tileMatInfluence: {fileID: 2100000, guid: 80d4a42aab418ca49afdb99cf869c30c, type: 2}
 --- !u!1 &669303217
 GameObject:
   m_ObjectHideFlags: 0
