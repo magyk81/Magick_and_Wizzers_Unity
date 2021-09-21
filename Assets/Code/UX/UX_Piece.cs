@@ -88,32 +88,32 @@ public class UX_Piece : MonoBehaviour
 
     public void UpdatePosition()
     {
-        float _x = _.X - (Board.CHUNK_SIZE / 2),
-            _z = _.Z - (Board.CHUNK_SIZE / 2),
-            __x = _x, __z = _z;
+        // float _x = _.X - (Board.CHUNK_SIZE / 2),
+        //     _z = _.Z - (Board.CHUNK_SIZE / 2),
+        //     __x = _x, __z = _z;
 
-        _x += _.BoardIdx * distBetweenBoards * Board.CHUNK_SIZE;
+        // _x += _.BoardIdx * distBetweenBoards * Board.CHUNK_SIZE;
             
-        for (int i = 0; i < 8; i++)
-        {
-            if (Board.CHUNK_SIZE % 2 == 0) { _x += 0.5F; _z += 0.5F; }
-            if (i == Util.UP || i == Util.UP_LEFT
-                || i == Util.UP_RIGHT) _z += fullBoardSize;
-            else if (i == Util.DOWN || i == Util.DOWN_LEFT
-                || i == Util.DOWN_RIGHT) _z -= fullBoardSize;
-            if (i == Util.RIGHT || i == Util.UP_RIGHT
-                || i == Util.DOWN_RIGHT) _x += fullBoardSize;
-            else if (i == Util.LEFT || i == Util.UP_LEFT
-                || i == Util.DOWN_LEFT) _x -= fullBoardSize;
+        // for (int i = 0; i < 8; i++)
+        // {
+        //     if (Board.CHUNK_SIZE % 2 == 0) { _x += 0.5F; _z += 0.5F; }
+        //     if (i == Util.UP || i == Util.UP_LEFT
+        //         || i == Util.UP_RIGHT) _z += fullBoardSize;
+        //     else if (i == Util.DOWN || i == Util.DOWN_LEFT
+        //         || i == Util.DOWN_RIGHT) _z -= fullBoardSize;
+        //     if (i == Util.RIGHT || i == Util.UP_RIGHT
+        //         || i == Util.DOWN_RIGHT) _x += fullBoardSize;
+        //     else if (i == Util.LEFT || i == Util.UP_LEFT
+        //         || i == Util.DOWN_LEFT) _x -= fullBoardSize;
                 
-            clonesTra[i].localPosition = new Vector3(_x, LIFT_DIST, _z);
+        //     clonesTra[i].localPosition = new Vector3(_x, LIFT_DIST, _z);
 
-            _x = __x;
-            _z = __z;
-        }
-        if (Board.CHUNK_SIZE % 2 == 0) { _x += 0.5F; _z += 0.5F; }
+        //     _x = __x;
+        //     _z = __z;
+        // }
+        // if (Board.CHUNK_SIZE % 2 == 0) { _x += 0.5F; _z += 0.5F; }
 
-        realTra.localPosition = new Vector3(_x, LIFT_DIST, _z);
+        // realTra.localPosition = new Vector3(_x, LIFT_DIST, _z);
     }
 
     public bool IsCollider(Collider collider)

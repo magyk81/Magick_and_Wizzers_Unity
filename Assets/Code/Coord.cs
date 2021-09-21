@@ -24,6 +24,8 @@ public struct Coord
     public static readonly Coord Null = new Coord(-1, -1);
     public static Coord operator +(Coord a, Coord b)
         => new Coord(a.X + b.X, a.Z + b.Z);
+    public static Coord operator *(Coord a, int b)
+        => new Coord(a.X * b, a.Z * b);
     public static bool operator ==(Coord a, Coord b)
     {
         return a.X == b.X && a.Z == b.Z;

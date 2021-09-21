@@ -4,46 +4,32 @@ using UnityEngine;
 
 public class ControllerScript : MonoBehaviour
 {
-    private Match match;
-    private UX_Match uxMatch;
-    private Dictionary<Player, Gamepad> gamepadBinding
-        = new Dictionary<Player, Gamepad>();
-    private Dictionary<Player, CameraScript> cameraBinding
-        = new Dictionary<Player, CameraScript>();
+    private static Player[] players;
 
-    [SerializeField]
-    private CameraScript BASE_CAMERA;
-    [SerializeField]
-    private Canvas BASE_CANVAS;
-    [SerializeField]
-    private GameObject BASE_WAYPOINT;
-    [SerializeField]
-    private UX_Chunk BASE_CHUNK;
-    [SerializeField]
-    private UX_Piece BASE_PIECE;
-    [SerializeField]
-    private int playerCount;
-    public static readonly int MAX_GAMEPADS = 4;
+    // [SerializeField]
+    // private GameObject uxPlayerParent, uxBoardParent, uxPieceParent;
+
+    private Match match;
 
     // Start is called before the first frame update
     void Start()
     {
         Application.targetFrameRate = 60;
 
-        // Set up players
-        Player[] players = new Player[playerCount];
+        // For debugging. This data would normally be set somewhere else.
+        Player[] players = new Player[2];
         players[0] = new Player("Brooke", 0, Player.Type.LOCAL_PLAYER);
         players[1] = new Player("Rachel", 1, Player.Type.BOT);
-
-        uxMatch = new UX_Match(BASE_CHUNK, BASE_PIECE, BASE_WAYPOINT,
-            BASE_CAMERA, BASE_CANVAS);
+        Match.Players = players;
+        Chunk.Size = 10;
         
-        match = new Match(uxMatch, players);
+        match = new Match();
+        match.InitUX(GetComponent<UX_Match>());
     }
 
     // Update is called once per frame
     void Update()
     {
-        match.Update();
+        match.MainLoop();
     }
 }
