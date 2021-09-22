@@ -14,7 +14,9 @@ public class UX_Match : MonoBehaviour
     private readonly int MAX_WAYPOINTS = 5;
 
     private UX_Player[] players;
+    public UX_Player[] Players { get { return players; } }
     private UX_Board[][] boards;
+    public UX_Board[][] Boards { get { return boards; } }
 
     public void Init(Player[] players, Board[] boards)
     {
@@ -31,6 +33,7 @@ public class UX_Match : MonoBehaviour
                 baseBoardParent.gameObject,
                 baseBoardParent.parent).GetComponent<Transform>();
             boardParent.gameObject.name = boards[i].Name;
+            boardParent.gameObject.SetActive(true);
 
             for (int j = 0; j < this.boards[i].Length; j++)
             {
@@ -50,7 +53,6 @@ public class UX_Match : MonoBehaviour
                 }
             }
         }
-        Destroy(baseBoardParent.gameObject);
 
         // Generate uxPlayers
         this.players = new UX_Player[players.Length];
@@ -61,31 +63,9 @@ public class UX_Match : MonoBehaviour
                 basePlayer.GetComponent<Transform>().parent
             ).GetComponent<UX_Player>();
             this.players[i].gameObject.name = players[i].Name;
+            this.players[i].gameObject.SetActive(true);
             this.players[i].Init(boardBounds);
         }
-        Destroy(basePlayer.gameObject);
-
-        // Generate chunks
-        // fullSizes = new int[boardSizes.Length];
-
-        // chunks = new UX_Chunk[boardSizes.Length][,];
-
-        // for (int i = 0; i < boardSizes.Length; i++)
-        // {
-        //     GameObject boardObj = new GameObject("Board " + (i + 1));
-        //     boardTra = boardObj.GetComponent<Transform>();
-        //     chunks[i] = new UX_Chunk[boardSizes[i], boardSizes[i]];
-
-        //     fullSizes[i] = boardSizes[i] * Chunk.Size;
-        //     for (int x = 0; x < boardSizes[i]; x++)
-        //         for (int z = 0; z < boardSizes[i]; z++)
-        //         {
-        //             chunks[i][x, z] = GameObject.Instantiate(
-        //                 baseChunk, boardTra);
-        //             chunks[i][x, z].Init(fullSizes[i], DIST_BETWEEN_BOARDS,
-        //                 i, x, z);
-        //         }
-        // }
 
         // Generate waypoints
         // GameObject[,] waypoints

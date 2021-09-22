@@ -9,9 +9,7 @@ public class Master : Piece
 
     public Master(Player player, int playerIdx, int boardIdx, Coord initPos)
         : base("Master of " + player.Name, playerIdx, boardIdx, initPos)
-    {
-        player.AddMaster(this);
-        
+    {        
         // Debug-deck
         deck = new Deck(Card.friend_cards);
         deck.Shuffle();

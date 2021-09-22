@@ -269,17 +269,17 @@ public class UX_Player : MonoBehaviour
         // }
     }
 
-    private void SelectPiece(UX_Piece ux_piece)
-    {
-        if (selectedPieces.Contains(ux_piece))
-        {
-            selectedPieces.Remove(ux_piece);
-            ux_piece.Unselect();
-        }
-        else
-        {
-            selectedPieces.Add(ux_piece);
-            ux_piece.Select();
-        }
-    }
+    // private void SelectPiece(UX_Piece ux_piece)
+    // {
+    //     if (selectedPieces.Contains(ux_piece))
+    //     {
+    //         selectedPieces.Remove(ux_piece);
+    //         ux_piece.Unselect();
+    //     }
+    //     else
+    //     {
+    //         selectedPieces.Add(ux_piece);
+    //         ux_piece.Select();
+    //     }
+    // }
 }

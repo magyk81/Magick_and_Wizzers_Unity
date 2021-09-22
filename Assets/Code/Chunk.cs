@@ -10,6 +10,12 @@ public class Chunk
     }
     public static int Size {
         set { InitInfo.size = value; } get { return InitInfo.size; } }
+    
+    private UX_Chunk[] ux = new UX_Chunk[9];
+    public void SetUX(UX_Chunk ux, int cloneIdx)
+    {
+        this.ux[cloneIdx] = ux;
+    }
 
     private Coord pos, minTile, maxTile;
 

@@ -16,17 +16,47 @@ public class Board
         else return InitInfo.size;
     }
 
+    private UX_Board[] ux;
+    public UX_Board[] UX
+    {
+        set
+        {
+            ux = value;
+
+            // Pair chunks with UX_Chunks.
+            for (int i = 0; i < GetSize(); i++)
+            {
+                for (int j = 0; j < GetSize(); j++)
+                {
+                    for (int k = 0; k < ux.Length; k++)
+                    {
+                        chunks[i, j].SetUX(ux[k].Chunks[i, j], k);
+                    }
+                }
+            }
+        }
+    }
+
     private readonly int TOTAL_SIZE;
     private Chunk[,] chunks;
     private List<Piece> pieces = new List<Piece>();
     private string name;
     public string Name { get { return name; } }
-    public Board(string name, Player[] players)
+    public Board(string name, int customSize = 0)
     {
         this.name = name;
+        this.customSize = customSize;
         chunks = new Chunk[GetSize(), GetSize()];
-
-        // Start each player with her initial master
+        for (int i = 0; i < GetSize(); i++)
+        {
+            for (int j = 0; j < GetSize(); j++)
+            {
+                chunks[i, j] = new Chunk(Coord._(i, j));
+            }
+        }
+    }
+    public void InitMasters(Player[] players)
+    {
         Coord[] masterStartPos = new Coord[players.Length];
         if (players.Length == 2) masterStartPos = new Coord[] {
             Coord._(TOTAL_SIZE / 4    , TOTAL_SIZE / 4),
@@ -46,15 +76,9 @@ public class Board
                 players[i], i, 0, masterStartPos[i]);
             AddPiece(initialMaster);
 
-            // The 5 cards that players start with at the beginning of a match.
-            initialMaster.DrawCards(5);
+            // // The 5 cards that players start with at the beginning of a match.
+            // initialMaster.DrawCards(5);
         }
-    }
-    public Board(string name, int customSize = 0)
-    {
-        this.name = name;
-        chunks = new Chunk[GetSize(), GetSize()];
-        this.customSize = customSize;
     }
 
     public Coord TileToChunk(Coord tile)
@@ -62,6 +86,10 @@ public class Board
         return Coord._(tile.X / Chunk.Size, tile.Z / Chunk.Size);
     }
 
-    public void AddPiece(Piece piece) { pieces.Add(piece); }
+    public void AddPiece(Piece piece)
+    {
+        pieces.Add(piece);
+        for (int i = 0; i < 9; i++) { ux[i].AddPiece(piece); }
+    }
     // void MovePiece(int idx, int dir, int dist) { pieces[idx].Move(dir, dist); }
 }

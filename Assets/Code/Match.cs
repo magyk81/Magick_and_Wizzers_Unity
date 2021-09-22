@@ -14,9 +14,29 @@ public class Match
     private Board[] boards = new Board[2];
     public Match()
     {
-        boards[0] = new Board("Main", InitInfo.players);
+        boards[0] = new Board("Main");
         boards[1] = new Board("Sheol", 1);
     }
-    public void InitUX(UX_Match uxMatch) { uxMatch.Init(InitInfo.players, boards); }
+    public void InitUX(UX_Match uxMatch)
+    {
+        uxMatch.Init(InitInfo.players, boards);
+
+        // Pair players with UX_Players.
+        UX_Player[] uxPlayers = uxMatch.Players;
+        for (int i = 0; i < InitInfo.players.Length; i++)
+        {
+            InitInfo.players[i].UX = uxPlayers[i];
+        }
+
+        // Pair boards with UX_Boards.
+        UX_Board[][] uxBoards = uxMatch.Boards;
+        for (int i = 0; i < boards.Length; i++)
+        {
+            boards[i].UX = uxBoards[i];
+        }
+
+        // Set initial masters.
+        boards[0].InitMasters(InitInfo.players);
+    }
     public void MainLoop() {}
 }

@@ -4,7 +4,8 @@ using UnityEngine;
 
 public class UX_Chunk : MonoBehaviour
 {
-    private int boardIdx, x, z;
+    private int boardIdx;
+    private Coord pos;
     
     private bool hovered = false;
 
@@ -114,15 +115,15 @@ public class UX_Chunk : MonoBehaviour
     //         localCoord.Z + (z * Board.CHUNK_SIZE));
     // }
 
-    public void Init(int fullBoardSize, int distBetweenBoards,
-            int boardIdx, int x, int z)
+    public void Init(Coord pos, int boardIdx, UX_Tile[,] tiles)
     {
         this.boardIdx = boardIdx;
-        this.x = x;
-        this.z = z;
+        this.pos = pos.Copy();
+        this.tiles = tiles;
 
-        gameObject.name = "Chunk [" + x + ", " + z + "]";
-        Transform tra = GetComponent<Transform>();
+        gameObject.name = "Chunk " + pos;
+        
+        // Transform tra = GetComponent<Transform>();
         // tiles = new UX_Tile[Board.CHUNK_SIZE, Board.CHUNK_SIZE];
         // for (int i = 0; i < (int) TileDispType.COUNT; i++)
         // {
