@@ -15,13 +15,7 @@ public class CameraScript : MonoBehaviour
     private float speed;
     private float x = 0, z = 0, y = 5;
 
-    // Start is called before the first frame update
-    void Start()
-    {
-        
-    }
-
-    public void InitCamObjs(CanvasScript canv)
+    public void Init(CanvasScript canv)
     {
         cam = GetComponent<Camera>();
         tra = GetComponent<Transform>();
@@ -32,7 +26,7 @@ public class CameraScript : MonoBehaviour
         canv.DarkScreen.sizeDelta = new Vector2(
             cam.pixelWidth, cam.pixelHeight);
 
-        // Setup rays
+        // Setup rays.
         ray = new Ray[5];
         rayVecs = new Vector3[ray.Length];
         float[] rayVecDirs = new float[rayVecs.Length];
@@ -156,7 +150,6 @@ public class CameraScript : MonoBehaviour
     private float[][] bounds;
     public float[][] Bounds
     {
-        get { return bounds; }
         set
         {
             bounds = new float[value.Length][];

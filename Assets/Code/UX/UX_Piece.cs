@@ -4,6 +4,12 @@ using UnityEngine;
 
 public class UX_Piece : MonoBehaviour
 {
+    private static class InitInfo
+    {
+        public static int playerCount;
+    }
+    public static int PlayerCount {
+        set { InitInfo.playerCount = value; } }
     private Piece __;
     public Piece _ { get { return __; } }
     [SerializeField]
@@ -12,8 +18,7 @@ public class UX_Piece : MonoBehaviour
     private enum Part {
         ART, FRAME, ATTACK, DEFENSE, LIFE, HOVER, SELECT, TARGET, COUNT };
     private int boardIdx, fullBoardSize, distBetweenBoards;
-    private bool hovered, selected;
-    private readonly static float LIFT_DIST = 0.1F;
+    private bool[] hovered, selected;
 
     // Start is called before the first frame update
     void Start()
@@ -23,10 +28,13 @@ public class UX_Piece : MonoBehaviour
 
     public void Init()
     {
-        if (__.GetType() != typeof(Master))
-        {
-            lifeBar.SetActive(false);
-        }
+        hovered = new bool[InitInfo.playerCount];
+        selected = new bool[InitInfo.playerCount];
+
+        // if (__.GetType() != typeof(Master))
+        // {
+        //     lifeBar.SetActive(false);
+        // }
         attackBar.SetActive(false);
         defenseBar.SetActive(false);
         hover.SetActive(false);

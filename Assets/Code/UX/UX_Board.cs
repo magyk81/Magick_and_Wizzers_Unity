@@ -10,12 +10,13 @@ public class UX_Board : MonoBehaviour
     UX_Chunk baseChunk;
     [SerializeField]
     UX_Piece basePiece;
+    private Transform pieceParent;
     private UX_Tile[,] tiles;
     private UX_Chunk[,] chunks;
     public UX_Chunk[,] Chunks { get { return chunks; } }
     private List<UX_Piece> pieces = new List<UX_Piece>();
-    private int cloneIdx;
-    private int boardIdx;
+    private readonly static float PIECE_LIFT_DIST = 0.1F;
+    private int boardIdx, cloneIdx;
 
     public void Init(int size, int boardIdx, int cloneIdx = -1)
     {
@@ -56,6 +57,10 @@ public class UX_Board : MonoBehaviour
         tiles = new UX_Tile[size * Chunk.Size, size * Chunk.Size];
         chunks = new UX_Chunk[size, size];
 
+        Transform chunkParent = new GameObject().GetComponent<Transform>();
+        chunkParent.gameObject.name = "Chunks";
+        chunkParent.parent = GetComponent<Transform>();
+
         // Change chunk material if Sheol (temporary)
         if (boardIdx == 1)
         {
@@ -69,8 +74,7 @@ public class UX_Board : MonoBehaviour
         {
             for (int j = j0; j < jEnd; j++)
             {
-                chunks[i, j] = Instantiate(
-                    baseChunk, GetComponent<Transform>());
+                chunks[i, j] = Instantiate(baseChunk, chunkParent);
 
                 // Position and scale chunks.
                 Transform chunkTra = chunks[i, j].GetComponent<Transform>();
@@ -80,9 +84,9 @@ public class UX_Board : MonoBehaviour
                     (i * Chunk.Size) + cloneOffsetX + apartOffset,
                     (j * Chunk.Size) + cloneOffsetZ);
                 chunkTra.localPosition = new Vector3(
-                    chunkPos.X - ((float) Chunk.Size / 2F),
+                    chunkPos.X + ((float) Chunk.Size / 2F),
                     0,
-                    chunkPos.Z - ((float) Chunk.Size / 2F));
+                    chunkPos.Z + ((float) Chunk.Size / 2F));
 
                 // Generate tiles.
                 UX_Tile[,] chunkTiles = new UX_Tile[Chunk.Size, Chunk.Size];
@@ -92,8 +96,8 @@ public class UX_Board : MonoBehaviour
                     {
                         Coord tilePos = Coord._(
                             i * Chunk.Size + a, j * Chunk.Size + b);
-                        tiles[tilePos.X, tilePos.Z]
-                            = new UX_Tile(tilePos, boardIdx);
+                        tiles[tilePos.X, tilePos.Z] = new UX_Tile(
+                            tilePos, size * Chunk.Size, cloneIdx, boardIdx);
                         chunkTiles[
                             tilePos.X - (i * Chunk.Size),
                             tilePos.Z - (j * Chunk.Size)]
@@ -102,8 +106,13 @@ public class UX_Board : MonoBehaviour
                 }
 
                 chunks[i, j].Init(Coord._(i, j), boardIdx, chunkTiles);
+                chunks[i, j].gameObject.SetActive(true);
             }
         }
+
+        pieceParent = new GameObject().GetComponent<Transform>();
+        pieceParent.gameObject.name = "Pieces";
+        pieceParent.parent = GetComponent<Transform>();
 
         gameObject.SetActive(true);
     }
@@ -112,17 +121,20 @@ public class UX_Board : MonoBehaviour
     {
         UX_Piece uxPiece = Instantiate(
             basePiece.gameObject,
-            basePiece.GetComponent<Transform>().parent)
+            pieceParent)
             .GetComponent<UX_Piece>();
         uxPiece.gameObject.name = piece.Name;
         piece.SetUX(uxPiece, cloneIdx + 1);
         pieces.Add(uxPiece);
 
-        // // Position the piece.
-        uxPiece.GetComponent<Transform>().localPosition = new Vector3(
-            0, 0, 0
-        );
-        uxPiece.gameObject.SetActive(true);
+        UX_Tile tile = tiles[piece.Pos.X, piece.Pos.Z];
+        if (tile != null)
+        {
+            // Position the piece.
+            uxPiece.GetComponent<Transform>().localPosition = new Vector3(
+                tile.UX_Pos.x, PIECE_LIFT_DIST, tile.UX_Pos.z);
+            uxPiece.gameObject.SetActive(true);
+        }       
     }
 
     // Update is called once per frame

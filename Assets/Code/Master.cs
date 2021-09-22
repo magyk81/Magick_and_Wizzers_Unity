@@ -5,7 +5,6 @@ using UnityEngine;
 public class Master : Piece
 {
     private int playerIdx;
-    private Coord pos;
 
     public Master(Player player, int playerIdx, int boardIdx, Coord initPos)
         : base("Master of " + player.Name, playerIdx, boardIdx, initPos)

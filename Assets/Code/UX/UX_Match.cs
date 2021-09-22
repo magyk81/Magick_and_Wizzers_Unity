@@ -56,15 +56,20 @@ public class UX_Match : MonoBehaviour
 
         // Generate uxPlayers
         this.players = new UX_Player[players.Length];
-        for (int i = 0; i < players.Length; i++)
+        for (int i = 0, j = 0; i < players.Length; i++)
         {
-            this.players[i] = Instantiate(
-                basePlayer.gameObject,
-                basePlayer.GetComponent<Transform>().parent
-            ).GetComponent<UX_Player>();
-            this.players[i].gameObject.name = players[i].Name;
-            this.players[i].gameObject.SetActive(true);
-            this.players[i].Init(boardBounds);
+            if (players[i].PlayerType == Player.Type.LOCAL_PLAYER)
+            {
+                this.players[j] = Instantiate(
+                    basePlayer.gameObject,
+                    basePlayer.GetComponent<Transform>().parent
+                ).GetComponent<UX_Player>();
+                this.players[j].gameObject.name = players[i].Name;
+                this.players[j].gameObject.SetActive(true);
+                this.players[j].Init(j, boardBounds);
+
+                j++;
+            }
         }
 
         // Generate waypoints

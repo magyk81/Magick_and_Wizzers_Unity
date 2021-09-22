@@ -46,6 +46,7 @@ public class Board
     {
         this.name = name;
         this.customSize = customSize;
+        TOTAL_SIZE = Chunk.Size * InitInfo.size;
         chunks = new Chunk[GetSize(), GetSize()];
         for (int i = 0; i < GetSize(); i++)
         {

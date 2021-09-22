@@ -16,35 +16,40 @@ public class UX_Player : MonoBehaviour
     private CanvasScript canv;
     private UX_Collider[,] tileColls;
     private UX_Collider[] quarterColls;
-    private readonly Player __;
+    private Gamepad gamepad;
+    private UX_Piece hoveredPiece;
+    private List<UX_Piece> selectedPieces = new List<UX_Piece>();
     public enum Mode { PLAIN, WAYPOINT, TARGET_PIECE, TARGET_CHUNK,
         TARGET_TILE, HAND, DETAIL, SURRENDER, PAUSE }
     private Mode mode = Mode.PLAIN;
-    private Gamepad gamepad;
-    
-    // Board being currently viewed by this player.
-    private UX_Piece hoveredPiece;
-    private List<UX_Piece> selectedPieces = new List<UX_Piece>();
-    // private Card cardBeingPlayed;
-    // private Piece pieceBeingPlayedFrom;
 
-    public void Init(int[][] boardBounds)
+    public void Init(int localPlayerIdx, int[][] boardBounds)
     {
+        // Setup camera.
         cam = Instantiate(
             baseCam.gameObject,
             GetComponent<Transform>()).GetComponent<CameraScript>();
         cam.gameObject.name = "Camera";
+        cam.gameObject.SetActive(true);
 
+        // Setup canvas.
         canv = Instantiate(
             baseCanv.gameObject,
             GetComponent<Transform>()).GetComponent<CanvasScript>();
         canv.gameObject.name = "Canvas";
+        canv.gameObject.SetActive(true);
+
+        cam.Init(canv);
+
+        // Setup gamepad.
+        gamepad = new Gamepad(localPlayerIdx == 0);
 
         Transform tileCollParent = Instantiate(
             baseCollParent.gameObject,
             GetComponent<Transform>()).GetComponent<Transform>();
         tileCollParent.gameObject.name = "Tile Colliders";
 
+        // Generate tile colliders.
         tileColls = new UX_Collider[Chunk.Size / 2, Chunk.Size / 2];
         for (int i = 0; i < Chunk.Size / 2; i++)
         {
@@ -62,6 +67,7 @@ public class UX_Player : MonoBehaviour
             GetComponent<Transform>()).GetComponent<Transform>();
         quarterCollParent.gameObject.name = "Quarter Colliders";
 
+        // Generate quarter-chunk colliders.
         quarterColls = new UX_Collider[4];
         for (int i = 0; i < 4; i++)
         {
@@ -70,10 +76,12 @@ public class UX_Player : MonoBehaviour
                 quarterCollParent).GetComponent<UX_Collider>();
             quarterColls[i].gameObject.name = Util.DirToString(i + 4);
         }
+    }
 
-        Destroy(baseCam.gameObject);
-        Destroy(baseCanv.gameObject);
-        Destroy(baseCollParent.gameObject);
+    private void Update()
+    {
+        int[] gamepadInput = gamepad.PadInput;
+        if (gamepadInput[0] == 1) Debug.Log("test");
     }
 
     // public void QueryGamepad()

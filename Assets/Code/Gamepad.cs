@@ -6,10 +6,6 @@ public class Gamepad
 {
     private readonly int STICK_INT = 100;
     private bool isKeyboard;
-    private int playerIdx = -1;
-    public int PlayerIdx {
-        get { return playerIdx; }
-        set { if (playerIdx == -1) playerIdx = value; } }
 
     private int[] padInput;
     public int[] PadInput
