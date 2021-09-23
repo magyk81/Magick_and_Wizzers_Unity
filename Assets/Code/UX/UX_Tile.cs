@@ -10,13 +10,14 @@ public class UX_Tile
     public Vector3 UX_Pos { get { return uxPos; } }
     private int boardIdx;
 
-    public UX_Tile(Coord pos, int boardTotalSize, int cloneIdx, int boardIdx)
+    public UX_Tile(Coord pos, int boardTotalSize, int apartOffset,
+        int cloneIdx, int boardIdx)
     {
         this.pos = pos.Copy();
         this.boardIdx = boardIdx;
 
         // Set physical position.
-        float x = pos.X + 0.5F, z = pos.Z + 0.5F;
+        float x = pos.X + 0.5F + apartOffset, z = pos.Z + 0.5F;
 
         if (cloneIdx >= 0)
         {

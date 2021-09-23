@@ -23,7 +23,7 @@ public class Match
 
         // Pair players with UX_Players.
         UX_Player[] uxPlayers = uxMatch.Players;
-        for (int i = 0; i < InitInfo.players.Length; i++)
+        for (int i = 0; i < UX_Match.localPlayerCount; i++)
         {
             InitInfo.players[i].UX = uxPlayers[i];
         }

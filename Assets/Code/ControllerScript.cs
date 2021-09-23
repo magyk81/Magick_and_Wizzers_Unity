@@ -21,7 +21,6 @@ public class ControllerScript : MonoBehaviour
         players[0] = new Player("Brooke", 0, Player.Type.LOCAL_PLAYER);
         players[1] = new Player("Rachel", 1, Player.Type.BOT);
         Match.Players = players;
-        UX_Piece.PlayerCount = players.Length;
         Board.Size = 5;
         Chunk.Size = 10;
         

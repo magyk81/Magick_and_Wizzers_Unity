@@ -15,12 +15,12 @@ public class UX_Board : MonoBehaviour
     private UX_Chunk[,] chunks;
     public UX_Chunk[,] Chunks { get { return chunks; } }
     private List<UX_Piece> pieces = new List<UX_Piece>();
-    private readonly static float PIECE_LIFT_DIST = 0.1F;
     private int boardIdx, cloneIdx;
 
     public void Init(int size, int boardIdx, int cloneIdx = -1)
     {
         this.boardIdx = boardIdx;
+        this.cloneIdx = cloneIdx;
 
         int i0 = 0, j0 = 0, iEnd = size, jEnd = size;
         int cloneOffsetX = 0, cloneOffsetZ = 0,
@@ -61,7 +61,7 @@ public class UX_Board : MonoBehaviour
         chunkParent.gameObject.name = "Chunks";
         chunkParent.parent = GetComponent<Transform>();
 
-        // Change chunk material if Sheol (temporary)
+        // Change chunk material if Sheol (temporary debugging)
         if (boardIdx == 1)
         {
             Material sheolMat = Resources.Load<Material>(
@@ -97,7 +97,8 @@ public class UX_Board : MonoBehaviour
                         Coord tilePos = Coord._(
                             i * Chunk.Size + a, j * Chunk.Size + b);
                         tiles[tilePos.X, tilePos.Z] = new UX_Tile(
-                            tilePos, size * Chunk.Size, cloneIdx, boardIdx);
+                            tilePos, size * Chunk.Size, apartOffset,
+                            cloneIdx, boardIdx);
                         chunkTiles[
                             tilePos.X - (i * Chunk.Size),
                             tilePos.Z - (j * Chunk.Size)]
@@ -117,6 +118,16 @@ public class UX_Board : MonoBehaviour
         gameObject.SetActive(true);
     }
 
+    public float[] GetBounds()
+    {
+        float[] bounds = new float[4];
+        bounds[Util.UP] = tiles[0, tiles.GetLength(1) - 1].UX_Pos.z + 0.5F;
+        bounds[Util.RIGHT] = tiles[tiles.GetLength(0) - 1, 0].UX_Pos.x + 0.5F;
+        bounds[Util.DOWN] = tiles[0, 0].UX_Pos.z - 0.5F;
+        bounds[Util.LEFT] = tiles[0, 0].UX_Pos.x - 0.5F;
+        return bounds;
+    }
+
     public void AddPiece(Piece piece)
     {
         UX_Piece uxPiece = Instantiate(
@@ -127,14 +138,30 @@ public class UX_Board : MonoBehaviour
         piece.SetUX(uxPiece, cloneIdx + 1);
         pieces.Add(uxPiece);
 
-        UX_Tile tile = tiles[piece.Pos.X, piece.Pos.Z];
-        if (tile != null)
+        uxPiece.Init(piece);
+        MovePiece(piece);
+
+        // UX_Tile tile = tiles[piece.Pos.X, piece.Pos.Z];
+        // if (tile != null)
+        // {
+        //     // Position the piece.
+        //     // uxPiece.GetComponent<Transform>().localPosition = new Vector3(
+        //     //     tile.UX_Pos.x, PIECE_LIFT_DIST, tile.UX_Pos.z);
+        //     uxPiece.gameObject.SetActive(true);
+        //     MovePiece(piece);
+        // }
+    }
+    public void MovePiece(Piece piece)
+    {
+        if (boardIdx != piece.BoardIdx)
         {
-            // Position the piece.
-            uxPiece.GetComponent<Transform>().localPosition = new Vector3(
-                tile.UX_Pos.x, PIECE_LIFT_DIST, tile.UX_Pos.z);
-            uxPiece.gameObject.SetActive(true);
-        }       
+            Debug.LogError("Board " + boardIdx
+                + " should not move piece from board " + piece.BoardIdx);
+        }
+        else
+        {
+            piece.UX_Move(tiles, cloneIdx + 1);
+        }
     }
 
     // Update is called once per frame

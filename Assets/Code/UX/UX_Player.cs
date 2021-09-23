@@ -23,7 +23,7 @@ public class UX_Player : MonoBehaviour
         TARGET_TILE, HAND, DETAIL, SURRENDER, PAUSE }
     private Mode mode = Mode.PLAIN;
 
-    public void Init(int localPlayerIdx, int[][] boardBounds)
+    public void Init(int localPlayerIdx, float[][] boardBounds)
     {
         // Setup camera.
         cam = Instantiate(
@@ -39,7 +39,7 @@ public class UX_Player : MonoBehaviour
         canv.gameObject.name = "Canvas";
         canv.gameObject.SetActive(true);
 
-        cam.Init(canv);
+        cam.Init(localPlayerIdx, canv, boardBounds);
 
         // Setup gamepad.
         gamepad = new Gamepad(localPlayerIdx == 0);
@@ -81,7 +81,16 @@ public class UX_Player : MonoBehaviour
     private void Update()
     {
         int[] gamepadInput = gamepad.PadInput;
-        if (gamepadInput[0] == 1) Debug.Log("test");
+
+        cam.Move(
+            gamepadInput[(int) Gamepad.Button.L_HORIZ],
+            gamepadInput[(int) Gamepad.Button.L_VERT]);
+        
+        if (gamepadInput[(int) Gamepad.Button.L_TRIG] == 1)
+        {
+            if (cam.BoardIdx == 0) cam.BoardIdx = 1;
+            else cam.BoardIdx = 0;
+        }
     }
 
     // public void QueryGamepad()

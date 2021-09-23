@@ -8,14 +8,14 @@ TagManager:
   - Default
   - TransparentFX
   - Ignore Raycast
-  - 
+  - .
   - Water
   - UI
-  - Pieces
-  - 
-  - 
-  - 
-  - 
+  - Chunks & Tiles
+  - Pieces - Player 1
+  - Pieces - Player 2
+  - Pieces - Player 3
+  - Pieces - Player 4
   - 
   - 
   - 

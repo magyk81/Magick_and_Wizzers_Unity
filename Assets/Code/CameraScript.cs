@@ -15,10 +15,20 @@ public class CameraScript : MonoBehaviour
     private float speed;
     private float x = 0, z = 0, y = 5;
 
-    public void Init(CanvasScript canv)
+    public void Init(int localPlayerIdx, CanvasScript canv, float[][] bounds)
     {
-        cam = GetComponent<Camera>();
         tra = GetComponent<Transform>();
+
+        // Setup camera.
+        cam = GetComponent<Camera>();
+        int mask = 1 << (UX_Piece.pieceLayer + localPlayerIdx);
+        for (int i = 0; i < UX_Piece.pieceLayer; i++)
+        {
+            mask |= (1 << i);
+        }
+        cam.cullingMask = mask;
+        
+        // Setup canvas.
         this.canv = canv;
         canv.InitCanvObjs(cam.pixelWidth, cam.pixelHeight);
 
@@ -47,6 +57,19 @@ public class CameraScript : MonoBehaviour
         rayVecs[Util.UP] = new Vector3(0.5F, rayVecDirs[Util.UP], 0);
         rayVecs[Util.DOWN] = new Vector3(0.5F, rayVecDirs[Util.DOWN], 0);
         rayVecs[MIDDLE_RAY_IDX] = new Vector3(0.5F, 0.5F, 0);
+
+        // Setup bounds.
+        Bounds = bounds;
+
+        // Setup positions for switching boards.
+        boardPos = new Vector3[bounds.Length];
+        for (int i = 0; i < bounds.Length; i++)
+        {
+            boardPos[i] = new Vector3(
+                bounds[i][(int) Util.LEFT] + (boardSize_horiz[i] / 2),
+                y,
+                bounds[i][(int) Util.DOWN] + (boardSize_vert[i] / 2));
+        }
     }
 
     public void Move(int x_move, int z_move)
@@ -56,6 +79,15 @@ public class CameraScript : MonoBehaviour
         x += x_move * speed;
         z += z_move * speed;
 
+        Move();
+    }
+    private void MoveTo(float newX, float newZ)
+    {
+        x = newX; z = newZ;
+        Move();
+    }
+    private void Move()
+    {
         if (x < bounds[boardIdx][Util.LEFT])
             x += boardSize_horiz[boardIdx];
         if (x > bounds[boardIdx][Util.RIGHT])
@@ -117,22 +149,22 @@ public class CameraScript : MonoBehaviour
     public void SetMode(UX_Player.Mode mode)
     {
         this.mode = mode;
-        if (mode == UX_Player.Mode.HAND)
-        {
-            canv.DarkScreen.gameObject.SetActive(true);
-            canv.ShowHand();
-            canv.HideReticleCrosshair();
-        }
-        else
-        {
-            canv.DarkScreen.gameObject.SetActive(false);
-            canv.HideHand();
-        }
+        // if (mode == UX_Player.Mode.HAND)
+        // {
+        //     canv.DarkScreen.gameObject.SetActive(true);
+        //     canv.ShowHand();
+        //     canv.HideReticleCrosshair();
+        // }
+        // else
+        // {
+        //     canv.DarkScreen.gameObject.SetActive(false);
+        //     canv.HideHand();
+        // }
 
-        if (mode == UX_Player.Mode.TARGET_PIECE
-            || mode == UX_Player.Mode.PLAIN) canv.ShowReticle();
-        else if (mode == UX_Player.Mode.TARGET_CHUNK
-            || mode == UX_Player.Mode.TARGET_TILE) canv.ShowCrosshair();
+        // if (mode == UX_Player.Mode.TARGET_PIECE
+        //     || mode == UX_Player.Mode.PLAIN) canv.ShowReticle();
+        // else if (mode == UX_Player.Mode.TARGET_CHUNK
+        //     || mode == UX_Player.Mode.TARGET_TILE) canv.ShowCrosshair();
     }
 
     public void SetHandCards(Piece handPiece)
@@ -169,6 +201,20 @@ public class CameraScript : MonoBehaviour
         }
     }
 
+    private Vector3[] boardPos;
     private int boardIdx = 0;
-    public int BoardIdx { set { boardIdx = value; } }
+    public int BoardIdx
+    {
+        get { return boardIdx; }
+        set
+        {
+            boardPos[boardIdx] = new Vector3(x, y, z);
+            boardIdx = value;
+            x = boardPos[value].x;
+            y = boardPos[value].y;
+            z = boardPos[value].z;
+            Move();
+            Debug.Log("Moved to board " + value);
+        }
+    }
 }

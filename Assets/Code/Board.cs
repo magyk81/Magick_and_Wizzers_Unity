@@ -73,8 +73,11 @@ public class Board
             Coord._(TOTAL_SIZE / 4 * 3, TOTAL_SIZE / 4 * 3) };
         for (int i = 0; i < players.Length; i++)
         {
+            Texture masterTex = Resources.Load<Texture>(
+                "Textures/Debug_Card_Art/Master_" + players[i].Name);
+
             Master initialMaster = new Master(
-                players[i], i, 0, masterStartPos[i]);
+                players[i], i, 0, masterStartPos[i], masterTex);
             AddPiece(initialMaster);
 
             // // The 5 cards that players start with at the beginning of a match.

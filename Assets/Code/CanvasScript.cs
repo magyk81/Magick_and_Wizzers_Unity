@@ -203,27 +203,27 @@ public class CanvasScript : MonoBehaviour
 
     public void SetHandPiece(Piece handPiece)
     {
-        Card[] cards = handPiece.Hand;
-        if (cards == null) return;
+        // Card[] cards = handPiece.Hand;
+        // if (cards == null) return;
 
-        cardCount = cards.Length;
-        if (cardCursorIdx >= cardCount) cardCursorIdx = cardCount - 1;
-        else if (cardCount > 0 && cardCursorIdx == -1) cardCursorIdx = 0;
-        cardCursor.gameObject.SetActive(cardCount > 0
-            && handCardsParent.gameObject.activeSelf);
+        // cardCount = cards.Length;
+        // if (cardCursorIdx >= cardCount) cardCursorIdx = cardCount - 1;
+        // else if (cardCount > 0 && cardCursorIdx == -1) cardCursorIdx = 0;
+        // cardCursor.gameObject.SetActive(cardCount > 0
+        //     && handCardsParent.gameObject.activeSelf);
 
-        for (int i = 0; i < MAX_HAND_CARDS; i++)
-        {
-            if (i < cards.Length)
-            {
-                handCards[i].SetArt(cards[i]);
-                handCards[i].Show();
-                handCards[i].Next = GetCardPos(i);
-            }
-            else handCards[i].Hide();
-        }
+        // for (int i = 0; i < MAX_HAND_CARDS; i++)
+        // {
+        //     if (i < cards.Length)
+        //     {
+        //         handCards[i].SetArt(cards[i]);
+        //         handCards[i].Show();
+        //         handCards[i].Next = GetCardPos(i);
+        //     }
+        //     else handCards[i].Hide();
+        // }
 
-        this.handPiece = handPiece;
+        // this.handPiece = handPiece;
     }
 
     private Coord GetCardPos(int idx)

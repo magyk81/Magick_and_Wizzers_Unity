@@ -6,9 +6,12 @@ public class Master : Piece
 {
     private int playerIdx;
 
-    public Master(Player player, int playerIdx, int boardIdx, Coord initPos)
-        : base("Master of " + player.Name, playerIdx, boardIdx, initPos)
-    {        
+    public Master(Player player, int playerIdx, int boardIdx, Coord initPos,
+        Texture art)
+        : base(player.Name, playerIdx, boardIdx, initPos, art)
+    {
+        pieceType = Type.MASTER;
+
         // Debug-deck
         deck = new Deck(Card.friend_cards);
         deck.Shuffle();

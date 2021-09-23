@@ -21,6 +21,8 @@ public class Gamepad
                 GetInput(KeyCode.Q, Button.B);
                 GetInput(KeyCode.E, Button.X);
                 GetInput(KeyCode.R, Button.Y);
+                GetInput(KeyCode.U, Button.L_TRIG);
+                GetInput(KeyCode.O, Button.R_TRIG);
                 GetInput(KeyCode.UpArrow, Button.UP);
                 GetInput(KeyCode.DownArrow, Button.DOWN);
                 GetInput(KeyCode.LeftArrow, Button.LEFT);

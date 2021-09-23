@@ -10,20 +10,20 @@ public class UX_Match : MonoBehaviour
     private Transform baseBoardParent;
     [SerializeField]
     private UX_Board baseBoard;
-    private readonly int DIST_BETWEEN_BOARDS = 20;
     private readonly int MAX_WAYPOINTS = 5;
 
     private UX_Player[] players;
     public UX_Player[] Players { get { return players; } }
+    public static int localPlayerCount;
     private UX_Board[][] boards;
     public UX_Board[][] Boards { get { return boards; } }
 
     public void Init(Player[] players, Board[] boards)
     {
-        // Prep uxBoard bounds
-        int[][] boardBounds = new int[boards.Length][];
+        // Prep uxBoard bounds.
+        float[][] boardBounds = new float[boards.Length][];
 
-        // Generate uxBoards
+        // Generate uxBoards.
         this.boards = new UX_Board[boards.Length][];
         for (int i = 0; i < boards.Length; i++)
         {
@@ -44,6 +44,7 @@ public class UX_Match : MonoBehaviour
                 {
                     this.boards[i][j].gameObject.name = "Board - Real";
                     this.boards[i][j].Init(boards[i].GetSize(), i);
+                    boardBounds[i] = this.boards[i][j].GetBounds();
                 }
                 else
                 {
@@ -55,7 +56,13 @@ public class UX_Match : MonoBehaviour
         }
 
         // Generate uxPlayers
-        this.players = new UX_Player[players.Length];
+        int localPlayerCount = 0;
+        for (int i = 0; i < players.Length; i++)
+        {
+            if (players[i].PlayerType == Player.Type.LOCAL_PLAYER)
+                localPlayerCount++;
+        }
+        this.players = new UX_Player[localPlayerCount];
         for (int i = 0, j = 0; i < players.Length; i++)
         {
             if (players[i].PlayerType == Player.Type.LOCAL_PLAYER)
@@ -71,6 +78,7 @@ public class UX_Match : MonoBehaviour
                 j++;
             }
         }
+        UX_Match.localPlayerCount = localPlayerCount;
 
         // Generate waypoints
         // GameObject[,] waypoints

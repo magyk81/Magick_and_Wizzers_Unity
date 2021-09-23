@@ -11,30 +11,46 @@ public class Piece
     }
     private string name;
     public string Name { get { return name; } }
+    public enum Type { MASTER, CREATURE, ITEM, CHARM }
+    public Type pieceType;
     private int playerIdx, boardIdx;
     public int PlayerIdx { get { return playerIdx; } }
     public int BoardIdx { get { return boardIdx; } }
-    private Coord pos;
+    private Coord pos, posTo, posFrom;
     public Coord Pos { get { return pos; } }
+    private float posLerp = 0;
     private Card card;
     public Card Card { get { return card; } }
+    private Texture art;
+    public Texture Art
+    {
+        get
+        {
+            if (card != null) return card.Art;
+            return art;
+        }
+    }
     protected Deck deck;
     private List<Card> hand = new List<Card>();
-    private bool handUpdated = false;
-    public Card[] Hand { get
-    {
-        bool _handUpdated = handUpdated;
-        handUpdated = false;
-        if (_handUpdated) return hand.ToArray();
-        return null;
-    } }
     public Piece(string name, int playerIdx, int boardIdx, Coord initPos,
-        Card card = null)
+        Card card)
     {
         this.name = name;
         this.playerIdx = playerIdx;
         pos = initPos.Copy();
+        posFrom = initPos.Copy();
+        posTo = initPos.Copy();
         this.card = card;
+    }
+    public Piece(string name, int playerIdx, int boardIdx, Coord initPos,
+        Texture art)
+    {
+        this.name = name;
+        this.playerIdx = playerIdx;
+        pos = initPos.Copy();
+        posFrom = initPos.Copy();
+        posTo = initPos.Copy();
+        this.art = art;
     }
 
     // dist goes from 0 to 100
@@ -55,9 +71,13 @@ public class Piece
     {
         return hand[idx];
     }
-    private void AddToHand(Card card)
+    private void AddToHand(Card card) { hand.Add(card); }
+
+    public void UX_Move(UX_Tile[,] uxTiles, int cloneIdx)
     {
-        hand.Add(card);
-        handUpdated = true;
+        ux[cloneIdx].SetPos(
+            uxTiles[posFrom.X, posFrom.Z],
+            uxTiles[posTo.X, posTo.Z],
+            posLerp);
     }
 }
