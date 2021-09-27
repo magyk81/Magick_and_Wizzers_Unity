@@ -110,7 +110,7 @@ public class CanvasScript : MonoBehaviour
     private int cardCursorIdx = 0, cardCount = 0;
     private Piece handPiece;
 
-    public void InitCanvObjs(int camWidth, int camHeight)
+    public void Init(int camWidth, int camHeight)
     {
         this.camWidth = camWidth;
         this.camHeight = camHeight;
@@ -175,6 +175,29 @@ public class CanvasScript : MonoBehaviour
         baseCard.gameObject.SetActive(false);
     }
 
+    public void SetMode(UX_Player.Mode mode)
+    {
+        if (mode == UX_Player.Mode.PLAIN
+            || mode == UX_Player.Mode.WAYPOINT_PIECE
+            || mode == UX_Player.Mode.TARGET_PIECE)
+        {
+            reticle.gameObject.SetActive(true);
+            crosshair.gameObject.SetActive(false);
+        }
+        else if (mode == UX_Player.Mode.WAYPOINT_TILE
+            || mode == UX_Player.Mode.TARGET_CHUNK
+            || mode == UX_Player.Mode.TARGET_TILE)
+        {
+            reticle.gameObject.SetActive(false);
+            crosshair.gameObject.SetActive(true);
+        }
+        else
+        {
+            reticle.gameObject.SetActive(false);
+            crosshair.gameObject.SetActive(false);
+        }
+    }
+
     public void ShowHand()
     {
         handCardsParent.gameObject.SetActive(true);
@@ -184,21 +207,6 @@ public class CanvasScript : MonoBehaviour
     {
         handCardsParent.gameObject.SetActive(false);
         cardCursor.gameObject.SetActive(false);
-    }
-    public void ShowReticle()
-    {
-        reticle.gameObject.SetActive(true);
-        crosshair.gameObject.SetActive(false);
-    }
-    public void ShowCrosshair()
-    {
-        reticle.gameObject.SetActive(false);
-        crosshair.gameObject.SetActive(true);
-    }
-    public void HideReticleCrosshair()
-    {
-        reticle.gameObject.SetActive(false);
-        crosshair.gameObject.SetActive(false);
     }
 
     public void SetHandPiece(Piece handPiece)

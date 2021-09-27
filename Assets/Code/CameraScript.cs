@@ -5,7 +5,6 @@ using UnityEngine;
 public class CameraScript : MonoBehaviour
 {
     private Ray[] ray;private RaycastHit rayHit;private Vector3[] rayVecs;
-    public static readonly int MIDDLE_RAY_IDX = 4;
     private Camera cam;
     private Transform tra;
     private CanvasScript canv;
@@ -30,16 +29,19 @@ public class CameraScript : MonoBehaviour
         
         // Setup canvas.
         this.canv = canv;
-        canv.InitCanvObjs(cam.pixelWidth, cam.pixelHeight);
+        canv.Init(cam.pixelWidth, cam.pixelHeight);
 
         float reticleRad = canv.Reticle.sizeDelta.x / 2;
         canv.DarkScreen.sizeDelta = new Vector2(
             cam.pixelWidth, cam.pixelHeight);
 
         // Setup rays.
-        ray = new Ray[5];
-        rayVecs = new Vector3[ray.Length];
-        float[] rayVecDirs = new float[rayVecs.Length];
+        // 1 ray for each of the 8 directions from Util, plus a middle ray.
+        int rayCount = Util.DOWN_LEFT + 2;
+        ray = new Ray[rayCount];
+        rayVecs = new Vector3[rayCount];
+        // Just the main 4 directions.
+        float[] rayVecDirs = new float[4];
         rayVecDirs[Util.LEFT]
             = ((float) ((cam.pixelWidth / 2) - reticleRad))
             / ((float) cam.pixelWidth);
@@ -52,11 +54,20 @@ public class CameraScript : MonoBehaviour
         rayVecDirs[Util.DOWN]
             = ((float) ((cam.pixelHeight / 2) - reticleRad))
             / ((float) cam.pixelHeight);
-        rayVecs[Util.LEFT] = new Vector3(rayVecDirs[Util.LEFT], 0.5F, 0);
-        rayVecs[Util.RIGHT] = new Vector3(rayVecDirs[Util.RIGHT], 0.5F, 0);
-        rayVecs[Util.UP] = new Vector3(0.5F, rayVecDirs[Util.UP], 0);
-        rayVecs[Util.DOWN] = new Vector3(0.5F, rayVecDirs[Util.DOWN], 0);
-        rayVecs[MIDDLE_RAY_IDX] = new Vector3(0.5F, 0.5F, 0);
+        rayVecs[0] = new Vector3(0.5F, 0.5F, 0);
+        rayVecs[Util.LEFT + 1] = new Vector3(rayVecDirs[Util.LEFT], 0.5F, 0);
+        rayVecs[Util.RIGHT + 1] = new Vector3(rayVecDirs[Util.RIGHT], 0.5F, 0);
+        rayVecs[Util.UP + 1] = new Vector3(0.5F, rayVecDirs[Util.UP], 0);
+        rayVecs[Util.DOWN + 1] = new Vector3(0.5F, rayVecDirs[Util.DOWN], 0);
+        for (int i = 0; i < 4; i++) { rayVecDirs[i] *= 0.707F; }
+        rayVecs[Util.UP_LEFT + 1] = new Vector3(
+            rayVecDirs[Util.LEFT], rayVecDirs[Util.UP], 0);
+        rayVecs[Util.UP_RIGHT + 1] = new Vector3(
+            rayVecDirs[Util.RIGHT], rayVecDirs[Util.UP], 0);
+        rayVecs[Util.DOWN_LEFT + 1] = new Vector3(
+            rayVecDirs[Util.LEFT], rayVecDirs[Util.DOWN], 0);
+        rayVecs[Util.DOWN_RIGHT + 1] = new Vector3(
+            rayVecDirs[Util.RIGHT], rayVecDirs[Util.DOWN], 0);
 
         // Setup bounds.
         Bounds = bounds;
@@ -135,8 +146,8 @@ public class CameraScript : MonoBehaviour
     // Used for detecting chunks and tiles.
     public Collider GetDetectedCollider()
     {
-        ray[MIDDLE_RAY_IDX] = cam.ViewportPointToRay(rayVecs[MIDDLE_RAY_IDX]);
-        if (Physics.Raycast(ray[MIDDLE_RAY_IDX], out rayHit,
+        ray[0] = cam.ViewportPointToRay(rayVecs[0]);
+        if (Physics.Raycast(ray[0], out rayHit,
             Mathf.Infinity, 1 << 0))
         {
             Collider hitCollider = rayHit.collider;
@@ -160,11 +171,6 @@ public class CameraScript : MonoBehaviour
         //     canv.DarkScreen.gameObject.SetActive(false);
         //     canv.HideHand();
         // }
-
-        // if (mode == UX_Player.Mode.TARGET_PIECE
-        //     || mode == UX_Player.Mode.PLAIN) canv.ShowReticle();
-        // else if (mode == UX_Player.Mode.TARGET_CHUNK
-        //     || mode == UX_Player.Mode.TARGET_TILE) canv.ShowCrosshair();
     }
 
     public void SetHandCards(Piece handPiece)

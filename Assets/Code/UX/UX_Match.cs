@@ -7,9 +7,10 @@ public class UX_Match : MonoBehaviour
     [SerializeField]
     private UX_Player basePlayer;
     [SerializeField]
-    private Transform baseBoardParent;
-    [SerializeField]
     private UX_Board baseBoard;
+    [SerializeField]
+    private Transform playerGroup, boardGroup;
+    
     private readonly int MAX_WAYPOINTS = 5;
 
     private UX_Player[] players;
@@ -29,9 +30,8 @@ public class UX_Match : MonoBehaviour
         {
             // 1 real uxBoard + 8 clone uxBoards
             this.boards[i] = new UX_Board[9];
-            Transform boardParent = Instantiate(
-                baseBoardParent.gameObject,
-                baseBoardParent.parent).GetComponent<Transform>();
+            Transform boardParent = new GameObject().GetComponent<Transform>();
+            boardParent.parent = boardGroup;
             boardParent.gameObject.name = boards[i].Name;
             boardParent.gameObject.SetActive(true);
 
@@ -69,7 +69,7 @@ public class UX_Match : MonoBehaviour
             {
                 this.players[j] = Instantiate(
                     basePlayer.gameObject,
-                    basePlayer.GetComponent<Transform>().parent
+                    playerGroup
                 ).GetComponent<UX_Player>();
                 this.players[j].gameObject.name = players[i].Name;
                 this.players[j].gameObject.SetActive(true);

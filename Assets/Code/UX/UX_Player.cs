@@ -9,8 +9,6 @@ public class UX_Player : MonoBehaviour
     [SerializeField]
     CanvasScript baseCanv;
     [SerializeField]
-    Transform baseCollParent;
-    [SerializeField]
     UX_Collider baseColl;
     private CameraScript cam;
     private CanvasScript canv;
@@ -19,9 +17,16 @@ public class UX_Player : MonoBehaviour
     private Gamepad gamepad;
     private UX_Piece hoveredPiece;
     private List<UX_Piece> selectedPieces = new List<UX_Piece>();
-    public enum Mode { PLAIN, WAYPOINT, TARGET_PIECE, TARGET_CHUNK,
-        TARGET_TILE, HAND, DETAIL, SURRENDER, PAUSE }
-    private Mode mode = Mode.PLAIN;
+    public enum Mode { PLAIN, WAYPOINT_PIECE, WAYPOINT_TILE, TARGET_PIECE,
+        TARGET_CHUNK, TARGET_TILE, HAND, DETAIL, SURRENDER, PAUSE }
+    private Mode mode = Mode.PAUSE;
+    public void SetMode(Mode mode)
+    {
+        if (mode == this.mode) return;
+        cam.SetMode(mode);
+        canv.SetMode(mode);
+        this.mode = mode;
+    }
 
     public void Init(int localPlayerIdx, float[][] boardBounds)
     {
@@ -40,13 +45,13 @@ public class UX_Player : MonoBehaviour
         canv.gameObject.SetActive(true);
 
         cam.Init(localPlayerIdx, canv, boardBounds);
+        SetMode(Mode.PLAIN);
 
         // Setup gamepad.
         gamepad = new Gamepad(localPlayerIdx == 0);
 
-        Transform tileCollParent = Instantiate(
-            baseCollParent.gameObject,
-            GetComponent<Transform>()).GetComponent<Transform>();
+        Transform tileCollParent = new GameObject().GetComponent<Transform>();
+        tileCollParent.parent = GetComponent<Transform>();
         tileCollParent.gameObject.name = "Tile Colliders";
 
         // Generate tile colliders.
@@ -62,9 +67,9 @@ public class UX_Player : MonoBehaviour
             }
         }
 
-        Transform quarterCollParent = Instantiate(
-            baseCollParent.gameObject,
-            GetComponent<Transform>()).GetComponent<Transform>();
+        Transform quarterCollParent
+            = new GameObject().GetComponent<Transform>();
+        quarterCollParent.parent = GetComponent<Transform>();
         quarterCollParent.gameObject.name = "Quarter Colliders";
 
         // Generate quarter-chunk colliders.

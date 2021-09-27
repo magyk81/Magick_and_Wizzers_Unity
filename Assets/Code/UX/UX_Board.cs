@@ -61,12 +61,12 @@ public class UX_Board : MonoBehaviour
         chunkParent.gameObject.name = "Chunks";
         chunkParent.parent = GetComponent<Transform>();
 
-        // Change chunk material if Sheol (temporary debugging)
+        // Load alternative chunk material if Sheol (temporary debugging)
+        Material altChunkMat = null;
         if (boardIdx == 1)
         {
-            Material sheolMat = Resources.Load<Material>(
+            altChunkMat = Resources.Load<Material>(
                 "Materials/Debug Chunk Sheol");
-            baseChunk.GetComponent<MeshRenderer>().material = sheolMat;
         }
 
         // Generate chunks.
@@ -76,6 +76,14 @@ public class UX_Board : MonoBehaviour
             {
                 chunks[i, j] = Instantiate(baseChunk, chunkParent);
 
+                // Set alternative chunk material if it's been loaded.
+                // Material set in prefab is used otherwise.
+                if (altChunkMat != null)
+                {
+                    chunks[i, j].GetComponent<MeshRenderer>().material
+                        = altChunkMat;
+                }
+                
                 // Position and scale chunks.
                 Transform chunkTra = chunks[i, j].GetComponent<Transform>();
                 chunkTra.localScale = new Vector3(
