@@ -5,6 +5,7 @@ using UnityEngine;
 public class CameraScript : MonoBehaviour
 {
     private Ray[] ray;private RaycastHit rayHit;private Vector3[] rayVecs;
+    private int rayMask;
     private Camera cam;
     private Transform tra;
     private CanvasScript canv;
@@ -20,8 +21,11 @@ public class CameraScript : MonoBehaviour
 
         // Setup camera.
         cam = GetComponent<Camera>();
-        int mask = 1 << (UX_Piece.pieceLayer + localPlayerIdx);
-        for (int i = 0; i < UX_Piece.pieceLayer; i++)
+
+        // Setup masks for camera and rays.
+        int mask = 1 << (UX_Piece.PIECE_LAYER + localPlayerIdx);
+        rayMask = mask;
+        for (int i = 0; i < UX_Piece.PIECE_LAYER; i++)
         {
             mask |= (1 << i);
         }
@@ -40,6 +44,7 @@ public class CameraScript : MonoBehaviour
         int rayCount = Util.DOWN_LEFT + 2;
         ray = new Ray[rayCount];
         rayVecs = new Vector3[rayCount];
+
         // Just the main 4 directions.
         float[] rayVecDirs = new float[4];
         rayVecDirs[Util.LEFT]
@@ -59,7 +64,14 @@ public class CameraScript : MonoBehaviour
         rayVecs[Util.RIGHT + 1] = new Vector3(rayVecDirs[Util.RIGHT], 0.5F, 0);
         rayVecs[Util.UP + 1] = new Vector3(0.5F, rayVecDirs[Util.UP], 0);
         rayVecs[Util.DOWN + 1] = new Vector3(0.5F, rayVecDirs[Util.DOWN], 0);
-        for (int i = 0; i < 4; i++) { rayVecDirs[i] *= 0.707F; }
+        
+        float diagChange = reticleRad * (1F - 0.707F)
+            / ((float) cam.pixelWidth);
+        rayVecDirs[Util.LEFT] += diagChange;
+        rayVecDirs[Util.RIGHT] -= diagChange;
+        rayVecDirs[Util.UP] -= diagChange;
+        rayVecDirs[Util.DOWN] += diagChange;
+
         rayVecs[Util.UP_LEFT + 1] = new Vector3(
             rayVecDirs[Util.LEFT], rayVecDirs[Util.UP], 0);
         rayVecs[Util.UP_RIGHT + 1] = new Vector3(
@@ -120,27 +132,26 @@ public class CameraScript : MonoBehaviour
     public void DisplayPlayCard(int idx) { canv.DisplayPlayCard(idx); }
     public Piece GetHandPiece() { return canv.GetHandPiece(); }
 
-    // Used for detecting pieces.
-    public List<Collider> GetDetectedColliders()
+    public UX_Piece GetDetectedPiece()
     {
         List<Collider> collidersDetected = new List<Collider>();
-        // The last element of ray is the middle of the reticle, which is what
-        // we want to check first
-        for (int i = ray.Length - 1; i >= 0; i--)
+
+        for (int i = 0; i < ray.Length; i++)
         {
             ray[i] = cam.ViewportPointToRay(rayVecs[i]);
-            // The layer mask for Pieces is (1 << 6).
-            if (Physics.Raycast(ray[i], out rayHit, Mathf.Infinity, 1 << 6))
+            if (Physics.Raycast(ray[i], out rayHit, Mathf.Infinity, rayMask))
             {
                 Collider hitCollider = rayHit.collider;
                 if (hitCollider != null)
                 {
-                    if (!collidersDetected.Contains(hitCollider))
-                        collidersDetected.Add(hitCollider);
+                    if (hitCollider.gameObject.GetComponent<UX_Collider>() == null)
+                        Debug.Log(hitCollider.gameObject);
+                    return hitCollider.gameObject.GetComponent<UX_Collider>()
+                        .Piece;
                 }
             }
         }
-        return collidersDetected;
+        return null;
     }
 
     // Used for detecting chunks and tiles.

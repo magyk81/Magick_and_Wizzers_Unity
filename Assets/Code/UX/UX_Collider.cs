@@ -7,7 +7,14 @@ public class UX_Collider : MonoBehaviour
     private UX_Tile tile;
     private int quarter = -1;
     private UX_Chunk chunk;
+    private UX_Piece piece;
     private MeshCollider coll;
+
+    public UX_Piece Piece
+    {
+        set { if (piece == null) piece = value; }
+        get { return piece; }
+    }
 
     // Start is called before the first frame update
     void Start()

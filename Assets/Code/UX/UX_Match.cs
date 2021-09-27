@@ -162,8 +162,8 @@ public class UX_Match : MonoBehaviour
     {
         foreach (UX_Player player in players)
         {
-            // player.QueryGamepad();
-            // player.QueryCamera(chunks, pieces);
+            player.QueryCamera();
+            player.QueryGamepad();
         }
     }
 }

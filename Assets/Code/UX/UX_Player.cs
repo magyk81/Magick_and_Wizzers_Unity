@@ -20,6 +20,7 @@ public class UX_Player : MonoBehaviour
     public enum Mode { PLAIN, WAYPOINT_PIECE, WAYPOINT_TILE, TARGET_PIECE,
         TARGET_CHUNK, TARGET_TILE, HAND, DETAIL, SURRENDER, PAUSE }
     private Mode mode = Mode.PAUSE;
+    private int localPlayerIdx;
     public void SetMode(Mode mode)
     {
         if (mode == this.mode) return;
@@ -30,6 +31,8 @@ public class UX_Player : MonoBehaviour
 
     public void Init(int localPlayerIdx, float[][] boardBounds)
     {
+        this.localPlayerIdx = localPlayerIdx;
+
         // Setup camera.
         cam = Instantiate(
             baseCam.gameObject,
@@ -85,12 +88,62 @@ public class UX_Player : MonoBehaviour
 
     private void Update()
     {
+        
+    }
+
+    public void QueryCamera()
+    {
+        if (mode == Mode.PLAIN || mode == Mode.WAYPOINT_PIECE
+            || mode == Mode.TARGET_PIECE)
+        {
+            UX_Piece detectedPiece = cam.GetDetectedPiece();
+            if (detectedPiece != null)
+            {
+                hoveredPiece = detectedPiece;
+
+                // Show that piece is hovered.
+                hoveredPiece.Hover(localPlayerIdx);
+            }
+            else if (hoveredPiece != null)
+            {
+                // Show that piece is unhovered.
+                hoveredPiece.Unhover(localPlayerIdx);
+                hoveredPiece = null;
+            }
+        }
+    }
+
+    public void QueryGamepad()
+    {
         int[] gamepadInput = gamepad.PadInput;
 
+        // <Left joystick | WASD> Pan the camera.
         cam.Move(
             gamepadInput[(int) Gamepad.Button.L_HORIZ],
             gamepadInput[(int) Gamepad.Button.L_VERT]);
         
+        // <A button |> Select the hovered item.
+        if (gamepadInput[(int) Gamepad.Button.A] == 1)
+        {
+            if (mode == Mode.PLAIN)
+            {
+                if (hoveredPiece != null)
+                {
+                    if (selectedPieces.Contains(hoveredPiece))
+                    {
+                        hoveredPiece.Unselect(localPlayerIdx);
+                        selectedPieces.Remove(hoveredPiece);
+                    }
+                    else
+                    {
+                        hoveredPiece.Select(localPlayerIdx);
+                        selectedPieces.Add(hoveredPiece);
+                    }
+                }
+            }
+        }
+        
+        // <Left trigger | U> Switch board.
         if (gamepadInput[(int) Gamepad.Button.L_TRIG] == 1)
         {
             if (cam.BoardIdx == 0) cam.BoardIdx = 1;
