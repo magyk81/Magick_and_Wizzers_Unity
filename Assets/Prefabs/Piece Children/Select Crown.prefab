@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 3213903544240107640}
   - component: {fileID: 3213903544240107646}
   - component: {fileID: 3213903544240107641}
-  m_Layer: 6
+  m_Layer: 0
   m_Name: Select Crown
   m_TagString: Untagged
   m_Icon: {fileID: 0}

@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 7077339156919134371}
   - component: {fileID: 7077339156919134381}
   - component: {fileID: 7077339156919134370}
-  m_Layer: 6
+  m_Layer: 0
   m_Name: Hover Crown
   m_TagString: Untagged
   m_Icon: {fileID: 0}

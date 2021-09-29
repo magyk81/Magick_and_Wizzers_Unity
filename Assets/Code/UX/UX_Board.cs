@@ -148,16 +148,6 @@ public class UX_Board : MonoBehaviour
 
         uxPiece.Init(piece);
         MovePiece(piece);
-
-        // UX_Tile tile = tiles[piece.Pos.X, piece.Pos.Z];
-        // if (tile != null)
-        // {
-        //     // Position the piece.
-        //     // uxPiece.GetComponent<Transform>().localPosition = new Vector3(
-        //     //     tile.UX_Pos.x, PIECE_LIFT_DIST, tile.UX_Pos.z);
-        //     uxPiece.gameObject.SetActive(true);
-        //     MovePiece(piece);
-        // }
     }
     public void MovePiece(Piece piece)
     {

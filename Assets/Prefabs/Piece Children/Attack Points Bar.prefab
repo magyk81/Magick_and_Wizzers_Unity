@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 6872317259288723629}
   - component: {fileID: 6872317259288723619}
   - component: {fileID: 6872317259288723628}
-  m_Layer: 6
+  m_Layer: 0
   m_Name: Attack Points Bar
   m_TagString: Untagged
   m_Icon: {fileID: 0}

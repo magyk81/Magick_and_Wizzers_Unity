@@ -14,15 +14,16 @@ public class Gamepad
         {
             if (isKeyboard)
             {
-                GetInput(KeyCode.Space, Button.DEBUG);
                 GetInput(KeyCode.Escape, Button.START);
                 GetInput(KeyCode.Backspace, Button.SELECT);
-                GetInput(KeyCode.F, Button.A);
-                GetInput(KeyCode.Q, Button.B);
-                GetInput(KeyCode.E, Button.X);
-                GetInput(KeyCode.R, Button.Y);
-                GetInput(KeyCode.U, Button.L_TRIG);
-                GetInput(KeyCode.O, Button.R_TRIG);
+                GetInput(KeyCode.Space, Button.A);
+                GetInput(KeyCode.L, Button.B);
+                GetInput(KeyCode.J, Button.X);
+                GetInput(KeyCode.K, Button.Y);
+                GetInput(KeyCode.LeftShift, Button.L_TRIG);
+                GetInput(KeyCode.RightShift, Button.R_TRIG);
+                GetInput(KeyCode.Q, Button.L_BUMP);
+                GetInput(KeyCode.E, Button.R_BUMP);
                 GetInput(KeyCode.UpArrow, Button.UP);
                 GetInput(KeyCode.DownArrow, Button.DOWN);
                 GetInput(KeyCode.LeftArrow, Button.LEFT);
@@ -69,9 +70,10 @@ public class Gamepad
             padInput[(int) button] = mult;
             return true;
         }
-        else if (Input.GetKeyUp(keyCode))
+        else if (Input.GetKeyUp(keyCode) && mult == 1)
         {
             padInput[(int) button] = -mult;
+            return true;
         }
         
         padInput[(int) button] = 0;

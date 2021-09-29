@@ -11,7 +11,6 @@ GameObject:
   - component: {fileID: 7463783090219411142}
   - component: {fileID: 7463783090219411137}
   - component: {fileID: 7463783090219411136}
-  - component: {fileID: 7463783090219411139}
   - component: {fileID: 7463783090219411143}
   m_Layer: 0
   m_Name: Chunk
@@ -83,20 +82,6 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!64 &7463783090219411139
-MeshCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7463783090219411138}
-  m_Material: {fileID: 0}
-  m_IsTrigger: 0
-  m_Enabled: 1
-  serializedVersion: 4
-  m_Convex: 0
-  m_CookingOptions: 30
-  m_Mesh: {fileID: 10210, guid: 0000000000000000e000000000000000, type: 0}
 --- !u!114 &7463783090219411143
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -109,3 +94,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0a5333951da561e49a12972d9ee400df, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  baseCollider: {fileID: -3830468120209970362, guid: 447e0efb8928c3a46be842b948805046,
+    type: 3}

@@ -14,7 +14,7 @@ public class UX_Piece : MonoBehaviour
     private Transform tra;
     private Material artMat;
     private readonly static float PIECE_LIFT_DIST = 0.1F;
-    public readonly static int PIECE_LAYER = 7;
+    public readonly static int LAYER = 6;
 
     // Start is called before the first frame update
     void Start()
@@ -37,7 +37,7 @@ public class UX_Piece : MonoBehaviour
             for (int i = 0; i < UX_Match.localPlayerCount; i++)
             {
                 lifeBar[i] = Instantiate(lifeBar_base, tra);
-                lifeBar[i].layer = PIECE_LAYER + i;
+                lifeBar[i].layer = LAYER + i;
                 lifeBar[i].name = "Life Bar - view " + i;
             }
             SetActive(lifeBar, true);
@@ -48,7 +48,7 @@ public class UX_Piece : MonoBehaviour
             for (int i = 0; i < UX_Match.localPlayerCount; i++)
             {
                 attackBar[i] = Instantiate(attackBar_base, tra);
-                attackBar[i].layer = PIECE_LAYER + i;
+                attackBar[i].layer = LAYER + i;
                 attackBar[i].name = "Attack Bar - view " + i;
             }
             SetActive(attackBar, true);
@@ -56,7 +56,7 @@ public class UX_Piece : MonoBehaviour
             for (int i = 0; i < UX_Match.localPlayerCount; i++)
             {
                 defenseBar[i] = Instantiate(defenseBar_base, tra);
-                defenseBar[i].layer = PIECE_LAYER + i;
+                defenseBar[i].layer = LAYER + i;
                 defenseBar[i].name = "Defense Bar - view " + i;
             }
             SetActive(defenseBar, true);
@@ -71,7 +71,7 @@ public class UX_Piece : MonoBehaviour
         {
             art[i] = Instantiate(art_base, tra);
             art[i].GetComponent<MeshRenderer>().material = artMat;
-            art[i].layer = PIECE_LAYER + i;
+            art[i].layer = LAYER + i;
             art[i].name = "Art - view " + i;
         }
         SetActive(art, true);
@@ -79,7 +79,7 @@ public class UX_Piece : MonoBehaviour
         for (int i = 0; i < UX_Match.localPlayerCount; i++)
         {
             frame[i] = Instantiate(frame_base, tra);
-            frame[i].layer = PIECE_LAYER + i;
+            frame[i].layer = LAYER + i;
 
             // Set collider script info.
             frame[i].GetComponent<UX_Collider>().Piece = this;
@@ -92,7 +92,7 @@ public class UX_Piece : MonoBehaviour
         for (int i = 0; i < UX_Match.localPlayerCount; i++)
         {
             hover[i] = Instantiate(hover_base, tra);
-            hover[i].layer = PIECE_LAYER + i;
+            hover[i].layer = LAYER + i;
             hover[i].name = "Hover Crown - view " + i;
         }
         SetActive(hover, false);
@@ -100,7 +100,7 @@ public class UX_Piece : MonoBehaviour
         for (int i = 0; i < UX_Match.localPlayerCount; i++)
         {
             select[i] = Instantiate(select_base, tra);
-            select[i].layer = PIECE_LAYER + i;
+            select[i].layer = LAYER + i;
             select[i].name = "Select Crown - view " + i;
         }
         SetActive(select, false);
@@ -108,7 +108,7 @@ public class UX_Piece : MonoBehaviour
         for (int i = 0; i < UX_Match.localPlayerCount; i++)
         {
             target[i] = Instantiate(target_base, tra);
-            target[i].layer = PIECE_LAYER + i;
+            target[i].layer = LAYER + i;
             target[i].name = "Target Crown - view " + i;
         }
         SetActive(target, false);

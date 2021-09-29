@@ -16,6 +16,7 @@ public class UX_Player : MonoBehaviour
     private UX_Collider[] quarterColls;
     private Gamepad gamepad;
     private UX_Piece hoveredPiece;
+    private UX_Tile hoveredTile;
     private List<UX_Piece> selectedPieces = new List<UX_Piece>();
     public enum Mode { PLAIN, WAYPOINT_PIECE, WAYPOINT_TILE, TARGET_PIECE,
         TARGET_CHUNK, TARGET_TILE, HAND, DETAIL, SURRENDER, PAUSE }
@@ -26,12 +27,55 @@ public class UX_Player : MonoBehaviour
         if (mode == this.mode) return;
         cam.SetMode(mode);
         canv.SetMode(mode);
+        Debug.Log("SetMode: " + mode);
         this.mode = mode;
     }
 
     public void Init(int localPlayerIdx, float[][] boardBounds)
     {
         this.localPlayerIdx = localPlayerIdx;
+
+        // Setup gamepad.
+        gamepad = new Gamepad(localPlayerIdx == 0);
+
+        Transform tileCollParent = new GameObject().GetComponent<Transform>();
+        tileCollParent.parent = GetComponent<Transform>();
+        tileCollParent.gameObject.name = "Tile Colliders";
+
+        // Generate tile colliders.
+        UX_Collider[,] tileColls = new UX_Collider[
+            Chunk.Size / 2, Chunk.Size / 2];
+        for (int i = 0; i < Chunk.Size / 2; i++)
+        {
+            for (int j = 0; j < Chunk.Size/ 2; j++)
+            {
+                tileColls[i, j] = Instantiate(
+                    baseColl.gameObject,
+                    tileCollParent).GetComponent<UX_Collider>();
+                tileColls[i, j].SetTypeTile();
+                tileColls[i, j].gameObject.layer
+                    = UX_Tile.LAYER + localPlayerIdx;
+                tileColls[i, j].gameObject.name = Coord._(i, j).ToString();
+            }
+        }
+
+        Transform quarterCollParent
+            = new GameObject().GetComponent<Transform>();
+        quarterCollParent.parent = GetComponent<Transform>();
+        quarterCollParent.gameObject.name = "Quarter Colliders";
+
+        // Generate quarter-chunk colliders.
+        UX_Collider[] quarterColls = new UX_Collider[4];
+        for (int i = 0; i < 4; i++)
+        {
+            quarterColls[i] = Instantiate(
+                baseColl.gameObject,
+                quarterCollParent).GetComponent<UX_Collider>();
+            quarterColls[i].Quarter = i + 4;
+            quarterColls[i].gameObject.layer
+                = UX_Tile.LAYER + localPlayerIdx;
+            quarterColls[i].gameObject.name = Util.DirToString(i + 4);
+        }
 
         // Setup camera.
         cam = Instantiate(
@@ -47,48 +91,33 @@ public class UX_Player : MonoBehaviour
         canv.gameObject.name = "Canvas";
         canv.gameObject.SetActive(true);
 
-        cam.Init(localPlayerIdx, canv, boardBounds);
+        cam.Init(localPlayerIdx, canv, boardBounds, quarterColls, tileColls);
         SetMode(Mode.PLAIN);
-
-        // Setup gamepad.
-        gamepad = new Gamepad(localPlayerIdx == 0);
-
-        Transform tileCollParent = new GameObject().GetComponent<Transform>();
-        tileCollParent.parent = GetComponent<Transform>();
-        tileCollParent.gameObject.name = "Tile Colliders";
-
-        // Generate tile colliders.
-        tileColls = new UX_Collider[Chunk.Size / 2, Chunk.Size / 2];
-        for (int i = 0; i < Chunk.Size / 2; i++)
-        {
-            for (int j = 0; j < Chunk.Size/ 2; j++)
-            {
-                tileColls[i, j] = Instantiate(
-                    baseColl.gameObject,
-                    tileCollParent).GetComponent<UX_Collider>();
-                tileColls[i, j].gameObject.name = Coord._(i, j).ToString();
-            }
-        }
-
-        Transform quarterCollParent
-            = new GameObject().GetComponent<Transform>();
-        quarterCollParent.parent = GetComponent<Transform>();
-        quarterCollParent.gameObject.name = "Quarter Colliders";
-
-        // Generate quarter-chunk colliders.
-        quarterColls = new UX_Collider[4];
-        for (int i = 0; i < 4; i++)
-        {
-            quarterColls[i] = Instantiate(
-                baseColl.gameObject,
-                quarterCollParent).GetComponent<UX_Collider>();
-            quarterColls[i].gameObject.name = Util.DirToString(i + 4);
-        }
     }
 
     private void Update()
     {
-        
+        if (mode == Mode.PLAIN)
+        {
+            if (holdingTriggerL && !holdingTriggerR)
+                SetMode(Mode.WAYPOINT_TILE);
+            else if (!holdingTriggerL && holdingTriggerR)
+                SetMode(Mode.WAYPOINT_PIECE);
+        }
+        else if (mode == Mode.WAYPOINT_TILE)
+        {
+            if (!holdingTriggerL && holdingTriggerR)
+                SetMode(Mode.WAYPOINT_PIECE);
+            else if (!holdingTriggerL && !holdingTriggerR)
+                SetMode(Mode.PLAIN);
+        }
+        else if (mode == Mode.WAYPOINT_PIECE)
+        {
+            if (holdingTriggerL && !holdingTriggerR)
+                SetMode(Mode.WAYPOINT_TILE);
+            else if (!holdingTriggerL && !holdingTriggerR)
+                SetMode(Mode.PLAIN);
+        }
     }
 
     public void QueryCamera()
@@ -111,18 +140,47 @@ public class UX_Player : MonoBehaviour
                 hoveredPiece = null;
             }
         }
+        if (mode == Mode.TARGET_TILE || mode == Mode.WAYPOINT_TILE)
+        {
+            UX_Tile detectedTile = cam.GetDetectedTile();
+            if (detectedTile != null)
+            {
+                hoveredTile = detectedTile;
+
+                // Show that tile is hovered.
+                Debug.Log(hoveredTile.Pos);
+            }
+            else if (hoveredTile != null)
+            {
+                // Show that tile is unhovered.
+
+                hoveredTile = null;
+            }
+        }
     }
 
+    private bool holdingTriggerL = false, holdingTriggerR = false;
     public void QueryGamepad()
     {
         int[] gamepadInput = gamepad.PadInput;
+
+        // <D-pad down | Down arrow>
+        if (gamepadInput[(int) Gamepad.Button.DOWN] == 1)
+        {
+            // Switch board.
+            if (holdingTriggerL && holdingTriggerR)
+            {
+                if (cam.BoardIdx != 1) cam.BoardIdx = 1;
+                else cam.BoardIdx = 0;
+            }
+        }
 
         // <Left joystick | WASD> Pan the camera.
         cam.Move(
             gamepadInput[(int) Gamepad.Button.L_HORIZ],
             gamepadInput[(int) Gamepad.Button.L_VERT]);
         
-        // <A button |> Select the hovered item.
+        // <A button | Space> Select the hovered item.
         if (gamepadInput[(int) Gamepad.Button.A] == 1)
         {
             if (mode == Mode.PLAIN)
@@ -142,13 +200,18 @@ public class UX_Player : MonoBehaviour
                 }
             }
         }
-        
-        // <Left trigger | U> Switch board.
+
+        // <Left trigger | Left shift>
         if (gamepadInput[(int) Gamepad.Button.L_TRIG] == 1)
-        {
-            if (cam.BoardIdx == 0) cam.BoardIdx = 1;
-            else cam.BoardIdx = 0;
-        }
+            holdingTriggerL = true;
+        else if (gamepadInput[(int) Gamepad.Button.L_TRIG] == -1)
+            holdingTriggerL = false;
+
+        // <Right trigger | Right shift>
+        if (gamepadInput[(int) Gamepad.Button.R_TRIG] == 1)
+            holdingTriggerR = true;
+        else if (gamepadInput[(int) Gamepad.Button.R_TRIG] == -1)
+            holdingTriggerR = false;
     }
 
     // public void QueryGamepad()

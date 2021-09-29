@@ -5,27 +5,38 @@ using UnityEngine;
 public class CameraScript : MonoBehaviour
 {
     private Ray[] ray;private RaycastHit rayHit;private Vector3[] rayVecs;
-    private int rayMask;
+    private int rayMask_pieces, rayMask_tiles;
     private Camera cam;
     private Transform tra;
     private CanvasScript canv;
+    private int localPlayerIdx;
     private UX_Player.Mode mode = UX_Player.Mode.PLAIN;
+
+    private UX_Collider[] quarterColls;
+    private UX_Collider[,] tileColls;
+    
+    private UX_Collider collidedChunkPrev = null, collidedQuarterPrev;
 
     [SerializeField]
     private float speed;
     private float x = 0, z = 0, y = 5;
 
-    public void Init(int localPlayerIdx, CanvasScript canv, float[][] bounds)
+    public void Init(int localPlayerIdx, CanvasScript canv, float[][] bounds,
+        UX_Collider[] quarterColls, UX_Collider[,] tileColls)
     {
+        this.localPlayerIdx = localPlayerIdx;
         tra = GetComponent<Transform>();
+        this.quarterColls = quarterColls;
+        this.tileColls = tileColls;
 
         // Setup camera.
         cam = GetComponent<Camera>();
 
         // Setup masks for camera and rays.
-        int mask = 1 << (UX_Piece.PIECE_LAYER + localPlayerIdx);
-        rayMask = mask;
-        for (int i = 0; i < UX_Piece.PIECE_LAYER; i++)
+        int mask = 1 << (UX_Piece.LAYER + localPlayerIdx);
+        rayMask_pieces = mask;
+        rayMask_tiles = 1 << (UX_Tile.LAYER + localPlayerIdx);
+        for (int i = 0; i < UX_Piece.LAYER; i++)
         {
             mask |= (1 << i);
         }
@@ -134,20 +145,54 @@ public class CameraScript : MonoBehaviour
 
     public UX_Piece GetDetectedPiece()
     {
-        List<Collider> collidersDetected = new List<Collider>();
-
         for (int i = 0; i < ray.Length; i++)
         {
             ray[i] = cam.ViewportPointToRay(rayVecs[i]);
-            if (Physics.Raycast(ray[i], out rayHit, Mathf.Infinity, rayMask))
+            if (Physics.Raycast(ray[i], out rayHit, Mathf.Infinity,
+                rayMask_pieces))
             {
                 Collider hitCollider = rayHit.collider;
                 if (hitCollider != null)
                 {
-                    if (hitCollider.gameObject.GetComponent<UX_Collider>() == null)
-                        Debug.Log(hitCollider.gameObject);
                     return hitCollider.gameObject.GetComponent<UX_Collider>()
                         .Piece;
+                }
+            }
+        }
+        return null;
+    }
+
+    public UX_Tile GetDetectedTile()
+    {
+        ray[0] = cam.ViewportPointToRay(rayVecs[0]);
+        if (Physics.Raycast(ray[0], out rayHit, Mathf.Infinity, rayMask_tiles))
+        {
+            Collider hitCollider = rayHit.collider;
+            if (hitCollider != null)
+            {
+                UX_Collider coll
+                    = hitCollider.gameObject.GetComponent<UX_Collider>();
+
+                if (coll.IsType(UX_Collider.Type.TILE)) return coll.Tile;
+                
+                if (coll.IsType(UX_Collider.Type.QUARTER))
+                {
+                    if (collidedQuarterPrev != null
+                        && collidedQuarterPrev != coll)
+                        collidedQuarterPrev.Enable();
+                    coll.Disable();
+                    collidedQuarterPrev = coll;
+                    coll.Chunk.SetTileColliders(
+                        coll.Quarter, tileColls, localPlayerIdx);
+                }
+
+                if (coll.IsType(UX_Collider.Type.CHUNK))
+                {
+                    if (collidedChunkPrev != null && collidedChunkPrev != coll)
+                        collidedChunkPrev.Enable();
+                    collidedChunkPrev = coll;
+                    coll.Chunk.SetQuarterColliders(
+                        quarterColls, localPlayerIdx);
                 }
             }
         }

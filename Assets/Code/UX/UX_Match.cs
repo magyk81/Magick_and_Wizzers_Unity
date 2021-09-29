@@ -24,6 +24,15 @@ public class UX_Match : MonoBehaviour
         // Prep uxBoard bounds.
         float[][] boardBounds = new float[boards.Length][];
 
+        // Calculate number of local players.
+        int localPlayerCount = 0;
+        for (int i = 0; i < players.Length; i++)
+        {
+            if (players[i].PlayerType == Player.Type.LOCAL_PLAYER)
+                localPlayerCount++;
+        }
+        UX_Match.localPlayerCount = localPlayerCount;
+
         // Generate uxBoards.
         this.boards = new UX_Board[boards.Length][];
         for (int i = 0; i < boards.Length; i++)
@@ -56,12 +65,6 @@ public class UX_Match : MonoBehaviour
         }
 
         // Generate uxPlayers
-        int localPlayerCount = 0;
-        for (int i = 0; i < players.Length; i++)
-        {
-            if (players[i].PlayerType == Player.Type.LOCAL_PLAYER)
-                localPlayerCount++;
-        }
         this.players = new UX_Player[localPlayerCount];
         for (int i = 0, j = 0; i < players.Length; i++)
         {
@@ -78,7 +81,6 @@ public class UX_Match : MonoBehaviour
                 j++;
             }
         }
-        UX_Match.localPlayerCount = localPlayerCount;
 
         // Generate waypoints
         // GameObject[,] waypoints

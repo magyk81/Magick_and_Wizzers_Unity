@@ -10,6 +10,8 @@ public class UX_Tile
     public Vector3 UX_Pos { get { return uxPos; } }
     private int boardIdx;
 
+    public readonly static int LAYER = 10;
+
     public UX_Tile(Coord pos, int boardTotalSize, int apartOffset,
         int cloneIdx, int boardIdx)
     {
