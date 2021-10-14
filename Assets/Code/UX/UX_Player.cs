@@ -10,10 +10,14 @@ public class UX_Player : MonoBehaviour
     CanvasScript baseCanv;
     [SerializeField]
     UX_Collider baseColl;
+    [SerializeField]
+    Transform baseTileHover;
+    [SerializeField]
+    UX_Waypoint baseWaypoint;
     private CameraScript cam;
     private CanvasScript canv;
-    private UX_Collider[,] tileColls;
-    private UX_Collider[] quarterColls;
+    private Transform[] tileHover;
+    private UX_Waypoint[][] waypoints;
     private Gamepad gamepad;
     private UX_Piece hoveredPiece;
     private UX_Tile hoveredTile;
@@ -77,6 +81,47 @@ public class UX_Player : MonoBehaviour
             quarterColls[i].gameObject.name = Util.DirToString(i + 4);
         }
 
+        Transform tileVisParent
+            = new GameObject().GetComponent<Transform>();
+        tileVisParent.parent = GetComponent<Transform>();
+        tileVisParent.gameObject.name = "Tile Visuals";
+
+        // Generate visualizations.
+        tileHover = new Transform[9];
+        for (int i = 0; i < 9; i++)
+        {
+            tileHover[i] = Instantiate(baseTileHover.gameObject,
+                tileVisParent).GetComponent<Transform>();
+            tileHover[i].gameObject.layer
+                    = UX_Tile.LAYER + localPlayerIdx;
+            tileHover[i].gameObject.name = "Tile Hover";
+            tileHover[i].gameObject.SetActive(false);
+        }
+
+        Transform waypointsParent = new GameObject().GetComponent<Transform>();
+        waypointsParent.parent = GetComponent<Transform>();
+        waypointsParent.gameObject.name = "Waypoints";
+
+        // Generate waypoints.
+        waypoints = new UX_Waypoint[Piece.MAX_WAYPOINTS][];
+        for (int i = 0; i < Piece.MAX_WAYPOINTS; i++)
+        {
+            waypoints[i] = new UX_Waypoint[9];
+            for (int j = 0; j < 9; j++)
+            {
+                waypoints[i][j] = Instantiate(baseWaypoint.gameObject,
+                    waypointsParent).GetComponent<UX_Waypoint>();
+                if (j == 0)
+                    waypoints[i][j].gameObject.name = "Waypoint - Real " + i;
+                else
+                {
+                    waypoints[i][j].gameObject.name = "Waypoint - Clone "
+                        + Util.DirToString(j - 1) + " " + i;
+                }
+                waypoints[i][j].gameObject.SetActive(false);
+            }
+        }
+
         // Setup camera.
         cam = Instantiate(
             baseCam.gameObject,
@@ -107,9 +152,15 @@ public class UX_Player : MonoBehaviour
         else if (mode == Mode.WAYPOINT_TILE)
         {
             if (!holdingTriggerL && holdingTriggerR)
+            {
+                UnhoverTile();
                 SetMode(Mode.WAYPOINT_PIECE);
+            }
             else if (!holdingTriggerL && !holdingTriggerR)
+            {
+                UnhoverTile();
                 SetMode(Mode.PLAIN);
+            }
         }
         else if (mode == Mode.WAYPOINT_PIECE)
         {
@@ -145,16 +196,71 @@ public class UX_Player : MonoBehaviour
             UX_Tile detectedTile = cam.GetDetectedTile();
             if (detectedTile != null)
             {
-                hoveredTile = detectedTile;
+                if (hoveredTile == null || hoveredTile.Pos != detectedTile.Pos)
+                {
+                    hoveredTile = detectedTile;
 
-                // Show that tile is hovered.
-                Debug.Log(hoveredTile.Pos);
+                    // Show that tile is hovered.
+                    Vector3[] tileHoverPos = hoveredTile.UX_PosAll;
+                    for (int i = 0; i < tileHover.Length; i++)
+                    {
+                        tileHover[i].gameObject.SetActive(true);
+                        tileHover[i].localPosition = tileHoverPos[i];
+                    }
+                    
+                    Debug.Log(hoveredTile.Pos);
+                }
             }
-            else if (hoveredTile != null)
-            {
-                // Show that tile is unhovered.
+            // Show that tile is unhovered.
+            else UnhoverTile();
 
-                hoveredTile = null;
+            // Show waypoints.
+            if (selectedPieces.Count == 0)
+            {
+                if (hoveredPiece != null)
+                {
+                    UX_Tile[] tiles = hoveredPiece.Waypoints;
+                    int nullTileIdx = tiles.Length;
+                    for (int i = 0; i < tiles.Length; i++)
+                    {
+                        if (tiles[i] == null)
+                        {
+                            nullTileIdx = i;
+                            break;
+                        }
+                        Vector3[] tilePosAll = tiles[i].UX_PosAll;
+                        for (int j = 0; j < 9; j++)
+                        {
+                            waypoints[i][j].gameObject.SetActive(true);
+                            waypoints[i][j].GetComponent<Transform>()
+                                .localPosition = tilePosAll[j];
+                        }
+                    }
+
+                    // Hide remaining waypoints.
+                    for (int i = nullTileIdx; i < tiles.Length; i++)
+                    {
+                        for (int j = 0; j < 9; j++)
+                        {
+                            waypoints[i][j].gameObject.SetActive(false);
+                        }
+                    }
+                }
+                // Hide all waypoints.
+                else
+                {
+                    for (int i = 0; i < Piece.MAX_WAYPOINTS; i++)
+                    {
+                        for (int j = 0; j < 9; j++)
+                        {
+                            waypoints[i][j].gameObject.SetActive(true);
+                        }
+                    }
+                }
+            }
+            else
+            {
+
             }
         }
     }
@@ -180,9 +286,10 @@ public class UX_Player : MonoBehaviour
             gamepadInput[(int) Gamepad.Button.L_HORIZ],
             gamepadInput[(int) Gamepad.Button.L_VERT]);
         
-        // <A button | Space> Select the hovered item.
+        // <A button | Space>
         if (gamepadInput[(int) Gamepad.Button.A] == 1)
         {
+            // Select the hovered item.
             if (mode == Mode.PLAIN)
             {
                 if (hoveredPiece != null)
@@ -199,6 +306,19 @@ public class UX_Player : MonoBehaviour
                     }
                 }
             }
+            // Set waypoint on hovered tile.
+            else if (mode == Mode.WAYPOINT_TILE)
+            {
+                if (selectedPieces.Count > 0)
+                {
+                    foreach (UX_Piece piece in selectedPieces)
+                    {
+                        UX_Match.AddSkinTicket(new SkinTicket(
+                            piece.Piece, hoveredTile.Pos,
+                            SkinTicket.Type.ADD_WAYPOINT));
+                    }
+                }
+            }
         }
 
         // <Left trigger | Left shift>
@@ -212,6 +332,18 @@ public class UX_Player : MonoBehaviour
             holdingTriggerR = true;
         else if (gamepadInput[(int) Gamepad.Button.R_TRIG] == -1)
             holdingTriggerR = false;
+    }
+
+    private void UnhoverTile()
+    {
+        if (hoveredTile != null)
+        {
+            foreach (Transform tile in tileHover)
+            {
+                tile.gameObject.SetActive(false);
+            }
+            hoveredTile = null;
+        }
     }
 
     // public void QueryGamepad()
@@ -290,134 +422,6 @@ public class UX_Player : MonoBehaviour
     //     }
     // }
 
-    public void QueryCamera(UX_Chunk[][,] chunks, List<UX_Piece> pieces)
-    {
-        // foreach (UX_Piece ux_piece in pieces) { ux_piece.Unhover(); }
 
-        // if (mode == Mode.TARGET_TILE)
-        // {
-        //     // Get middle collider detected by this player's camera.
-        //     Collider colliderDetected = CAM.GetDetectedCollider();
-
-        //     // Get chunk and tile being hovered.
-        //     UX_Chunk chunkDetected = null;
-        //     Coord tileDetected = Coord.Null;
-        //     foreach (UX_Chunk[,] ux_chunk_board in chunks)
-        //     {
-        //         foreach (UX_Chunk ux_chunk in ux_chunk_board)
-        //         {
-        //             tileDetected = ux_chunk.GetTile(colliderDetected);
-        //             if (tileDetected != Coord.Null
-        //                 || ux_chunk.IsCollider(colliderDetected))
-        //                 chunkDetected = ux_chunk;
-                    
-        //             if (chunkDetected != null)
-        //             {
-        //                 chunkDetected.Hover(chunks);
-        //                 break;
-        //             }
-        //         }
-        //         if (chunkDetected != null) break;
-        //     }
-
-        //     // Determine if the AVAILABLE tiles need to be shown/updated.
-        //     bool showAvailableRange = false;
-
-        //     // Set influence range if it hasn't been set yet.
-        //     if (influenceRange == InfluenceRange.Null)
-        //     {
-        //         influenceRange = InfluenceRange._(pieceBeingPlayedFrom);
-        //         showAvailableRange = true;
-        //     }
-        //     else
-        //     {
-        //         // Update influence range in case the pieceBeingPlayedFrom
-        //         // moved or its level changed.
-        //         InfluenceRange updatedIR
-        //             = influenceRange.Update(pieceBeingPlayedFrom);
-        //         if (updatedIR != InfluenceRange.Null)
-        //         {
-        //             influenceRange = updatedIR;
-        //             showAvailableRange = true;
-        //         }
-                    
-        //     }
-
-        //     // Show influence range tiles.
-        //     if (showAvailableRange)
-        //     {
-        //         availableTiles = chunkDetected.ShowTiles(
-        //             influenceRange.Origin,
-        //             influenceRange.ValidTiles,
-        //             (int) UX_Chunk.TileDispType.AVAILABLE, chunks[boardIdx]);
-        //     }
-
-        //     // Update tile display of types VALID and INVALID.
-        //     // Don't need to check if tileDetected isn't null. If tileDetected
-        //     // isn't null, chunkDetected isn't null either.
-        //     if (tileDetected != Coord.Null)
-        //     {
-        //         // See whether the detected tile is within the influence range
-        //         // to determine whether it should be shown as VALID or INVALID.
-        //         UX_Chunk.TileDispType tileDetectedShowDisp
-        //             = UX_Chunk.TileDispType.INVALID;
-        //         UX_Chunk.TileDispType tileDetectedHideDisp
-        //             = UX_Chunk.TileDispType.VALID;
-        //         foreach (Coord availableTile in availableTiles)
-        //         {
-        //             if (chunkDetected.LocalCoordToBoard(tileDetected)
-        //                 == availableTile)
-        //             {
-        //                 tileDetectedShowDisp = UX_Chunk.TileDispType.VALID;
-        //                 tileDetectedHideDisp
-        //                     = UX_Chunk.TileDispType.INVALID;
-        //                 break;
-        //             }
-        //         }
-
-        //         // Show hovered tile.
-        //         chunkDetected.ShowTile(tileDetected,
-        //             (int) tileDetectedShowDisp, chunks[boardIdx]);
-        //         chunkDetected.HideTiles((int) tileDetectedHideDisp);
-        //     }
-        //     else if (chunkDetected != null)
-        //     {
-        //         chunkDetected.HideTiles((int) UX_Chunk.TileDispType.VALID);
-        //         chunkDetected.HideTiles((int) UX_Chunk.TileDispType.INVALID);
-        //     }
-        // }
-        // else if (mode == Mode.TARGET_PIECE || mode == Mode.PLAIN)
-        // {
-        //     // Get colliders detected by this player's camera.
-        //     List<Collider> collidersDetected = CAM.GetDetectedColliders();
-
-        //     // Get piece being hovered.
-        //     foreach (Collider collider in collidersDetected)
-        //     {
-        //         foreach (UX_Piece ux_piece in pieces)
-        //         {
-        //             if (ux_piece.IsCollider(collider))
-        //             {
-        //                 hoveredPiece = ux_piece;
-        //                 hoveredPiece.Hover();
-        //                 return;
-        //             }
-        //         }
-        //     }
-        // }
-    }
-
-    // private void SelectPiece(UX_Piece ux_piece)
-    // {
-    //     if (selectedPieces.Contains(ux_piece))
-    //     {
-    //         selectedPieces.Remove(ux_piece);
-    //         ux_piece.Unselect();
-    //     }
-    //     else
-    //     {
-    //         selectedPieces.Add(ux_piece);
-    //         ux_piece.Select();
-    //     }
-    // }
+   
 }

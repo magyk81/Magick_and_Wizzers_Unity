@@ -11,9 +11,13 @@ public class UX_Piece : MonoBehaviour
         select, target;
     private enum Part {
         ART, FRAME, ATTACK, DEFENSE, LIFE, HOVER, SELECT, TARGET, COUNT };
+    private Piece piece;
+    public Piece Piece { get { return piece; } }
     private Transform tra;
     private Material artMat;
-    private readonly static float PIECE_LIFT_DIST = 0.1F;
+    private UX_Tile[] waypoints = new UX_Tile[Piece.MAX_WAYPOINTS];
+    public UX_Tile[] Waypoints { get { return waypoints; } }
+    private readonly static float LIFT_DIST = 0.1F;
     public readonly static int LAYER = 6;
 
     // Start is called before the first frame update
@@ -29,6 +33,7 @@ public class UX_Piece : MonoBehaviour
 
     public void Init(Piece piece)
     {
+        this.piece = piece;
         tra = GetComponent<Transform>();
 
         if (piece.pieceType == Piece.Type.MASTER)
@@ -132,8 +137,20 @@ public class UX_Piece : MonoBehaviour
         else
         {
             Vector3 pos = Vector3.Lerp(a.UX_Pos, b.UX_Pos, lerp);
-            tra.localPosition = new Vector3(pos.x, PIECE_LIFT_DIST, pos.z);
+            tra.localPosition = new Vector3(pos.x, LIFT_DIST, pos.z);
             gameObject.SetActive(true);
+        }
+    }
+
+    public void AddWaypoint(UX_Tile tile)
+    {
+        for (int i = 0; i < waypoints.Length; i++)
+        {
+            if (waypoints[i] == null)
+            {
+                waypoints[i] = tile;
+                break;
+            }
         }
     }
 

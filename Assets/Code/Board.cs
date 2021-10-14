@@ -16,26 +16,26 @@ public class Board
         else return InitInfo.size;
     }
 
-    private UX_Board[] ux;
-    public UX_Board[] UX
-    {
-        set
-        {
-            ux = value;
+    // private UX_Board[] ux;
+    // public UX_Board[] UX
+    // {
+    //     set
+    //     {
+    //         ux = value;
 
-            // Pair chunks with UX_Chunks.
-            for (int i = 0; i < GetSize(); i++)
-            {
-                for (int j = 0; j < GetSize(); j++)
-                {
-                    for (int k = 0; k < ux.Length; k++)
-                    {
-                        chunks[i, j].SetUX(ux[k].Chunks[i, j], k);
-                    }
-                }
-            }
-        }
-    }
+    //         // Pair chunks with UX_Chunks.
+    //         for (int i = 0; i < GetSize(); i++)
+    //         {
+    //             for (int j = 0; j < GetSize(); j++)
+    //             {
+    //                 for (int k = 0; k < ux.Length; k++)
+    //                 {
+    //                     chunks[i, j].SetUX(ux[k].Chunks[i, j], k);
+    //                 }
+    //             }
+    //         }
+    //     }
+    // }
 
     private readonly int TOTAL_SIZE;
     private Chunk[,] chunks;
@@ -93,7 +93,7 @@ public class Board
     public void AddPiece(Piece piece)
     {
         pieces.Add(piece);
-        for (int i = 0; i < 9; i++) { ux[i].AddPiece(piece); }
+        Match.AddSkinTicket(new SkinTicket(piece, SkinTicket.Type.ADD_PIECE));
     }
     // void MovePiece(int idx, int dir, int dist) { pieces[idx].Move(dir, dist); }
 }

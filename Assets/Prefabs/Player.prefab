@@ -48,3 +48,7 @@ MonoBehaviour:
     type: 3}
   baseColl: {fileID: -3830468120209970362, guid: 447e0efb8928c3a46be842b948805046,
     type: 3}
+  baseTileHover: {fileID: 7357313190539987364, guid: 9c2e43f591bde0d4f99c3623c6ea8f2a,
+    type: 3}
+  baseWaypoint: {fileID: -2610927972562071735, guid: 962458794240a5d4f9a7bdab38785f25,
+    type: 3}

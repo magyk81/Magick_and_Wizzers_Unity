@@ -4,8 +4,8 @@ using UnityEngine;
 
 public class Player
 {
-    private UX_Player ux;
-    public UX_Player UX { set { ux = value; } }
+    // private UX_Player ux;
+    // public UX_Player UX { set { ux = value; } }
     private readonly string name;
     public string Name { get { return name; } }
     private readonly int idx;

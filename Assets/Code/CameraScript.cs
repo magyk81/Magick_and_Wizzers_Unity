@@ -40,6 +40,7 @@ public class CameraScript : MonoBehaviour
         {
             mask |= (1 << i);
         }
+        mask |= (1 << (UX_Tile.LAYER + localPlayerIdx));
         cam.cullingMask = mask;
         
         // Setup canvas.

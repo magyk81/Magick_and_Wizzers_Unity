@@ -8,6 +8,15 @@ public class UX_Tile
     public Coord Pos { get { return pos; } }
     private Vector3 uxPos;
     public Vector3 UX_Pos { get { return uxPos; } }
+    private readonly static float LIFT_DIST = 0.05F;
+    private Vector3[] uxPosAll = null;
+    public Vector3[] UX_PosAll {
+        get {
+                if (uxPosAll == null) return real.uxPosAll;
+                return uxPosAll;
+            }
+    }
+    private UX_Tile real = null;
     private int boardIdx;
 
     public readonly static int LAYER = 10;
@@ -32,7 +41,20 @@ public class UX_Tile
             if (cloneIdx == Util.LEFT || cloneIdx == Util.UP_LEFT
                 || cloneIdx == Util.DOWN_LEFT) x -= boardTotalSize;
         }
+        else
+        {
+            uxPosAll = new Vector3[9];
+            uxPosAll[0] = new Vector3(x, LIFT_DIST, z);
+        }
         
         uxPos = new Vector3(x, 0, z);
+    }
+
+    public void AddClone(UX_Tile tileClone, int cloneIdx)
+    {
+        tileClone.real = this;
+
+        uxPosAll[cloneIdx + 1] = new Vector3(
+            tileClone.uxPos.x, LIFT_DIST, tileClone.uxPos.z);
     }
 }

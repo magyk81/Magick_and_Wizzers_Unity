@@ -12,6 +12,29 @@ public class Match
         set { InitInfo.players = value; } }
 
     private Board[] boards = new Board[2];
+
+    private static List<SkinTicket> skinTickets = new List<SkinTicket>();
+    public static void AddSkinTicket(SkinTicket ticket)
+    {
+        skinTickets.Add(ticket);
+    }
+    public SkinTicket[] SkinTickets {
+        get {
+            SkinTicket[] arr = skinTickets.ToArray();
+            skinTickets.Clear();
+            return arr;
+        }
+        set {
+            foreach (SkinTicket ticket in value)
+            {
+                if (ticket.TicketType == SkinTicket.Type.ADD_WAYPOINT)
+                {
+                    ticket.Piece.AddWaypoint(ticket.Coord);
+                }
+            }
+        }
+    }
+
     public Match()
     {
         boards[0] = new Board("Main");
@@ -21,22 +44,23 @@ public class Match
     {
         uxMatch.Init(InitInfo.players, boards);
 
-        // Pair players with UX_Players.
-        UX_Player[] uxPlayers = uxMatch.Players;
-        for (int i = 0; i < UX_Match.localPlayerCount; i++)
-        {
-            InitInfo.players[i].UX = uxPlayers[i];
-        }
+        // // Pair players with UX_Players.
+        // UX_Player[] uxPlayers = uxMatch.Players;
+        // for (int i = 0; i < UX_Match.localPlayerCount; i++)
+        // {
+        //     InitInfo.players[i].UX = uxPlayers[i];
+        // }
 
-        // Pair boards with UX_Boards.
-        UX_Board[][] uxBoards = uxMatch.Boards;
-        for (int i = 0; i < boards.Length; i++)
-        {
-            boards[i].UX = uxBoards[i];
-        }
+        // // Pair boards with UX_Boards.
+        // UX_Board[][] uxBoards = uxMatch.Boards;
+        // for (int i = 0; i < boards.Length; i++)
+        // {
+        //     boards[i].UX = uxBoards[i];
+        // }
 
         // Set initial masters.
         boards[0].InitMasters(InitInfo.players);
     }
+
     public void MainLoop() {}
 }

@@ -21,6 +21,14 @@ public struct Coord
         while (newZ < 0) newZ += size;
         return new Coord(newX, newZ);
     }
+    public Coord Dir(int dir)
+    {
+        if (dir == Util.UP) { return new Coord(X, Z + 1); }
+        if (dir == Util.DOWN) { return new Coord(X, Z - 1); }
+        if (dir == Util.LEFT) { return new Coord(X - 1, Z); }
+        if (dir == Util.RIGHT) { return new Coord(X + 1, Z); }
+        return this;
+    }
     public static readonly Coord Null = new Coord(-1, -1);
     public static Coord operator +(Coord a, Coord b)
         => new Coord(a.X + b.X, a.Z + b.Z);

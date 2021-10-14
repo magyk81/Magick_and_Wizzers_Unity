@@ -14,10 +14,13 @@ public class UX_Board : MonoBehaviour
     private UX_Tile[,] tiles;
     private UX_Chunk[,] chunks;
     public UX_Chunk[,] Chunks { get { return chunks; } }
-    private List<UX_Piece> pieces = new List<UX_Piece>();
+    private Dictionary<Piece, UX_Piece> pieces
+        = new Dictionary<Piece, UX_Piece>();
+    // private List<UX_Piece> pieces = new List<UX_Piece>();
     private int boardIdx, cloneIdx;
 
-    public void Init(int size, int boardIdx, int cloneIdx = -1)
+    public void Init(int size, int boardIdx,
+        int cloneIdx = -1, UX_Board realBoard = null)
     {
         this.boardIdx = boardIdx;
         this.cloneIdx = cloneIdx;
@@ -111,6 +114,12 @@ public class UX_Board : MonoBehaviour
                             tilePos.X - (i * Chunk.Size),
                             tilePos.Z - (j * Chunk.Size)]
                             = tiles[tilePos.X, tilePos.Z];
+                        
+                        if (cloneIdx != -1)
+                        {
+                            realBoard.tiles[tilePos.X, tilePos.Z].AddClone(
+                                tiles[tilePos.X, tilePos.Z], cloneIdx);
+                        }
                     }
                 }
 
@@ -143,8 +152,8 @@ public class UX_Board : MonoBehaviour
             pieceParent)
             .GetComponent<UX_Piece>();
         uxPiece.gameObject.name = piece.Name;
-        piece.SetUX(uxPiece, cloneIdx + 1);
-        pieces.Add(uxPiece);
+        // piece.SetUX(uxPiece, cloneIdx + 1);
+        pieces.Add(piece, uxPiece);
 
         uxPiece.Init(piece);
         MovePiece(piece);
@@ -158,8 +167,22 @@ public class UX_Board : MonoBehaviour
         }
         else
         {
-            piece.UX_Move(tiles, cloneIdx + 1);
+            // piece.UX_Move(tiles, cloneIdx + 1);
+            // pieces[piece].SetPos(
+                // tiles[posFrom.X, posFrom.Z],
+                // tiles[posTo.X, posTo.Z],
+                // posLerp);
+            Piece.PosPrecise posPrec = piece.PosPrec;
+            pieces[piece].SetPos(
+                tiles[posPrec.From.X, posPrec.From.Z],
+                tiles[posPrec.To.X, posPrec.To.Z],
+                posPrec.Lerp);
         }
+    }
+
+    public void AddWaypoint(Piece piece, Coord coord)
+    {
+        pieces[piece].AddWaypoint(tiles[coord.X, coord.Z]);
     }
 
     // Update is called once per frame

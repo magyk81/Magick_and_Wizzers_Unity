@@ -8,16 +8,44 @@ public class UX_Match : MonoBehaviour
     private UX_Player basePlayer;
     [SerializeField]
     private UX_Board baseBoard;
-    [SerializeField]
-    private Transform playerGroup, boardGroup;
-    
-    private readonly int MAX_WAYPOINTS = 5;
 
     private UX_Player[] players;
     public UX_Player[] Players { get { return players; } }
     public static int localPlayerCount;
     private UX_Board[][] boards;
     public UX_Board[][] Boards { get { return boards; } }
+
+    private static List<SkinTicket> skinTickets = new List<SkinTicket>();
+    public static void AddSkinTicket(SkinTicket ticket)
+    {
+        skinTickets.Add(ticket);
+    }
+    public SkinTicket[] SkinTickets {
+        get {
+            SkinTicket[] arr = skinTickets.ToArray();
+            skinTickets.Clear();
+            return arr;
+        }
+        set {
+            foreach (SkinTicket ticket in value)
+            {
+                if (ticket.TicketType == SkinTicket.Type.ADD_PIECE)
+                {
+                    foreach (UX_Board board in boards[ticket.Piece.BoardIdx])
+                    {
+                        board.AddPiece(ticket.Piece);
+                    }
+                }
+                else if (ticket.TicketType == SkinTicket.Type.ADD_WAYPOINT)
+                {
+                    foreach (UX_Board board in boards[ticket.Piece.BoardIdx])
+                    {
+                        board.AddWaypoint(ticket.Piece, ticket.Coord);
+                    }
+                }
+            }
+        }
+    }
 
     public void Init(Player[] players, Board[] boards)
     {
@@ -34,6 +62,8 @@ public class UX_Match : MonoBehaviour
         UX_Match.localPlayerCount = localPlayerCount;
 
         // Generate uxBoards.
+        Transform boardGroup = new GameObject().GetComponent<Transform>();
+        boardGroup.gameObject.name = "Boards";
         this.boards = new UX_Board[boards.Length][];
         for (int i = 0; i < boards.Length; i++)
         {
@@ -59,13 +89,16 @@ public class UX_Match : MonoBehaviour
                 {
                     this.boards[i][j].gameObject.name = "Board - Clone "
                         + Util.DirToString(j - 1);
-                    this.boards[i][j].Init(boards[i].GetSize(), i, j - 1);
+                    this.boards[i][j].Init(
+                        boards[i].GetSize(), i, j - 1, this.boards[i][0]);
                 }
             }
         }
 
         // Generate uxPlayers
         this.players = new UX_Player[localPlayerCount];
+        Transform playerGroup = new GameObject().GetComponent<Transform>();
+        playerGroup.gameObject.name = "Players";
         for (int i = 0, j = 0; i < players.Length; i++)
         {
             if (players[i].PlayerType == Player.Type.LOCAL_PLAYER)

@@ -10,6 +10,7 @@ public class ControllerScript : MonoBehaviour
     // private GameObject uxPlayerParent, uxBoardParent, uxPieceParent;
 
     private Match match;
+    private UX_Match uxMatch;
 
     // Start is called before the first frame update
     void Start()
@@ -21,16 +22,19 @@ public class ControllerScript : MonoBehaviour
         players[0] = new Player("Brooke", 0, Player.Type.LOCAL_PLAYER);
         players[1] = new Player("Rachel", 1, Player.Type.BOT);
         Match.Players = players;
-        Board.Size = 1;
+        Board.Size = 2;
         Chunk.Size = 10;
         
         match = new Match();
-        match.InitUX(GetComponent<UX_Match>());
+        uxMatch = GetComponent<UX_Match>();
+        match.InitUX(uxMatch);
     }
 
     // Update is called once per frame
     void Update()
     {
+        match.SkinTickets = uxMatch.SkinTickets;
         match.MainLoop();
+        uxMatch.SkinTickets = match.SkinTickets;
     }
 }
