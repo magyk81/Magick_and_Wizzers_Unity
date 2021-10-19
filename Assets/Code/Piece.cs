@@ -108,6 +108,14 @@ public class Piece
         Match.AddSkinTicket(new SkinTicket(
             this, tile, SkinTicket.Type.ADD_WAYPOINT));
     }
+    public bool HasSameWaypoints(Piece piece)
+    {
+        for (int i = 0; i < waypoints.Length; i++)
+        {
+            if (waypoints[i] != piece.waypoints[i]) return false;
+        }
+        return true;
+    }
     public virtual int Level { get
     {
         if (card != null) return card.Level;

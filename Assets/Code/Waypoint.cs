@@ -18,4 +18,28 @@ public class Waypoint
         tile = Coord.Null.Copy();
         piece = null;
     }
+
+    public override bool Equals(object obj)
+    {
+        return base.Equals(obj);
+    }
+
+    public override int GetHashCode()
+    {
+        return base.GetHashCode();
+    }
+
+    public override string ToString()
+    {
+        return base.ToString();
+    }
+
+    public static bool operator ==(Waypoint a, Waypoint b)
+    {
+        return a.tile == b.tile;
+    }
+    public static bool operator !=(Waypoint a, Waypoint b)
+    {
+        return a.tile != b.tile;
+    }
 }

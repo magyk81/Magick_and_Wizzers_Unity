@@ -4,6 +4,9 @@ using UnityEngine;
 
 public class UX_Waypoint : MonoBehaviour
 {
+    [SerializeField]
+    private Material opaqueMat, semitransMat;
+
     private UX_Tile tile;
     public UX_Tile Tile
     {
@@ -16,11 +19,29 @@ public class UX_Waypoint : MonoBehaviour
     }
 
     private Transform tra;
+    private Renderer rend;
+
+    public void Show(bool opaque)
+    {
+        if (opaque)
+        {
+            if (rend.material != opaqueMat) rend.material = opaqueMat;
+        }
+        else
+        {
+            if (rend.material != semitransMat) rend.material = semitransMat;
+        }
+        gameObject.SetActive(true);
+    }
+    public void Hide() { gameObject.SetActive(false); }
+    public void SetPos(Vector3 pos) { tra.localPosition = pos; }
 
     // Start is called before the first frame update
     void Start()
     {
         tra = GetComponent<Transform>();
+        rend = GetComponent<Renderer>();
+        Hide();
     }
 
     // Update is called once per frame

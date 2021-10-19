@@ -26,6 +26,8 @@ public class UX_Player : MonoBehaviour
         TARGET_CHUNK, TARGET_TILE, HAND, DETAIL, SURRENDER, PAUSE }
     private Mode mode = Mode.PAUSE;
     private int localPlayerIdx;
+
+    private bool waypointsAreCommon = false;
     public void SetMode(Mode mode)
     {
         if (mode == this.mode) return;
@@ -118,7 +120,6 @@ public class UX_Player : MonoBehaviour
                     waypoints[i][j].gameObject.name = "Waypoint - Clone "
                         + Util.DirToString(j - 1) + " " + i;
                 }
-                waypoints[i][j].gameObject.SetActive(false);
             }
         }
 
@@ -191,6 +192,7 @@ public class UX_Player : MonoBehaviour
                 hoveredPiece = null;
             }
         }
+
         if (mode == Mode.TARGET_TILE || mode == Mode.WAYPOINT_TILE)
         {
             UX_Tile detectedTile = cam.GetDetectedTile();
@@ -213,56 +215,10 @@ public class UX_Player : MonoBehaviour
             }
             // Show that tile is unhovered.
             else UnhoverTile();
-
-            // Show waypoints.
-            if (selectedPieces.Count == 0)
-            {
-                if (hoveredPiece != null)
-                {
-                    UX_Tile[] tiles = hoveredPiece.Waypoints;
-                    int nullTileIdx = tiles.Length;
-                    for (int i = 0; i < tiles.Length; i++)
-                    {
-                        if (tiles[i] == null)
-                        {
-                            nullTileIdx = i;
-                            break;
-                        }
-                        Vector3[] tilePosAll = tiles[i].UX_PosAll;
-                        for (int j = 0; j < 9; j++)
-                        {
-                            waypoints[i][j].gameObject.SetActive(true);
-                            waypoints[i][j].GetComponent<Transform>()
-                                .localPosition = tilePosAll[j];
-                        }
-                    }
-
-                    // Hide remaining waypoints.
-                    for (int i = nullTileIdx; i < tiles.Length; i++)
-                    {
-                        for (int j = 0; j < 9; j++)
-                        {
-                            waypoints[i][j].gameObject.SetActive(false);
-                        }
-                    }
-                }
-                // Hide all waypoints.
-                else
-                {
-                    for (int i = 0; i < Piece.MAX_WAYPOINTS; i++)
-                    {
-                        for (int j = 0; j < 9; j++)
-                        {
-                            waypoints[i][j].gameObject.SetActive(true);
-                        }
-                    }
-                }
-            }
-            else
-            {
-
-            }
         }
+
+        UpdateWaypointDisplay(mode == Mode.WAYPOINT_PIECE
+            || mode == Mode.WAYPOINT_TILE);
     }
 
     private bool holdingTriggerL = false, holdingTriggerR = false;
@@ -304,6 +260,7 @@ public class UX_Player : MonoBehaviour
                         hoveredPiece.Select(localPlayerIdx);
                         selectedPieces.Add(hoveredPiece);
                     }
+                    CalcIfWaypointsCommon();
                 }
             }
             // Set waypoint on hovered tile.
@@ -344,6 +301,90 @@ public class UX_Player : MonoBehaviour
             }
             hoveredTile = null;
         }
+    }
+
+    private void UpdateWaypointDisplay(bool waypointMode)
+    {
+        if (waypointMode)
+        {
+            // In WAYPOINT modes, show opaque waypoints if pieces are selected
+            // and if those pieces all have the same waypoints.
+            if (selectedPieces.Count > 0)
+            {
+                if (waypointsAreCommon) ShowWaypoints(true);
+            }
+            else if (hoveredPiece != null) ShowWaypoints(false);
+            else HideWaypoints();
+        }
+        else
+        {
+            // In PLAIN mode, show semitrans waypoints on hovered piece only.
+            if (hoveredPiece != null) ShowWaypoints(false);
+            else HideWaypoints();
+        }
+    }
+
+    private void ShowWaypoints(bool opaque)
+    {
+        UX_Tile[] tiles;
+        if (opaque) tiles = selectedPieces[0].Waypoints;
+        else tiles = hoveredPiece.Waypoints;
+        int nullTileIdx = tiles.Length;
+
+        // Show waypoints that aren't null.
+        for (int i = 0; i < tiles.Length; i++)
+        {
+            if (tiles[i] == null)
+            {
+                nullTileIdx = i;
+                break;
+            }
+            Vector3[] tilePosAll = tiles[i].UX_PosAll;
+            for (int j = 0; j < 9; j++)
+            {
+                waypoints[i][j].Show(opaque);
+                waypoints[i][j].SetPos(tilePosAll[j]);
+            }
+        }
+
+        // Hide remaining waypoints.
+        for (int i = nullTileIdx; i < tiles.Length; i++)
+        {
+            for (int j = 0; j < 9; j++)
+            {
+                waypoints[i][j].Hide();
+            }
+        }
+    }
+
+    private void HideWaypoints()
+    {
+        for (int i = 0; i < Piece.MAX_WAYPOINTS; i++)
+        {
+            for (int j = 0; j < 9; j++)
+            {
+                waypoints[i][j].Hide();
+            }
+        }
+    }
+
+    public void CalcIfWaypointsCommon()
+    {
+        waypointsAreCommon = true;
+
+        if (selectedPieces.Count >= 2)
+        {
+            for (int i = 1; i < selectedPieces.Count; i++)
+            {
+                if (!selectedPieces[i].Piece.HasSameWaypoints(
+                    selectedPieces[0].Piece))
+                {
+                    waypointsAreCommon = false;
+                    break;
+                }
+            }
+        }
+        Debug.Log("waypointsAreCommon: " + waypointsAreCommon);
     }
 
     // public void QueryGamepad()

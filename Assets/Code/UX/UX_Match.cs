@@ -42,6 +42,10 @@ public class UX_Match : MonoBehaviour
                     {
                         board.AddWaypoint(ticket.Piece, ticket.Coord);
                     }
+                    foreach (UX_Player player in players)
+                    {
+                        player.CalcIfWaypointsCommon();
+                    }
                 }
             }
         }
