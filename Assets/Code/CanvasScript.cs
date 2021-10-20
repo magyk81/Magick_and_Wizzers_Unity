@@ -17,7 +17,7 @@ public class CanvasScript : MonoBehaviour
     public RectTransform Reticle { get { return reticle; } }
     public RectTransform DarkScreen { get { return darkScreen; } }
 
-    private static readonly float CARD_DIM_RATIO = 1.4F;
+    // private static readonly float CARD_DIM_RATIO = 1.4F;
     private static readonly int MAX_HAND_CARDS = 60, CARDS_PER_ROW = 5;
     private HandCard[] handCards;
     private class CardPos
@@ -123,56 +123,56 @@ public class CanvasScript : MonoBehaviour
                 crosshair = child.gameObject.GetComponent<RectTransform>();
             else if (child.gameObject.name == darkScreen.name)
                 darkScreen = child.gameObject.GetComponent<RectTransform>();
-            else if (child.gameObject.name == handCardsParent.name)
-            {
-                handCardsParent = child.gameObject
-                    .GetComponent<RectTransform>();
-                foreach (
-                    Transform handCardsChild in handCardsParent)
-                {
-                    if (handCardsChild.gameObject.name == baseCard.name)
-                    {
-                        baseCard = handCardsChild.gameObject
-                            .GetComponent<RectTransform>();
-                    }
-                }
-            }
-            else if (child.gameObject.name == cardCursor.name)
-                cardCursor = child.gameObject.GetComponent<RectTransform>();
-            else if (child.gameObject.name == cardBeingPlayed.name)
-                cardBeingPlayed = child.gameObject.GetComponent<RectTransform>();
+            // else if (child.gameObject.name == handCardsParent.name)
+            // {
+            //     handCardsParent = child.gameObject
+            //         .GetComponent<RectTransform>();
+            //     foreach (
+            //         Transform handCardsChild in handCardsParent)
+            //     {
+            //         if (handCardsChild.gameObject.name == baseCard.name)
+            //         {
+            //             baseCard = handCardsChild.gameObject
+            //                 .GetComponent<RectTransform>();
+            //         }
+            //     }
+            // }
+            // else if (child.gameObject.name == cardCursor.name)
+            //     cardCursor = child.gameObject.GetComponent<RectTransform>();
+            // else if (child.gameObject.name == cardBeingPlayed.name)
+            //     cardBeingPlayed = child.gameObject.GetComponent<RectTransform>();
         }
 
         darkScreen.gameObject.SetActive(false);
 
         // Set up hand cards
-        cardWidth = ((float) camWidth) / (CARDS_PER_ROW + 2);
-        cardHeight = cardWidth * CARD_DIM_RATIO;
+        // cardWidth = ((float) camWidth) / (CARDS_PER_ROW + 2);
+        // cardHeight = cardWidth * CARD_DIM_RATIO;
 
-        cardCursor.sizeDelta = new Vector2(
-            cardWidth + cursorThickness, cardHeight + cursorThickness);
-        cardBeingPlayed.sizeDelta = new Vector2(
-            cardWidth + cursorThickness, cardHeight + cursorThickness);
+        // cardCursor.sizeDelta = new Vector2(
+        //     cardWidth + cursorThickness, cardHeight + cursorThickness);
+        // cardBeingPlayed.sizeDelta = new Vector2(
+        //     cardWidth + cursorThickness, cardHeight + cursorThickness);
 
-        Coord initCardPos = Coord._(
-            (int) (camWidth + cardWidth + 1) / 2, 0);
+        // Coord initCardPos = Coord._(
+        //     (int) (camWidth + cardWidth + 1) / 2, 0);
 
-        handCards = new HandCard[MAX_HAND_CARDS];
-        handCardsParent.SetParent(GetComponent<RectTransform>());
-        for (int i = 0; i < MAX_HAND_CARDS; i++)
-        {
-            handCards[i] = new HandCard(i, baseCard, handCardsParent,
-                cardWidth, cardHeight, initCardPos);
-        }
+        // handCards = new HandCard[MAX_HAND_CARDS];
+        // handCardsParent.SetParent(GetComponent<RectTransform>());
+        // for (int i = 0; i < MAX_HAND_CARDS; i++)
+        // {
+        //     handCards[i] = new HandCard(i, baseCard, handCardsParent,
+        //         cardWidth, cardHeight, initCardPos);
+        // }
 
-        cardCursor.anchoredPosition = GetCardPos(0).ToVec2();
-        cardBeingPlayed.anchoredPosition
-            = Coord._(0, (int) (camHeight - cardHeight) / 2).ToVec2();
+        // cardCursor.anchoredPosition = GetCardPos(0).ToVec2();
+        // cardBeingPlayed.anchoredPosition
+        //     = Coord._(0, (int) (camHeight - cardHeight) / 2).ToVec2();
 
-        HideHand();
-        cardCursor.gameObject.SetActive(false);
-        cardBeingPlayed.gameObject.SetActive(false);
-        baseCard.gameObject.SetActive(false);
+        // //HideHand();
+        // cardCursor.gameObject.SetActive(false);
+        // cardBeingPlayed.gameObject.SetActive(false);
+        // baseCard.gameObject.SetActive(false);
     }
 
     public void SetMode(UX_Player.Mode mode)
@@ -196,17 +196,14 @@ public class CanvasScript : MonoBehaviour
             reticle.gameObject.SetActive(false);
             crosshair.gameObject.SetActive(false);
         }
-    }
 
-    public void ShowHand()
-    {
-        handCardsParent.gameObject.SetActive(true);
-        cardCursor.gameObject.SetActive(cardCount > 0);
-    }
-    public void HideHand()
-    {
-        handCardsParent.gameObject.SetActive(false);
-        cardCursor.gameObject.SetActive(false);
+        if (mode == UX_Player.Mode.HAND || mode == UX_Player.Mode.DETAIL
+            || mode == UX_Player.Mode.PAUSE
+            || mode == UX_Player.Mode.SURRENDER)
+        {
+            darkScreen.gameObject.SetActive(true);
+        }
+        else darkScreen.gameObject.SetActive(false);
     }
 
     public void SetHandPiece(Piece handPiece)

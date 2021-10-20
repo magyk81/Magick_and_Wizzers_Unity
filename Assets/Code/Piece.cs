@@ -55,6 +55,7 @@ public class Piece
     }
     protected Deck deck;
     private List<Card> hand = new List<Card>();
+    public Card[] Hand { get { return hand.ToArray(); } }
     private Waypoint[] waypoints;
     public static readonly int MAX_WAYPOINTS = 5;
     public Piece(string name, int playerIdx, int boardIdx, Coord initPos,

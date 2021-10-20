@@ -10,6 +10,8 @@ public class SkinTicket
     public Type TicketType { get { return type; } }
     private Piece piece;
     public Piece Piece { get { return piece; } }
+    private Card card;
+    public Card Card { get { return card; } }
     private Coord coord;
     public Coord Coord { get { return coord; } }
 
@@ -21,6 +23,13 @@ public class SkinTicket
     public SkinTicket(Piece piece, Coord coord, Type type)
     {
         this.piece = piece;
+        this.coord = coord;
+        this.type = type;
+    }
+    public SkinTicket(Piece piece, Card card, Coord coord, Type type)
+    {
+        this.piece = piece;
+        this.card = card;
         this.coord = coord;
         this.type = type;
     }

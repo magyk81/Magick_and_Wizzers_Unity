@@ -80,8 +80,8 @@ public class Board
                 players[i], i, 0, masterStartPos[i], masterTex);
             AddPiece(initialMaster);
 
-            // // The 5 cards that players start with at the beginning of a match.
-            // initialMaster.DrawCards(5);
+            // The 5 cards that players start with at the beginning of a match.
+            initialMaster.DrawCards(20);
         }
     }
 

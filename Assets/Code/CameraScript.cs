@@ -238,7 +238,7 @@ public class CameraScript : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (mode == UX_Player.Mode.HAND) canv.UpdateHandCards();
+        // if (mode == UX_Player.Mode.HAND) canv.UpdateHandCards();
     }
 
     private float[] boardSize_horiz, boardSize_vert;

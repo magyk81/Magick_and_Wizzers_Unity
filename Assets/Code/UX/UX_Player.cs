@@ -16,6 +16,8 @@ public class UX_Player : MonoBehaviour
     UX_Waypoint baseWaypoint;
     private CameraScript cam;
     private CanvasScript canv;
+    private UX_Hand hand;
+    private Card playCard;
     private Transform[] tileHover;
     private UX_Waypoint[][] waypoints;
     private Gamepad gamepad;
@@ -23,18 +25,22 @@ public class UX_Player : MonoBehaviour
     private UX_Tile hoveredTile;
     private List<UX_Piece> selectedPieces = new List<UX_Piece>();
     public enum Mode { PLAIN, WAYPOINT_PIECE, WAYPOINT_TILE, TARGET_PIECE,
-        TARGET_CHUNK, TARGET_TILE, HAND, DETAIL, SURRENDER, PAUSE }
+        TARGET_CHUNK, TARGET_TILE, BOARD_SWITCH, HAND, DETAIL, SURRENDER,
+        PAUSE }
     private Mode mode = Mode.PAUSE;
     private int localPlayerIdx;
 
     private bool waypointsAreCommon = false;
-    public void SetMode(Mode mode)
+
+    // Returns true if mode has changed.
+    public bool SetMode(Mode mode)
     {
-        if (mode == this.mode) return;
+        if (mode == this.mode) return false;
         cam.SetMode(mode);
         canv.SetMode(mode);
         Debug.Log("SetMode: " + mode);
         this.mode = mode;
+        return true;
     }
 
     public void Init(int localPlayerIdx, float[][] boardBounds)
@@ -137,38 +143,22 @@ public class UX_Player : MonoBehaviour
         canv.gameObject.name = "Canvas";
         canv.gameObject.SetActive(true);
 
+        // Setup hand.
+        hand = canv.GetComponent<UX_Hand>();
+
         cam.Init(localPlayerIdx, canv, boardBounds, quarterColls, tileColls);
         SetMode(Mode.PLAIN);
     }
 
     private void Update()
     {
-        if (mode == Mode.PLAIN)
+        if (mode == Mode.PLAIN || mode == Mode.BOARD_SWITCH)
         {
-            if (holdingTriggerL && !holdingTriggerR)
-                SetMode(Mode.WAYPOINT_TILE);
-            else if (!holdingTriggerL && holdingTriggerR)
-                SetMode(Mode.WAYPOINT_PIECE);
+            SetMode(GetTriggerCombo());
         }
-        else if (mode == Mode.WAYPOINT_TILE)
+        else if (mode == Mode.WAYPOINT_TILE || mode == Mode.WAYPOINT_PIECE)
         {
-            if (!holdingTriggerL && holdingTriggerR)
-            {
-                UnhoverTile();
-                SetMode(Mode.WAYPOINT_PIECE);
-            }
-            else if (!holdingTriggerL && !holdingTriggerR)
-            {
-                UnhoverTile();
-                SetMode(Mode.PLAIN);
-            }
-        }
-        else if (mode == Mode.WAYPOINT_PIECE)
-        {
-            if (holdingTriggerL && !holdingTriggerR)
-                SetMode(Mode.WAYPOINT_TILE);
-            else if (!holdingTriggerL && !holdingTriggerR)
-                SetMode(Mode.PLAIN);
+            if (SetMode(GetTriggerCombo())) UnhoverTile();
         }
     }
 
@@ -229,12 +219,27 @@ public class UX_Player : MonoBehaviour
         // <D-pad down | Down arrow>
         if (gamepadInput[(int) Gamepad.Button.DOWN] == 1)
         {
-            // Switch board.
-            if (holdingTriggerL && holdingTriggerR)
+            if (mode == Mode.BOARD_SWITCH)
             {
+                // Switch board.
                 if (cam.BoardIdx != 1) cam.BoardIdx = 1;
                 else cam.BoardIdx = 0;
             }
+        }
+
+        // <D-pad | Arrows>
+        if (mode == Mode.HAND)
+        {
+            int x_move = -1, y_move = -1;
+            if (gamepadInput[(int) Gamepad.Button.LEFT] == 1)
+                x_move = Util.LEFT;
+            else if (gamepadInput[(int) Gamepad.Button.RIGHT] == 1)
+                x_move = Util.RIGHT;
+            if (gamepadInput[(int) Gamepad.Button.UP] == 1)
+                y_move = Util.UP;
+            else if (gamepadInput[(int) Gamepad.Button.DOWN] == 1)
+                y_move = Util.DOWN;
+            hand.MoveCursor(x_move, y_move);
         }
 
         // <Left joystick | WASD> Pan the camera.
@@ -276,6 +281,42 @@ public class UX_Player : MonoBehaviour
                     }
                 }
             }
+            // Play the selected card.
+            else if (mode == Mode.TARGET_TILE)
+            {
+                UX_Match.AddSkinTicket(new SkinTicket(
+                    hoveredPiece.Piece, playCard, hoveredTile.Pos,
+                    SkinTicket.Type.ADD_PIECE));
+                playCard = null;
+                hand.Hide();
+                UnhoverTile();
+                SetMode(Mode.PLAIN);
+            }
+            // Select the hovered card.
+            else if (mode == Mode.HAND)
+            {
+                playCard = hand.Select();
+                hand.Hide(false);
+                SetMode(Mode.TARGET_TILE);
+            }
+        }
+
+        // <X button | J>
+        if (gamepadInput[(int) Gamepad.Button.X] == 1)
+        {
+            if (mode == Mode.PLAIN)
+            {
+                if (hoveredPiece != null)
+                {
+                    hand.Show(hoveredPiece.Piece);
+                    SetMode(Mode.HAND);
+                }
+            }
+            else if (mode == Mode.HAND)
+            {
+                hand.Hide();
+                SetMode(Mode.PLAIN);
+            }
         }
 
         // <Left trigger | Left shift>
@@ -289,6 +330,14 @@ public class UX_Player : MonoBehaviour
             holdingTriggerR = true;
         else if (gamepadInput[(int) Gamepad.Button.R_TRIG] == -1)
             holdingTriggerR = false;
+    }
+
+    private Mode GetTriggerCombo()
+    {
+        if (holdingTriggerL && holdingTriggerR) return Mode.BOARD_SWITCH;
+        else if (holdingTriggerL) return Mode.WAYPOINT_TILE;
+        else if (holdingTriggerR) return Mode.WAYPOINT_PIECE;
+        return Mode.PLAIN;
     }
 
     private void UnhoverTile()
@@ -313,6 +362,7 @@ public class UX_Player : MonoBehaviour
             {
                 if (waypointsAreCommon) ShowWaypoints(true);
             }
+            // Otherwise, show semitrans waypoint on hovered piece only.
             else if (hoveredPiece != null) ShowWaypoints(false);
             else HideWaypoints();
         }
@@ -384,7 +434,6 @@ public class UX_Player : MonoBehaviour
                 }
             }
         }
-        Debug.Log("waypointsAreCommon: " + waypointsAreCommon);
     }
 
     // public void QueryGamepad()
