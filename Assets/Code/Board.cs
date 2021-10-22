@@ -1,3 +1,9 @@
+/* Copyright (C) All Rights Reserved
+ * Unauthorized copying of this file, via any medium is prohibited.
+ * Proprietary and confidential.
+ * Written by Robin Campos <magyk81@gmail.com>, year 2021.
+ */
+
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -15,27 +21,6 @@ public class Board
         if (customSize > 0) return customSize;
         else return InitInfo.size;
     }
-
-    // private UX_Board[] ux;
-    // public UX_Board[] UX
-    // {
-    //     set
-    //     {
-    //         ux = value;
-
-    //         // Pair chunks with UX_Chunks.
-    //         for (int i = 0; i < GetSize(); i++)
-    //         {
-    //             for (int j = 0; j < GetSize(); j++)
-    //             {
-    //                 for (int k = 0; k < ux.Length; k++)
-    //                 {
-    //                     chunks[i, j].SetUX(ux[k].Chunks[i, j], k);
-    //                 }
-    //             }
-    //         }
-    //     }
-    // }
 
     private readonly int TOTAL_SIZE;
     private Chunk[,] chunks;
@@ -56,6 +41,9 @@ public class Board
             }
         }
     }
+
+    /// <summary>Adds 1 master to the boards for each player. The masters'
+    ///     starting positions depend on the number of players.</summary>
     public void InitMasters(Player[] players)
     {
         Coord[] masterStartPos = new Coord[players.Length];
@@ -85,6 +73,8 @@ public class Board
         }
     }
 
+    /// <returns>The chunk that the tile belongs to.
+    /// </returns>
     public Coord TileToChunk(Coord tile)
     {
         return Coord._(tile.X / Chunk.Size, tile.Z / Chunk.Size);
@@ -95,5 +85,4 @@ public class Board
         pieces.Add(piece);
         Match.AddSkinTicket(new SkinTicket(piece, SkinTicket.Type.ADD_PIECE));
     }
-    // void MovePiece(int idx, int dir, int dist) { pieces[idx].Move(dir, dist); }
 }

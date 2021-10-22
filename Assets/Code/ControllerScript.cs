@@ -1,3 +1,9 @@
+/* Copyright (C) All Rights Reserved
+ * Unauthorized copying of this file, via any medium is prohibited.
+ * Proprietary and confidential.
+ * Written by Robin Campos <magyk81@gmail.com>, year 2021.
+ */
+
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -5,9 +11,6 @@ using UnityEngine;
 public class ControllerScript : MonoBehaviour
 {
     private static Player[] players;
-
-    // [SerializeField]
-    // private GameObject uxPlayerParent, uxBoardParent, uxPieceParent;
 
     private Match match;
     private UX_Match uxMatch;
@@ -17,7 +20,7 @@ public class ControllerScript : MonoBehaviour
     {
         Application.targetFrameRate = 60;
 
-        // For debugging. This data would normally be set somewhere else.
+        // For debugging. This data would normally be set from somewhere else.
         Player[] players = new Player[2];
         players[0] = new Player("Brooke", 0, Player.Type.LOCAL_PLAYER);
         players[1] = new Player("Rachel", 1, Player.Type.BOT);

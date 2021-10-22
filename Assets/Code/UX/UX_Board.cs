@@ -1,3 +1,9 @@
+/* Copyright (C) All Rights Reserved
+ * Unauthorized copying of this file, via any medium is prohibited.
+ * Proprietary and confidential.
+ * Written by Robin Campos <magyk81@gmail.com>, year 2021.
+ */
+
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -16,9 +22,9 @@ public class UX_Board : MonoBehaviour
     public UX_Chunk[,] Chunks { get { return chunks; } }
     private Dictionary<Piece, UX_Piece> pieces
         = new Dictionary<Piece, UX_Piece>();
-    // private List<UX_Piece> pieces = new List<UX_Piece>();
     private int boardIdx, cloneIdx;
 
+    /// <summary>Called once before the match begins.</summary>
     public void Init(int size, int boardIdx,
         int cloneIdx = -1, UX_Board realBoard = null)
     {
@@ -152,12 +158,14 @@ public class UX_Board : MonoBehaviour
             pieceParent)
             .GetComponent<UX_Piece>();
         uxPiece.gameObject.name = piece.Name;
-        // piece.SetUX(uxPiece, cloneIdx + 1);
         pieces.Add(piece, uxPiece);
 
         uxPiece.Init(piece);
         MovePiece(piece);
     }
+
+    /// <summary>Updates the piece's position on the board between the tiles
+    /// indicated by the piece's PosPrecise info.</summary>
     public void MovePiece(Piece piece)
     {
         if (boardIdx != piece.BoardIdx)
@@ -167,11 +175,6 @@ public class UX_Board : MonoBehaviour
         }
         else
         {
-            // piece.UX_Move(tiles, cloneIdx + 1);
-            // pieces[piece].SetPos(
-                // tiles[posFrom.X, posFrom.Z],
-                // tiles[posTo.X, posTo.Z],
-                // posLerp);
             Piece.PosPrecise posPrec = piece.PosPrec;
             pieces[piece].SetPos(
                 tiles[posPrec.From.X, posPrec.From.Z],

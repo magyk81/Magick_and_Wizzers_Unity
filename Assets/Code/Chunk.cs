@@ -1,3 +1,9 @@
+/* Copyright (C) All Rights Reserved
+ * Unauthorized copying of this file, via any medium is prohibited.
+ * Proprietary and confidential.
+ * Written by Robin Campos <magyk81@gmail.com>, year 2021.
+ */
+
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -10,12 +16,6 @@ public class Chunk
     }
     public static int Size {
         set { InitInfo.size = value; } get { return InitInfo.size; } }
-    
-    private UX_Chunk[] ux = new UX_Chunk[9];
-    public void SetUX(UX_Chunk ux, int cloneIdx)
-    {
-        this.ux[cloneIdx] = ux;
-    }
 
     private Coord pos, minTile, maxTile;
 

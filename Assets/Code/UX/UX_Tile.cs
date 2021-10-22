@@ -1,3 +1,9 @@
+/* Copyright (C) All Rights Reserved
+ * Unauthorized copying of this file, via any medium is prohibited.
+ * Proprietary and confidential.
+ * Written by Robin Campos <magyk81@gmail.com>, year 2021.
+ */
+
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -50,6 +56,8 @@ public class UX_Tile
         uxPos = new Vector3(x, 0, z);
     }
 
+    /// <summary>Called 8 times before the match begins: once for each clone
+    /// needed.</summary>
     public void AddClone(UX_Tile tileClone, int cloneIdx)
     {
         tileClone.real = this;

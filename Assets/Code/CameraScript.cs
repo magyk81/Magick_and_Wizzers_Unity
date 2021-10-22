@@ -1,3 +1,9 @@
+/* Copyright (C) All Rights Reserved
+ * Unauthorized copying of this file, via any medium is prohibited.
+ * Proprietary and confidential.
+ * Written by Robin Campos <magyk81@gmail.com>, year 2021.
+ */
+
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -21,6 +27,7 @@ public class CameraScript : MonoBehaviour
     private float speed;
     private float x = 0, z = 0, y = 5;
 
+    /// <summary>Called once before the match begins.</summary>
     public void Init(int localPlayerIdx, CanvasScript canv, float[][] bounds,
         UX_Collider[] quarterColls, UX_Collider[,] tileColls)
     {
@@ -107,6 +114,11 @@ public class CameraScript : MonoBehaviour
         }
     }
 
+    /// <summary> Called every frame.</summary>
+    /// <param x_move="x_move">
+    /// -1 to move left, 1 to move right, or 0 not move horizontally </param>
+    /// <param z_move="z_move">
+    /// -1 to move down, 1 to move up, or 0 not move vertically </param>
     public void Move(int x_move, int z_move)
     {
         if (x_move == 0 && z_move == 0) return;
@@ -116,11 +128,14 @@ public class CameraScript : MonoBehaviour
 
         Move();
     }
+
     private void MoveTo(float newX, float newZ)
     {
         x = newX; z = newZ;
         Move();
     }
+
+    /// <summary>Relocates the camera if out of bounds.</summary>
     private void Move()
     {
         if (x < bounds[boardIdx][Util.LEFT])
@@ -135,15 +150,8 @@ public class CameraScript : MonoBehaviour
         tra.localPosition = new Vector3(x, y, z);
     }
 
-    public void HandMove(int x_move, int y_move)
-    {
-        if (x_move == -1 && y_move == -1) return;
-        canv.MoveCursor(x_move, y_move);
-    }
-    public int GetHandCard() { return canv.GetHoverIdx(); }
-    public void DisplayPlayCard(int idx) { canv.DisplayPlayCard(idx); }
-    public Piece GetHandPiece() { return canv.GetHandPiece(); }
-
+    /// <returns>Piece detected by the reticle using all 9 rays, but
+    /// prioritizing the rays closest to the middle.</returns>
     public UX_Piece GetDetectedPiece()
     {
         for (int i = 0; i < ray.Length; i++)
@@ -163,6 +171,8 @@ public class CameraScript : MonoBehaviour
         return null;
     }
 
+    /// <returns>Tile detected by the reticle using just the 1 middle ray.
+    /// </returns>
     public UX_Tile GetDetectedTile()
     {
         ray[0] = cam.ViewportPointToRay(rayVecs[0]);
@@ -200,45 +210,14 @@ public class CameraScript : MonoBehaviour
         return null;
     }
 
-    // Used for detecting chunks and tiles.
-    public Collider GetDetectedCollider()
-    {
-        ray[0] = cam.ViewportPointToRay(rayVecs[0]);
-        if (Physics.Raycast(ray[0], out rayHit,
-            Mathf.Infinity, 1 << 0))
-        {
-            Collider hitCollider = rayHit.collider;
-            return hitCollider;
-        }
-        return null;
-    }
-
-    // Toggle dark screen
     public void SetMode(UX_Player.Mode mode)
     {
         this.mode = mode;
-        // if (mode == UX_Player.Mode.HAND)
-        // {
-        //     canv.DarkScreen.gameObject.SetActive(true);
-        //     canv.ShowHand();
-        //     canv.HideReticleCrosshair();
-        // }
-        // else
-        // {
-        //     canv.DarkScreen.gameObject.SetActive(false);
-        //     canv.HideHand();
-        // }
-    }
-
-    public void SetHandCards(Piece handPiece)
-    {
-        canv.SetHandPiece(handPiece);
     }
 
     // Update is called once per frame
     void Update()
     {
-        // if (mode == UX_Player.Mode.HAND) canv.UpdateHandCards();
     }
 
     private float[] boardSize_horiz, boardSize_vert;

@@ -1,3 +1,9 @@
+/* Copyright (C) All Rights Reserved
+ * Unauthorized copying of this file, via any medium is prohibited.
+ * Proprietary and confidential.
+ * Written by Robin Campos <magyk81@gmail.com>, year 2021.
+ */
+
 using System;
 using UnityEngine;
 
@@ -42,14 +48,6 @@ public struct Coord
     {
         return a.X != b.X || a.Z != b.Z;
     }
-    public override bool Equals(object obj)
-    {
-        return base.Equals(obj);
-    }
-    public override int GetHashCode()
-    {
-        return base.GetHashCode();
-    }
     public static Coord Lerp(Coord a, Coord b, float dist)
     {
         float xDist = ((float) (b.X - a.X)) * dist,
@@ -60,4 +58,15 @@ public struct Coord
     }
     public static Coord _(int x, int z) { return new Coord(x, z); }
     public override string ToString() { return "[" + X + ", " + Z + "]"; }
+
+
+
+    public override bool Equals(object obj)
+    {
+        return base.Equals(obj);
+    }
+    public override int GetHashCode()
+    {
+        return base.GetHashCode();
+    }
 }

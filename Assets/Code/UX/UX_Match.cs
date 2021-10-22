@@ -1,3 +1,9 @@
+/* Copyright (C) All Rights Reserved
+ * Unauthorized copying of this file, via any medium is prohibited.
+ * Proprietary and confidential.
+ * Written by Robin Campos <magyk81@gmail.com>, year 2021.
+ */
+
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -51,6 +57,7 @@ public class UX_Match : MonoBehaviour
         }
     }
 
+    /// <summary>Called once before the match begins.</summary>
     public void Init(Player[] players, Board[] boards)
     {
         // Prep uxBoard bounds.
@@ -118,84 +125,7 @@ public class UX_Match : MonoBehaviour
                 j++;
             }
         }
-
-        // Generate waypoints
-        // GameObject[,] waypoints
-        //     = new GameObject[players.Length, MAX_WAYPOINTS];
-        // GameObject waypointGroupObj = new GameObject("Waypoints");
-        // Transform waypointGroupTra = waypointGroupObj
-        //     .GetComponent<Transform>();
-        // for (int i = 0; i < players.Length; i++)
-        // {
-        //     GameObject waypointGroupPlayerObj = new GameObject(
-        //         "Waypoints - Player " + i);
-        //     Transform waypointGroupPlayerTra = waypointGroupPlayerObj
-        //         .GetComponent<Transform>();
-        //     waypointGroupPlayerTra.SetParent(waypointGroupTra);
-        //     for (int j = 0; j < MAX_WAYPOINTS; j++)
-        //     {
-        //         waypoints[i, j] = GameObject.Instantiate(
-        //             waypointObj, waypointGroupPlayerTra);
-        //         waypoints[i, j].name = "Waypoint " + (j + 1);
-        //         waypoints[i, j].SetActive(false);
-        //     }
-        // }
-
-        // Set group for cameras, and canvases
-        // Transform camGroupTra
-        //     = new GameObject("Cameras").GetComponent<Transform>();
-        // Transform canvasGroupTra
-        //     = new GameObject("Canvases").GetComponent<Transform>();
-
-        // Generate UX_Players with their gamepads and cameras
-        // int localPlayerCount = 0;
-        // foreach (Player player in players)
-        // {
-        //     if (player.PlayerType == Player.Type.LOCAL_PLAYER)
-        //         localPlayerCount++;
-        // }
-        // this.players = new UX_Player[localPlayerCount];
-        // for (int i = 0, j = 0; i < players.Length; i++)
-        // {
-        //     if (players[i].PlayerType == Player.Type.LOCAL_PLAYER)
-        //     {
-        //         Gamepad gamepad = new Gamepad(j == 0);
-
-        //         GameObject camClone = GameObject.Instantiate(
-        //             baseCam.gameObject, camGroupTra);
-        //         camClone.name = "Camera - Player " + (i + 1);
-        //         camClone.GetComponent<AudioListener>().enabled = (j == 0);
-        //         camClone.GetComponent<CameraScript>().Bounds = bounds;
-
-        //         GameObject canvasClone = GameObject.Instantiate(
-        //             baseCanvas.gameObject, canvasGroupTra);
-        //         canvasClone.name = "Canvas - Player " + (i + 1);
-        //         canvasClone.GetComponent<Canvas>().worldCamera
-        //             = camClone.GetComponent<Camera>();
-                
-        //         camClone.GetComponent<CameraScript>().InitCamObjs(
-        //             canvasClone.GetComponent<CanvasScript>());
-
-        //         this.players[j] = new UX_Player(players[i], gamepad,
-        //             camClone.GetComponent<CameraScript>());
-        //         j++;
-        //     } 
-        // }
-        
-        // baseChunk.gameObject.SetActive(false);
-        // basePiece.gameObject.SetActive(false);
-        // waypointObj.SetActive(false);
-        // baseCam.gameObject.SetActive(false);
-        // baseCanvas.gameObject.SetActive(false);
     }
-
-    // public void AddPiece(Piece piece)
-    // {
-    //     UX_Piece newUxPiece = GameObject.Instantiate(basePiece, boardTra);
-    //     pieces.Add(newUxPiece);
-    //     newUxPiece.Init(piece, fullSizes[piece.BoardIdx], DIST_BETWEEN_BOARDS);
-    //     newUxPiece.UpdatePosition();
-    // }
 
     public void Update()
     {

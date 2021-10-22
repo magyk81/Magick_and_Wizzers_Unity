@@ -1,3 +1,9 @@
+/* Copyright (C) All Rights Reserved
+ * Unauthorized copying of this file, via any medium is prohibited.
+ * Proprietary and confidential.
+ * Written by Robin Campos <magyk81@gmail.com>, year 2021.
+ */
+
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -10,7 +16,8 @@ public class Gamepad
     private int[] padInput;
     public int[] PadInput
     {
-        get // Called once per frame
+        // Called once per frame.
+        get
         {
             if (isKeyboard)
             {
@@ -61,6 +68,10 @@ public class Gamepad
         padInput = new int[(int) Button.COUNT];
     }
 
+    /// <summary>Updates the array padInput with the info of whether the key is
+    /// pressed, being held down, or depressed.</summary>
+    /// <returns>True if the key was pressed or depressed this frame.
+    /// </returns>
     private bool GetInput(KeyCode keyCode, Button button, int mult = 1)
     {
         // mult != 1 when it's the stick

@@ -1,3 +1,9 @@
+/* Copyright (C) All Rights Reserved
+ * Unauthorized copying of this file, via any medium is prohibited.
+ * Proprietary and confidential.
+ * Written by Robin Campos <magyk81@gmail.com>, year 2021.
+ */
+
 using System.Collections;
 using System.Collections.Generic;
 using System;
@@ -21,9 +27,10 @@ public class Deck
     {
         Card[] arr = cards.ToArray();
 
-        // The following while-loop was written by "grenade"
-        // (grenade.github.io) and edited by "Uwe Keim" (zeta-producer.com)
-        // from Stack Overflow.
+        /* The following while-loop was written by "grenade"
+         * (grenade.github.io) and edited by "Uwe Keim" (zeta-producer.com)
+         * from Stack Overflow.
+         */
         int n = arr.Length;
         while (n > 1)
         {

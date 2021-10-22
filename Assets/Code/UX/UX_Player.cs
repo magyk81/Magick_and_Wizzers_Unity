@@ -1,3 +1,9 @@
+/* Copyright (C) All Rights Reserved
+ * Unauthorized copying of this file, via any medium is prohibited.
+ * Proprietary and confidential.
+ * Written by Robin Campos <magyk81@gmail.com>, year 2021.
+ */
+
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -43,6 +49,7 @@ public class UX_Player : MonoBehaviour
         return true;
     }
 
+    /// <summary>Called once before the match begins.</summary>
     public void Init(int localPlayerIdx, float[][] boardBounds)
     {
         this.localPlayerIdx = localPlayerIdx;
@@ -150,6 +157,7 @@ public class UX_Player : MonoBehaviour
         SetMode(Mode.PLAIN);
     }
 
+    // Called once every frame.
     private void Update()
     {
         if (mode == Mode.PLAIN || mode == Mode.BOARD_SWITCH)
@@ -357,7 +365,7 @@ public class UX_Player : MonoBehaviour
         if (waypointMode)
         {
             // In WAYPOINT modes, show opaque waypoints if pieces are selected
-            // and if those pieces all have the same waypoints.
+            // and if those pieces all share identical waypoints.
             if (selectedPieces.Count > 0)
             {
                 if (waypointsAreCommon) ShowWaypoints(true);
@@ -418,6 +426,10 @@ public class UX_Player : MonoBehaviour
         }
     }
 
+    /// <summary>Called whenever the number of waypoints changes or the number
+    /// of pieces changes. Sets waypointsAreCommon to True if all selected
+    /// pieces share idential waypoints, otherwise it is set to False.
+    /// </summary>
     public void CalcIfWaypointsCommon()
     {
         waypointsAreCommon = true;
@@ -434,84 +446,5 @@ public class UX_Player : MonoBehaviour
                 }
             }
         }
-    }
-
-    // public void QueryGamepad()
-    // {
-    //     int[] padInput = GAMEPAD.PadInput;
-
-    //     Mode oldMode = mode;
-
-    //     if (mode == Mode.PLAIN || mode == Mode.TARGET_CHUNK
-    //         || mode == Mode.TARGET_PIECE || mode == Mode.TARGET_TILE)
-    //     {
-    //         // Move camera
-    //         int x_move = 0, z_move = 0,
-    //             l_horiz = padInput[(int) Gamepad.Button.L_HORIZ],
-    //             l_vert = padInput[(int) Gamepad.Button.L_VERT];
-    //         if (l_horiz != 0) x_move = l_horiz;
-    //         if (l_vert != 0) z_move = l_vert;
-    //         CAM.Move(x_move, z_move);
-            
-    //         if (mode == Mode.PLAIN)
-    //         {
-    //             if (hoveredPiece != null)
-    //             {
-    //                 // Select piece if hovering a piece
-    //                 bool a_button = padInput[(int) Gamepad.Button.A] > 0;
-    //                 if (a_button) SelectPiece(hoveredPiece);
-    //             }
-                    
-    //             if (hoveredPiece != null && __.Idx == hoveredPiece._.PlayerIdx)
-    //             {
-    //                 CAM.SetHandCards(hoveredPiece._);
-
-    //                 // Go to HAND mode if hovering a master
-    //                 bool x_button = padInput[(int) Gamepad.Button.X] > 0;
-    //                 if (x_button)
-    //                 {
-    //                     mode = Mode.HAND;
-    //                     pieceBeingPlayedFrom = hoveredPiece._;
-    //                 }
-    //             }
-    //         }
-    //     }
-
-    //     if (mode == Mode.HAND)
-    //     {
-    //         // Go to PLAIN mode
-    //         bool b_button = padInput[(int) Gamepad.Button.B] > 0;
-    //         if (b_button) mode = Mode.PLAIN;
-
-    //         // Play the hovered card
-    //         bool a_button = padInput[(int) Gamepad.Button.A] > 0;
-    //         if (a_button)
-    //         {
-    //             cardBeingPlayed
-    //                 = CAM.GetHandPiece().GetCardFromHand(CAM.GetHandCard());
-    //             if (cardBeingPlayed != null)
-    //             {
-    //                 CAM.DisplayPlayCard(CAM.GetHandCard());
-    //                 mode = cardBeingPlayed.GetPlayMode();
-    //             }
-    //         }
-
-    //         int x_move = -1, y_move = -1;
-    //         if (padInput[(int) Gamepad.Button.LEFT] == 1) x_move = Util.LEFT;
-    //         else if (padInput[(int) Gamepad.Button.RIGHT] == 1)
-    //             x_move = Util.RIGHT;
-    //         if (padInput[(int) Gamepad.Button.DOWN] == 1) y_move = Util.DOWN;
-    //         else if (padInput[(int) Gamepad.Button.UP] == 1) y_move = Util.UP;
-    //         CAM.HandMove(x_move, y_move);
-    //     }
-
-    //     if (oldMode != mode)
-    //     {
-    //         CAM.SetMode(mode);
-    //         Debug.Log("Set Mode: " + mode);
-    //     }
-    // }
-
-
-   
+    }   
 }

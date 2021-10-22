@@ -1,3 +1,9 @@
+/* Copyright (C) All Rights Reserved
+ * Unauthorized copying of this file, via any medium is prohibited.
+ * Proprietary and confidential.
+ * Written by Robin Campos <magyk81@gmail.com>, year 2021.
+ */
+
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -43,20 +49,6 @@ public class Match
     public void InitUX(UX_Match uxMatch)
     {
         uxMatch.Init(InitInfo.players, boards);
-
-        // // Pair players with UX_Players.
-        // UX_Player[] uxPlayers = uxMatch.Players;
-        // for (int i = 0; i < UX_Match.localPlayerCount; i++)
-        // {
-        //     InitInfo.players[i].UX = uxPlayers[i];
-        // }
-
-        // // Pair boards with UX_Boards.
-        // UX_Board[][] uxBoards = uxMatch.Boards;
-        // for (int i = 0; i < boards.Length; i++)
-        // {
-        //     boards[i].UX = uxBoards[i];
-        // }
 
         // Set initial masters.
         boards[0].InitMasters(InitInfo.players);

@@ -1,3 +1,9 @@
+/* Copyright (C) All Rights Reserved
+ * Unauthorized copying of this file, via any medium is prohibited.
+ * Proprietary and confidential.
+ * Written by Robin Campos <magyk81@gmail.com>, year 2021.
+ */
+
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -81,7 +87,7 @@ public class UX_Hand : MonoBehaviour
         public void SetArt(Card card) { art.texture = card.Art; }
         public bool Update(bool otherOutGridAlreadyUpdated)
         {
-            // Another hand card that's NOT in the grid yes has moved
+            // Another hand card that's NOT in the grid has moved.
             if (otherOutGridAlreadyUpdated) return false;
 
             // It's already in the grid and/or has not been assigned to move.
@@ -146,6 +152,7 @@ public class UX_Hand : MonoBehaviour
             isShown = true;
         }
     }
+
     public void Hide(bool hideAll = true)
     {
         if (setupDone)
@@ -228,10 +235,10 @@ public class UX_Hand : MonoBehaviour
 
         if (x_move == Util.LEFT)
         {
-            // Cursor is a progressive woke marxist punk radical feminist
+            // The cursor is on the left-most column.
             if (cursorIdx % CARDS_PER_ROW == 0)
             {
-                // Turn the cursor into an evil capitalist
+                // Put the cursor on the right-most column.
                 cursorIdx += CARDS_PER_ROW - 1;
                 if (cursorIdx >= count) cursorIdx = count - 1;
             }
@@ -239,13 +246,13 @@ public class UX_Hand : MonoBehaviour
         }
         else if (x_move == Util.RIGHT)
         {
-            // Cursor is a white cishet 22-inch cock slung over his shoulder
+            // The cursor is along the right-most column.
             if (cursorIdx % CARDS_PER_ROW == CARDS_PER_ROW - 1)
             {
-                // Turn the cursor into an LGBTQA+ woke-folk ally
+                // Put the cursor on the left-most column.
                 cursorIdx -= CARDS_PER_ROW - 1;
             }
-            // When the right ain't right
+            // When the right ain't right.
             else if (cursorIdx == count - 1)
             {
                 cursorIdx -= (count % CARDS_PER_ROW) - 1;
@@ -256,7 +263,7 @@ public class UX_Hand : MonoBehaviour
         {
             cursorIdx -= CARDS_PER_ROW;
 
-            // Cursor is a Russian
+            // The cursur is on the top row.
             if (cursorIdx < 0) cursorIdx
                 += count + (count % CARDS_PER_ROW);
             if (cursorIdx >= count) cursorIdx -= CARDS_PER_ROW;
@@ -265,7 +272,7 @@ public class UX_Hand : MonoBehaviour
         {
             cursorIdx += CARDS_PER_ROW;
 
-            // Cursor is an American
+            // The cursor is on the bottom row.
             if (cursorIdx >= count) cursorIdx
                 -= count + (count % CARDS_PER_ROW);
             if (cursorIdx < 0) cursorIdx += CARDS_PER_ROW;

@@ -1,3 +1,9 @@
+/* Copyright (C) All Rights Reserved
+ * Unauthorized copying of this file, via any medium is prohibited.
+ * Proprietary and confidential.
+ * Written by Robin Campos <magyk81@gmail.com>, year 2021.
+ */
+
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -26,11 +32,13 @@ public class UX_Piece : MonoBehaviour
         
     }
 
+    // Cleans memory if/when application is stopped.
     private void OnDestroy()
     {
         if (artMat != null) Destroy(artMat);
     }
 
+    /// <summary>Called once before the match begins.</summary>
     public void Init(Piece piece)
     {
         this.piece = piece;
@@ -154,47 +162,6 @@ public class UX_Piece : MonoBehaviour
         }
     }
 
-    public void UpdatePosition()
-    {
-        // float _x = _.X - (Board.CHUNK_SIZE / 2),
-        //     _z = _.Z - (Board.CHUNK_SIZE / 2),
-        //     __x = _x, __z = _z;
-
-        // _x += _.BoardIdx * distBetweenBoards * Board.CHUNK_SIZE;
-            
-        // for (int i = 0; i < 8; i++)
-        // {
-        //     if (Board.CHUNK_SIZE % 2 == 0) { _x += 0.5F; _z += 0.5F; }
-        //     if (i == Util.UP || i == Util.UP_LEFT
-        //         || i == Util.UP_RIGHT) _z += fullBoardSize;
-        //     else if (i == Util.DOWN || i == Util.DOWN_LEFT
-        //         || i == Util.DOWN_RIGHT) _z -= fullBoardSize;
-        //     if (i == Util.RIGHT || i == Util.UP_RIGHT
-        //         || i == Util.DOWN_RIGHT) _x += fullBoardSize;
-        //     else if (i == Util.LEFT || i == Util.UP_LEFT
-        //         || i == Util.DOWN_LEFT) _x -= fullBoardSize;
-                
-        //     clonesTra[i].localPosition = new Vector3(_x, LIFT_DIST, _z);
-
-        //     _x = __x;
-        //     _z = __z;
-        // }
-        // if (Board.CHUNK_SIZE % 2 == 0) { _x += 0.5F; _z += 0.5F; }
-
-        // realTra.localPosition = new Vector3(_x, LIFT_DIST, _z);
-    }
-
-    // public bool IsCollider(Collider collider)
-    // {
-    //     if (frame == collider.gameObject) return true;
-    //     foreach (GameObject[] clonePart in cloneParts)
-    //     {
-    //         if (clonePart[(int) Part.FRAME] == collider.gameObject)
-    //             return true;
-    //     }
-    //     return false;
-    // }
-
     public void Hover(int localPlayerIdx)
     {
         hover[localPlayerIdx].SetActive(true);
@@ -218,19 +185,6 @@ public class UX_Piece : MonoBehaviour
     {
         select[localPlayerCount].SetActive(false);
     }
-
-    // private void SetActive(Part part, bool active)
-    // {
-    //     if (part == Part.FRAME)
-    //         frame.GetComponent<MeshRenderer>().enabled = active;
-    //     else if (part == Part.HOVER) hover.SetActive(active);
-    //     else if (part == Part.SELECT) select.SetActive(active);
-    //     else if (part == Part.TARGET) target.SetActive(active);
-    //     foreach (GameObject[] clonePart in cloneParts)
-    //     {
-    //         clonePart[(int) part].SetActive(active);
-    //     }
-    // }
 
     // Update is called once per frame
     void Update()

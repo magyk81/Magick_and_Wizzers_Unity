@@ -1,3 +1,9 @@
+/* Copyright (C) All Rights Reserved
+ * Unauthorized copying of this file, via any medium is prohibited.
+ * Proprietary and confidential.
+ * Written by Robin Campos <magyk81@gmail.com>, year 2021.
+ */
+
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -26,11 +32,7 @@ public class Piece
             return new PosPrecise(to, From, 0);
         }
     }
-    // private UX_Piece[] ux = new UX_Piece[9];
-    // public void SetUX(UX_Piece ux, int cloneIdx)
-    // {
-    //     this.ux[cloneIdx] = ux;
-    // }
+
     private string name;
     public string Name { get { return name; } }
     public enum Type { MASTER, CREATURE, ITEM, CHARM }
@@ -90,7 +92,7 @@ public class Piece
         }
     }
 
-    // dist goes from 0 to 100
+    /// <param name="dist">Goes from 0 to 100.</param>
     public void Move(int dir, int dist)
     {
 
@@ -126,17 +128,6 @@ public class Piece
     {
         for (int i = 0; i < count; i++) { AddToHand(deck.DrawCard()); }
     }
-    public Card GetCardFromHand(int idx)
-    {
-        return hand[idx];
-    }
-    private void AddToHand(Card card) { hand.Add(card); }
 
-    // public void UX_Move(UX_Tile[,] uxTiles, int cloneIdx)
-    // {
-    //     ux[cloneIdx].SetPos(
-    //         uxTiles[posFrom.X, posFrom.Z],
-    //         uxTiles[posTo.X, posTo.Z],
-    //         posLerp);
-    // }
+    private void AddToHand(Card card) { hand.Add(card); }
 }

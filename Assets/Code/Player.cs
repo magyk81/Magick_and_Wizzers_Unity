@@ -1,11 +1,15 @@
+/* Copyright (C) All Rights Reserved
+ * Unauthorized copying of this file, via any medium is prohibited.
+ * Proprietary and confidential.
+ * Written by Robin Campos <magyk81@gmail.com>, year 2021.
+ */
+
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class Player
 {
-    // private UX_Player ux;
-    // public UX_Player UX { set { ux = value; } }
     private readonly string name;
     public string Name { get { return name; } }
     private readonly int idx;
