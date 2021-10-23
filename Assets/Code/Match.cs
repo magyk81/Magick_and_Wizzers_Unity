@@ -37,14 +37,22 @@ public class Match
                 {
                     ticket.Piece.AddWaypoint(ticket.Coord);
                 }
+                else if (ticket.TicketType == SkinTicket.Type.ADD_PIECE)
+                {
+                    if (boards[ticket.BoardIdx].AddPiece(ticket.PlayerIdx,
+                        ticket.Card, ticket.Coord))
+                    {
+                        ticket.Piece.RemoveFromHand(ticket.Card);
+                    }
+                }
             }
         }
     }
 
     public Match()
     {
-        boards[0] = new Board("Main");
-        boards[1] = new Board("Sheol", 1);
+        boards[0] = new Board("Main", 0);
+        boards[1] = new Board("Sheol", 1, 1);
     }
     public void InitUX(UX_Match uxMatch)
     {

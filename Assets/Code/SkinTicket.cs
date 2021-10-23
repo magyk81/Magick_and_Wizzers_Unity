@@ -11,9 +11,14 @@ using UnityEngine;
 public class SkinTicket
 {
     public enum Type { ADD_PIECE, REMOVE_PIECE, MOVE_PIECE,
+        ADD_CARD, REMOVE_CARD,
         ADD_WAYPOINT, REMOVE_WAYPOINT }
     private Type type;
     public Type TicketType { get { return type; } }
+    private int playerIdx;
+    public int PlayerIdx { get { return playerIdx; } }
+    private int boardIdx;
+    public int BoardIdx { get { return boardIdx; } }
     private Piece piece;
     public Piece Piece { get { return piece; } }
     private Card card;
@@ -32,11 +37,24 @@ public class SkinTicket
         this.coord = coord;
         this.type = type;
     }
-    public SkinTicket(Piece piece, Card card, Coord coord, Type type)
+
+    public SkinTicket(int playerIdx, int boardIdx, Piece piece, Card card,
+        Coord coord, Type type)
     {
+        this.playerIdx = playerIdx;
+        this.boardIdx = boardIdx;
         this.piece = piece;
         this.card = card;
         this.coord = coord;
+        this.type = type;
+    }
+
+    // REMOVE_CARD for UX
+    public SkinTicket(int boardIdx, Piece piece, Card card, Type type)
+    {
+        this.boardIdx = boardIdx;
+        this.piece = piece;
+        this.card = card;
         this.type = type;
     }
 }

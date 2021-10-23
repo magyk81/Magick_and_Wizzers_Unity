@@ -149,6 +149,11 @@ public class UX_Hand : MonoBehaviour
             // Show parent and cursor.
             cardParent.gameObject.SetActive(true);
             cursor.gameObject.SetActive(count > 0);
+
+            // Update cursor position.
+            MoveCursor(-1, Util.UP);
+            MoveCursor(-1, Util.DOWN);
+
             isShown = true;
         }
     }

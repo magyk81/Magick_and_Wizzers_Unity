@@ -12,9 +12,9 @@ public class Master : Piece
 {
     private int playerIdx;
 
-    public Master(Player player, int playerIdx, int boardIdx, Coord initPos,
+    public Master(Player player, int playerIdx, int boardIdx,
         Texture art)
-        : base(player.Name, playerIdx, boardIdx, initPos, art)
+        : base(player.Name, playerIdx, boardIdx, art)
     {
         pieceType = Type.MASTER;
 

@@ -15,11 +15,16 @@ public class Piece
         public Coord To { get; }
         public Coord From { get; }
         public float Lerp { get; }
-        private PosPrecise(Coord to, Coord from, float lerp)
+        private readonly int DIST, DIST_MAX;
+
+        private PosPrecise(Coord to, Coord from, int dist)
         {
+            DIST = dist;
+            DIST_MAX = 100;
+
             To = to;
             From = from;
-            Lerp = lerp;
+            Lerp = ((float) dist) / DIST_MAX;
         }
         public static PosPrecise _(Coord init)
         {
@@ -31,6 +36,16 @@ public class Piece
             if (to == To) return this;
             return new PosPrecise(to, From, 0);
         }
+        public PosPrecise Step(Coord next, int dist)
+        {
+            int newDist = DIST + dist;
+            if (newDist > DIST_MAX)
+            {
+                if (next == Coord.Null) return _(To);
+                else return new PosPrecise(next, To, newDist - DIST_MAX);
+            }
+            return new PosPrecise(To, From, newDist);
+        }
     }
 
     private string name;
@@ -41,7 +56,16 @@ public class Piece
     public int PlayerIdx { get { return playerIdx; } }
     public int BoardIdx { get { return boardIdx; } }
     private Coord pos;
-    public Coord Pos { get { return pos; } }
+    public Coord Pos
+    {
+        get { return pos; }
+        set
+        {
+            pos = value.Copy();
+            posPrec = PosPrecise._(value);
+        }
+    }
+
     private PosPrecise posPrec;
     public PosPrecise PosPrec { get { return posPrec; } }
     private Card card;
@@ -60,14 +84,11 @@ public class Piece
     public Card[] Hand { get { return hand.ToArray(); } }
     private Waypoint[] waypoints;
     public static readonly int MAX_WAYPOINTS = 5;
-    public Piece(string name, int playerIdx, int boardIdx, Coord initPos,
-        Card card)
+    public Piece(int playerIdx, int boardIdx, Card card)
     {
-        this.name = name;
+        this.name = card.Name;
         this.playerIdx = playerIdx;
         this.boardIdx = boardIdx;
-        pos = initPos.Copy();
-        posPrec = PosPrecise._(initPos);
         this.card = card;
         
         waypoints = new Waypoint[MAX_WAYPOINTS];
@@ -76,13 +97,10 @@ public class Piece
             waypoints[i] = new Waypoint();
         }
     }
-    public Piece(string name, int playerIdx, int boardIdx, Coord initPos,
-        Texture art)
+    public Piece(string name, int playerIdx, int boardIdx, Texture art)
     {
         this.name = name;
         this.playerIdx = playerIdx;
-        pos = initPos.Copy();
-        posPrec = PosPrecise._(initPos);
         this.art = art;
 
         waypoints = new Waypoint[MAX_WAYPOINTS];
@@ -97,6 +115,7 @@ public class Piece
     {
 
     }
+
     public void AddWaypoint(Coord tile)
     {
         for (int i = 0; i < MAX_WAYPOINTS; i++)
@@ -130,4 +149,5 @@ public class Piece
     }
 
     private void AddToHand(Card card) { hand.Add(card); }
+    public void RemoveFromHand(Card card) { hand.Remove(card); }
 }

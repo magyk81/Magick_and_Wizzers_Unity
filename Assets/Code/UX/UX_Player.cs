@@ -34,7 +34,7 @@ public class UX_Player : MonoBehaviour
         TARGET_CHUNK, TARGET_TILE, BOARD_SWITCH, HAND, DETAIL, SURRENDER,
         PAUSE }
     private Mode mode = Mode.PAUSE;
-    private int localPlayerIdx;
+    private int playerIdx, localPlayerIdx;
 
     private bool waypointsAreCommon = false;
 
@@ -50,8 +50,9 @@ public class UX_Player : MonoBehaviour
     }
 
     /// <summary>Called once before the match begins.</summary>
-    public void Init(int localPlayerIdx, float[][] boardBounds)
+    public void Init(int playerIdx, int localPlayerIdx, float[][] boardBounds)
     {
+        this.playerIdx = playerIdx;
         this.localPlayerIdx = localPlayerIdx;
 
         // Setup gamepad.
@@ -268,7 +269,9 @@ public class UX_Player : MonoBehaviour
                         hoveredPiece.Unselect(localPlayerIdx);
                         selectedPieces.Remove(hoveredPiece);
                     }
-                    else
+                    // Can only select this piece if it's under this player's
+                    // control.
+                    else if (hoveredPiece.Piece.PlayerIdx == playerIdx)
                     {
                         hoveredPiece.Select(localPlayerIdx);
                         selectedPieces.Add(hoveredPiece);
@@ -293,8 +296,8 @@ public class UX_Player : MonoBehaviour
             else if (mode == Mode.TARGET_TILE)
             {
                 UX_Match.AddSkinTicket(new SkinTicket(
-                    hoveredPiece.Piece, playCard, hoveredTile.Pos,
-                    SkinTicket.Type.ADD_PIECE));
+                    playerIdx, cam.BoardIdx, hoveredPiece.Piece, playCard,
+                    hoveredTile.Pos, SkinTicket.Type.ADD_PIECE));
                 playCard = null;
                 hand.Hide();
                 UnhoverTile();
@@ -306,6 +309,19 @@ public class UX_Player : MonoBehaviour
                 playCard = hand.Select();
                 hand.Hide(false);
                 SetMode(Mode.TARGET_TILE);
+            }
+        }
+
+        // <B button | L>
+        if (gamepadInput[(int) Gamepad.Button.B] == 1)
+        {
+            // Unselect every piece.
+            if (mode == Mode.PLAIN)
+            {
+                foreach (UX_Piece piece in selectedPieces)
+                {
+                    piece.Unselect(localPlayerIdx);
+                }
             }
         }
 

@@ -120,7 +120,7 @@ public class UX_Match : MonoBehaviour
                 ).GetComponent<UX_Player>();
                 this.players[j].gameObject.name = players[i].Name;
                 this.players[j].gameObject.SetActive(true);
-                this.players[j].Init(j, boardBounds);
+                this.players[j].Init(i, j, boardBounds);
 
                 j++;
             }

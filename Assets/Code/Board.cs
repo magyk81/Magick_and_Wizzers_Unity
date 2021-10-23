@@ -27,9 +27,11 @@ public class Board
     private List<Piece> pieces = new List<Piece>();
     private string name;
     public string Name { get { return name; } }
-    public Board(string name, int customSize = 0)
+    private int idx;
+    public Board(string name, int idx, int customSize = 0)
     {
         this.name = name;
+        this.idx = idx;
         this.customSize = customSize;
         TOTAL_SIZE = Chunk.Size * InitInfo.size;
         chunks = new Chunk[GetSize(), GetSize()];
@@ -65,8 +67,8 @@ public class Board
                 "Textures/Debug_Card_Art/Master_" + players[i].Name);
 
             Master initialMaster = new Master(
-                players[i], i, 0, masterStartPos[i], masterTex);
-            AddPiece(initialMaster);
+                players[i], i, 0, masterTex);
+            AddPiece(initialMaster, masterStartPos[i]);
 
             // The 5 cards that players start with at the beginning of a match.
             initialMaster.DrawCards(20);
@@ -80,9 +82,22 @@ public class Board
         return Coord._(tile.X / Chunk.Size, tile.Z / Chunk.Size);
     }
 
-    public void AddPiece(Piece piece)
+    /// <returns>True if the piece was successfully added. False otherwise.
+    /// </returns>
+    public bool AddPiece(int playerIdx, Card card, Coord tile)
     {
+        Piece piece = new Piece(playerIdx, idx, card);
+        return AddPiece(piece, tile);
+    }
+    private bool AddPiece(Piece piece, Coord tile)
+    {
+        foreach (Piece p in pieces)
+        {
+            if (p.Pos == piece.Pos) return false;
+        }
+        piece.Pos = tile;
         pieces.Add(piece);
         Match.AddSkinTicket(new SkinTicket(piece, SkinTicket.Type.ADD_PIECE));
+        return true;
     }
 }
