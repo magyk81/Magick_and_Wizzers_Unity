@@ -208,8 +208,6 @@ public class UX_Player : MonoBehaviour
                         tileHover[i].gameObject.SetActive(true);
                         tileHover[i].localPosition = tileHoverPos[i];
                     }
-                    
-                    Debug.Log(hoveredTile.Pos);
                 }
             }
             // Show that tile is unhovered.

@@ -42,11 +42,11 @@ public class UX_Match : MonoBehaviour
                         board.AddPiece(ticket.Piece);
                     }
                 }
-                else if (ticket.TicketType == SkinTicket.Type.ADD_WAYPOINT)
+                else if (ticket.TicketType == SkinTicket.Type.UPDATE_WAYPOINTS)
                 {
                     foreach (UX_Board board in boards[ticket.Piece.BoardIdx])
                     {
-                        board.AddWaypoint(ticket.Piece, ticket.Coord);
+                        board.UpdateWaypoints(ticket.Piece, ticket.Coords);
                     }
                     foreach (UX_Player player in players)
                     {

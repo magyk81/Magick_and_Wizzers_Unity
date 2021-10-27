@@ -174,18 +174,23 @@ public class UX_Board : MonoBehaviour
                 + " should not move piece from board " + piece.BoardIdx);
         }
         else
-        {
-            Piece.PosPrecise posPrec = piece.PosPrec;
+        {            
             pieces[piece].SetPos(
-                tiles[posPrec.From.X, posPrec.From.Z],
-                tiles[posPrec.To.X, posPrec.To.Z],
-                posPrec.Lerp);
+                tiles[piece.PosPrev.X, piece.PosPrev.Z],
+                tiles[piece.Pos.X, piece.Pos.Z],
+                piece.GetPosLerp());
         }
     }
 
-    public void AddWaypoint(Piece piece, Coord coord)
+    public void UpdateWaypoints(Piece piece, Coord[] coords)
     {
-        pieces[piece].AddWaypoint(tiles[coord.X, coord.Z]);
+        UX_Tile[] waypoints = new UX_Tile[coords.Length];
+        for (int i = 0; i < coords.Length; i++)
+        {
+            if (coords[i] == Coord.Null) waypoints[i] = null;
+            else waypoints[i] = tiles[coords[i].X, coords[i].Z];
+        }
+        pieces[piece].UpdateWaypoints(waypoints);
     }
 
     // Update is called once per frame

@@ -12,7 +12,7 @@ public class SkinTicket
 {
     public enum Type { ADD_PIECE, REMOVE_PIECE, MOVE_PIECE,
         ADD_CARD, REMOVE_CARD,
-        ADD_WAYPOINT, REMOVE_WAYPOINT }
+        ADD_WAYPOINT, REMOVE_WAYPOINT, UPDATE_WAYPOINTS }
     private Type type;
     public Type TicketType { get { return type; } }
     private int playerIdx;
@@ -25,6 +25,8 @@ public class SkinTicket
     public Card Card { get { return card; } }
     private Coord coord;
     public Coord Coord { get { return coord; } }
+    private Coord[] coords;
+    public Coord[] Coords { get { return coords; } }
 
     public SkinTicket(Piece piece, Type type)
     {
@@ -35,6 +37,14 @@ public class SkinTicket
     {
         this.piece = piece;
         this.coord = coord;
+        this.type = type;
+    }
+
+    // UPDATE_WAYPOINTS for UX
+    public SkinTicket(Piece piece, Coord[] coords, Type type)
+    {
+        this.piece = piece;
+        this.coords = coords;
         this.type = type;
     }
 

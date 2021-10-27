@@ -150,15 +150,11 @@ public class UX_Piece : MonoBehaviour
         }
     }
 
-    public void AddWaypoint(UX_Tile tile)
+    public void UpdateWaypoints(UX_Tile[] tiles)
     {
         for (int i = 0; i < waypoints.Length; i++)
         {
-            if (waypoints[i] == null)
-            {
-                waypoints[i] = tile;
-                break;
-            }
+            waypoints[i] = tiles[i];
         }
     }
 

@@ -36,4 +36,79 @@ public class Util
         }
         return new string(chars);
     }
+
+    public static int AddDirs(int horiz, int vert)
+    {
+        if (horiz == -1) return vert;
+        if (vert == -1) return horiz;
+        if (vert == UP)
+        {
+            if (horiz == LEFT) return UP_LEFT;
+            return UP_RIGHT;
+        }
+        else
+        {
+            if (horiz == LEFT) return DOWN_LEFT;
+            return DOWN_RIGHT;
+        }
+    }
+    public static int[] DiagToDirs(int diag)
+    {
+        if (diag == UP_LEFT) return new int[] { LEFT, UP };
+        if (diag == DOWN_LEFT) return new int[] { LEFT, DOWN };
+        if (diag == UP_RIGHT) return new int[] { RIGHT, UP };
+        if (diag == DOWN_RIGHT) return new int[] { RIGHT, DOWN };
+        return null;
+    }
+    public static bool InDiag(int diag, int straight)
+    {
+        if (diag == UP_LEFT)
+            return straight == UP || straight == LEFT;
+        else if (diag == UP_RIGHT)
+            return straight == UP || straight == RIGHT;
+        else if (diag == DOWN_LEFT)
+            return straight == DOWN || straight == LEFT;
+        else if (diag == DOWN_RIGHT)
+            return straight == DOWN || straight == RIGHT;
+        Debug.LogWarning("diag value \"" + diag + "\" not valid");
+        return false;
+    }
+
+    public static int[] GetDists(Coord a, Coord b, int totalSize)
+    {
+        int[] dists = new int[4];
+        if (a.X > b.X)
+        {
+            dists[Util.LEFT] = b.X - a.X;
+            dists[Util.RIGHT] = totalSize + dists[Util.LEFT];
+        }
+        else if (a.X < b.X)
+        {
+            dists[Util.RIGHT] = b.X - a.X;
+            dists[Util.LEFT] = totalSize + dists[Util.LEFT];
+        }
+        else
+        {
+            dists[Util.LEFT] = 0;
+            dists[Util.RIGHT] = 0;
+        }
+        if (a.Z > b.Z)
+        {
+            dists[Util.DOWN] = b.Z - a.Z;
+            dists[Util.UP] = totalSize + dists[Util.LEFT];
+        }
+        else if (a.Z < b.Z)
+        {
+            dists[Util.UP] = b.Z - a.Z;
+            dists[Util.DOWN] = totalSize + dists[Util.LEFT];
+        }
+        else
+        {
+            dists[Util.UP] = 0;
+            dists[Util.DOWN] = 0;
+        }
+        dists[Util.DOWN] *= -1;
+        dists[Util.LEFT] *= -1;
+        return dists;
+    }
 }

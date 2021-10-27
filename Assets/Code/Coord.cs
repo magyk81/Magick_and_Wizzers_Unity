@@ -35,6 +35,15 @@ public struct Coord
         if (dir == Util.RIGHT) { return new Coord(X + 1, Z); }
         return this;
     }
+    public Coord Dir(int horiz, int vert)
+    {
+        int newX = X, newZ = Z;
+        if (horiz == Util.LEFT) newX--;
+        else if (horiz == Util.RIGHT) newX++;
+        if (vert == Util.UP) newZ++;
+        else if (vert == Util.DOWN) newZ--;
+        return new Coord(newX, newZ);
+    }
     public static readonly Coord Null = new Coord(-1, -1);
     public static Coord operator +(Coord a, Coord b)
         => new Coord(a.X + b.X, a.Z + b.Z);

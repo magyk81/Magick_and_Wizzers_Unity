@@ -62,5 +62,8 @@ public class Match
         boards[0].InitMasters(InitInfo.players);
     }
 
-    public void MainLoop() {}
+    public void MainLoop()
+    {
+        foreach (Board board in boards) { board.Update(); }
+    }
 }
