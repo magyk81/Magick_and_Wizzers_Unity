@@ -106,22 +106,6 @@ public class Board
     {
         foreach (Piece piece in pieces)
         {
-            // if (!piece.IsNextTileSet() && piece.NextWaypoint.IsSet)
-            // {
-            //     int[] dists = Util.GetDists(
-            //         piece.Pos, piece.NextWaypoint.Tile, TOTAL_SIZE);
-            //     int horiz = -1, vert = -1;
-            //     if (Mathf.Abs(dists[Util.LEFT]) < dists[Util.RIGHT])
-            //         horiz = Util.LEFT;
-            //     else if (Mathf.Abs(dists[Util.LEFT]) > dists[Util.RIGHT])
-            //         horiz = Util.RIGHT;
-            //     if (Mathf.Abs(dists[Util.DOWN]) < dists[Util.UP])
-            //         vert = Util.DOWN;
-            //     else if (Mathf.Abs(dists[Util.DOWN]) > dists[Util.UP])
-            //         vert = Util.UP;
-            //     piece.SetNextTile(horiz, vert);
-            // }
-
             piece.Update();
         }
     }

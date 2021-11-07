@@ -176,9 +176,9 @@ public class UX_Board : MonoBehaviour
         else
         {            
             pieces[piece].SetPos(
-                tiles[piece.PosPrev.X, piece.PosPrev.Z],
                 tiles[piece.Pos.X, piece.Pos.Z],
-                piece.GetPosLerp());
+                tiles[piece.Pos.X, piece.Pos.Z],
+                1);
         }
     }
 
