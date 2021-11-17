@@ -10,6 +10,8 @@ using UnityEngine;
 
 public abstract class Card
 {
+    public readonly int ID;
+    private static int ID_count = 0;
     private string name;
     public string Name { get { return name; } }
     private Texture art;
@@ -20,6 +22,8 @@ public abstract class Card
     protected Card(string name, Texture art, int level,
         GameTerrain terrain)
     {
+        ID = ++ID_count;
+
         this.name = name;
         this.art = art;
 

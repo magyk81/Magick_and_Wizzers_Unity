@@ -98,7 +98,7 @@ public class Board
         piece.Pos = tile;
         piece.BoardTotalSize = TOTAL_SIZE;
         pieces.Add(piece);
-        Match.AddSkinTicket(new SkinTicket(piece, SkinTicket.Type.ADD_PIECE));
+        // Match.AddSkinTicket(new Signal(piece, Signal.Type.ADD_PIECE));
         return true;
     }
 

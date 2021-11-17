@@ -284,18 +284,18 @@ public class UX_Player : MonoBehaviour
                 {
                     foreach (UX_Piece piece in selectedPieces)
                     {
-                        UX_Match.AddSkinTicket(new SkinTicket(
-                            piece.Piece, hoveredTile.Pos,
-                            SkinTicket.Type.ADD_WAYPOINT));
+                        // UX_Match.AddSkinTicket(new Signal(
+                        //     piece.Piece, hoveredTile.Pos,
+                        //     Signal.Type.ADD_WAYPOINT));
                     }
                 }
             }
             // Play the selected card.
             else if (mode == Mode.TARGET_TILE)
             {
-                UX_Match.AddSkinTicket(new SkinTicket(
-                    playerIdx, cam.BoardIdx, hoveredPiece.Piece, playCard,
-                    hoveredTile.Pos, SkinTicket.Type.ADD_PIECE));
+                // UX_Match.AddSkinTicket(new Signal(
+                //     playerIdx, cam.BoardIdx, hoveredPiece.Piece, playCard,
+                //     hoveredTile.Pos, Signal.Type.ADD_PIECE));
                 playCard = null;
                 hand.Hide();
                 UnhoverTile();

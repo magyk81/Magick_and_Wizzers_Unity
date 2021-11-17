@@ -11,6 +11,12 @@ using UnityEngine;
 public class ControllerScript : MonoBehaviour
 {
     private static Player[] players;
+    public static int PlayerCount {
+        get {
+            if (players != null) return players.Length;
+            return 0;
+        }
+    }
 
     private Match match;
     private UX_Match uxMatch;
@@ -36,8 +42,8 @@ public class ControllerScript : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        match.SkinTickets = uxMatch.SkinTickets;
+        // match.Signals = uxMatch.Signals;
         match.MainLoop();
-        uxMatch.SkinTickets = match.SkinTickets;
+        // uxMatch.Signals = match.Signals;
     }
 }

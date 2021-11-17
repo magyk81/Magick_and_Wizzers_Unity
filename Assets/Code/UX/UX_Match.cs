@@ -21,41 +21,41 @@ public class UX_Match : MonoBehaviour
     private UX_Board[][] boards;
     public UX_Board[][] Boards { get { return boards; } }
 
-    private static List<SkinTicket> skinTickets = new List<SkinTicket>();
-    public static void AddSkinTicket(SkinTicket ticket)
-    {
-        skinTickets.Add(ticket);
-    }
-    public SkinTicket[] SkinTickets {
-        get {
-            SkinTicket[] arr = skinTickets.ToArray();
-            skinTickets.Clear();
-            return arr;
-        }
-        set {
-            foreach (SkinTicket ticket in value)
-            {
-                if (ticket.TicketType == SkinTicket.Type.ADD_PIECE)
-                {
-                    foreach (UX_Board board in boards[ticket.Piece.BoardIdx])
-                    {
-                        board.AddPiece(ticket.Piece);
-                    }
-                }
-                else if (ticket.TicketType == SkinTicket.Type.UPDATE_WAYPOINTS)
-                {
-                    foreach (UX_Board board in boards[ticket.Piece.BoardIdx])
-                    {
-                        board.UpdateWaypoints(ticket.Piece, ticket.Coords);
-                    }
-                    foreach (UX_Player player in players)
-                    {
-                        player.CalcIfWaypointsCommon();
-                    }
-                }
-            }
-        }
-    }
+    // private static List<Signal> signals = new List<Signal>();
+    // public static void AddSkinTicket(Signal signal)
+    // {
+    //     signals.Add(signal);
+    // }
+    // public Signal[] Signals {
+    //     get {
+    //         Signal[] arr = signals.ToArray();
+    //         signals.Clear();
+    //         return arr;
+    //     }
+    //     set {
+    //         foreach (Signal ticket in value)
+    //         {
+    //             if (ticket.SignalType == Signal.Type.ADD_PIECE)
+    //             {
+    //                 foreach (UX_Board board in boards[ticket.Piece.BoardIdx])
+    //                 {
+    //                     board.AddPiece(ticket.Piece);
+    //                 }
+    //             }
+    //             else if (ticket.SignalType == Signal.Type.UPDATE_WAYPOINTS)
+    //             {
+    //                 foreach (UX_Board board in boards[ticket.Piece.BoardIdx])
+    //                 {
+    //                     board.UpdateWaypoints(ticket.Piece, ticket.Coords);
+    //                 }
+    //                 foreach (UX_Player player in players)
+    //                 {
+    //                     player.CalcIfWaypointsCommon();
+    //                 }
+    //             }
+    //         }
+    //     }
+    // }
 
     /// <summary>Called once before the match begins.</summary>
     public void Init(Player[] players, Board[] boards)

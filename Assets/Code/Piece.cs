@@ -11,6 +11,8 @@ using System.Linq.Expressions;
 
 public class Piece
 {
+    public readonly int ID;
+    private static int ID_count = 0;
 
     private Coord pos;
     public Coord Pos {
@@ -46,6 +48,8 @@ public class Piece
     public static readonly int MAX_WAYPOINTS = 5;
     public Piece(int playerIdx, int boardIdx, Card card)
     {
+        ID = ++ID_count;
+
         this.name = card.Name;
         this.playerIdx = playerIdx;
         this.boardIdx = boardIdx;
@@ -59,6 +63,8 @@ public class Piece
     }
     public Piece(string name, int playerIdx, int boardIdx, Texture art)
     {
+        ID = ++ID_count;
+
         this.name = name;
         this.playerIdx = playerIdx;
         this.art = art;
@@ -131,8 +137,8 @@ public class Piece
             waypointTiles[i] = waypoints[i].Tile;
         }
 
-        Match.AddSkinTicket(new SkinTicket(
-            this, waypointTiles, SkinTicket.Type.UPDATE_WAYPOINTS));
+        // Match.AddSkinTicket(new Signal(
+        //     this, waypointTiles, Signal.Type.UPDATE_WAYPOINTS));
     }
     public bool HasSameWaypoints(Piece piece)
     {

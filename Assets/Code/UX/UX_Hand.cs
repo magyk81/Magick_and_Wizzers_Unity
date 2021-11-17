@@ -49,8 +49,7 @@ public class UX_Hand : MonoBehaviour
         public Coord Next { set
             {
                 cardPos.Next = value;
-                //if (tickCountdown <= 0 && value != Curr)
-                    tickCountdown = MAX_TICK_COUNT;
+                tickCountdown = MAX_TICK_COUNT;
             } }
         public Coord Curr { get { return cardPos.Curr; } }
         private RectTransform rectTran;
@@ -100,6 +99,14 @@ public class UX_Hand : MonoBehaviour
             rectTran.anchoredPosition = Curr.ToVec2();
 
             return inGridYet;
+        }
+
+        // Puts the card in its final place, skipping the animation.
+        public void Finish()
+        {
+            tickCountdown = 0;
+            cardPos.Lerp(1);
+            rectTran.anchoredPosition = Curr.ToVec2();
         }
     }
 
@@ -162,6 +169,8 @@ public class UX_Hand : MonoBehaviour
     {
         if (setupDone)
         {
+            //foreach (UX_Card card in cards) { card.Finish(); }
+
             cardParent.gameObject.SetActive(false);
             cursor.gameObject.SetActive(false);
             if (hideAll) playCard.gameObject.SetActive(false);
