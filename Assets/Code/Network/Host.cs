@@ -7,15 +7,17 @@ using System.Net.Sockets;
 using System.Threading;
 using UnityEngine;
 
-public class HostScript : SocketScript
+public class Host : SocketHand
 {
     private Socket[] clientSockets;
+    private int clientCount;
     private int connClientCount = 0;
 
-    [SerializeField]
-    private int debugClientCount;
-    [SerializeField]
-    private KeyCode debugKey = KeyCode.None;
+    public Host(string ipAddress, int port, int clientCount)
+        : base(ipAddress, port)
+    {
+        this.clientCount = clientCount;
+    }
 
     private bool OpenConnection(int idx)
     {
@@ -32,8 +34,7 @@ public class HostScript : SocketScript
 
     protected override void Run()
     {
-        clientSockets = new Socket[ControllerScript.PlayerCount > 0
-            ? ControllerScript.PlayerCount : debugClientCount];
+        clientSockets = new Socket[clientCount];
         if (clientSockets.Length <= 0)
         {
             Debug.LogError("Error: clientSockets.Length is "
@@ -43,8 +44,8 @@ public class HostScript : SocketScript
 
         while (!terminating && !connected)
         {
-            IPEndPoint endPoint
-                = new IPEndPoint(IPAddress.Parse(ipAddress), port);
+            IPEndPoint endPoint = new IPEndPoint(
+                IPAddress.Parse(ipAddress), port);
             
             try {
                 socket.Bind(endPoint);
@@ -73,11 +74,11 @@ public class HostScript : SocketScript
             if (clientSockets.Length > 2)
             {
                 Debug.Log("Host connected to all " + clientSockets.Length
-                    + " client sockets.");
+                    + " clients.");
             }
             else if (clientSockets.Length == 2)
-                Debug.Log("Host connected to both client sockets.");
-            else Debug.Log("Host connected to single client socket.");
+                Debug.Log("Host connected to both clients.");
+            else Debug.Log("Host connected to single client.");
         }
 
         while (!terminating)
@@ -97,27 +98,27 @@ public class HostScript : SocketScript
     }
 
     // Update is called once per frame
-    private void Update()
-    {
-        if (debugKey != KeyCode.None && connected && !terminating)
-        {
-            if (Input.GetKeyDown(debugKey))
-            {
-                // Generate random data.
-                System.Random rand = new System.Random();
-                int GetRandInt() { return rand.Next() % 100; };
-                int randPlayerID = GetRandInt(),
-                    randCardID = GetRandInt(),
-                    randPieceID = GetRandInt();
-                Coord randTile = Coord._(GetRandInt(), GetRandInt());
+    // private void Update()
+    // {
+    //     if (debugKey != KeyCode.None && connected && !terminating)
+    //     {
+    //         if (Input.GetKeyDown(debugKey))
+    //         {
+    //             // Generate random data.
+    //             System.Random rand = new System.Random();
+    //             int GetRandInt() { return rand.Next() % 100; };
+    //             int randPlayerID = GetRandInt(),
+    //                 randCardID = GetRandInt(),
+    //                 randPieceID = GetRandInt();
+    //             Coord randTile = Coord._(GetRandInt(), GetRandInt());
 
-                SignalFromHost signal = SignalFromHost.AddPiece(
-                    randPlayerID, randCardID, randPieceID, randTile);
+    //             SignalFromHost signal = SignalFromHost.AddPiece(
+    //                 randPlayerID, randCardID, randPieceID, randTile);
 
-                SendSignals(signal);
-            }
-        }
-    }
+    //             SendSignals(signal);
+    //         }
+    //     }
+    // }
 
     public override void Terminate()
     {
@@ -136,6 +137,4 @@ public class HostScript : SocketScript
         }
         
     }
-
-    private void OnDestroy() { Terminate(); }
 }

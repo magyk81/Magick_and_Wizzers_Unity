@@ -7,10 +7,15 @@ using System.Net.Sockets;
 using System.Threading;
 using UnityEngine;
 
-public class ClientScript : SocketScript
+public class Client : SocketHand
 {
-    private int playerIdx = -1;
-    public int PlayerIdx { set { playerIdx = value; } }
+    private int id = -1;
+    public int ID { get { return id; } }
+
+    public Client(string ipAddress, int port, int id) : base(ipAddress, port)
+    {
+        this.id = id;
+    }
 
     private bool OpenConnection()
     {
@@ -35,7 +40,7 @@ public class ClientScript : SocketScript
             Thread.Sleep(1000);
         }
         connected = true;
-        Debug.Log("Client listening to host.");
+        Debug.Log("Client connected to host.");
 
         while (!terminating)
         {
@@ -56,6 +61,4 @@ public class ClientScript : SocketScript
             if (socket != null) socket.Close();
         }
     }
-
-    private void OnDestroy() { Terminate(); }
 }

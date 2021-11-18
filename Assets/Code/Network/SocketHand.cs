@@ -7,7 +7,7 @@ using System.Net.Sockets;
 using System.Threading;
 using UnityEngine;
 
-public abstract class SocketScript : MonoBehaviour
+public abstract class SocketHand
 {
     protected Socket socket; private Thread thread;
     protected bool connected = false, terminating = false;
@@ -22,25 +22,24 @@ public abstract class SocketScript : MonoBehaviour
     protected List<int[]> messagesReceived = new List<int[]>();
     private List<Signal> messagesToSend = new List<Signal>();
     
-    [SerializeField]
     protected string ipAddress;
-    [SerializeField]
-    protected int port = 6969;
+    protected int port;
 
-    // Start is called before the first frame update
-    protected void Start()
+    protected SocketHand(string ipAddress, int port)
     {
         IPHostEntry ipHostEntry = Dns.GetHostEntry(Dns.GetHostName());
 
         if (ipHostEntry == null || ipAddress.Length == 0
             || ipAddress.Equals("localhost"))
         {
-            foreach (IPAddress ipAddress in ipHostEntry.AddressList)
+            foreach (IPAddress address in ipHostEntry.AddressList)
             {
-                if (ipAddress.AddressFamily == AddressFamily.InterNetwork)
-                    this.ipAddress = ipAddress.ToString();
+                if (address.AddressFamily == AddressFamily.InterNetwork)
+                    this.ipAddress = address.ToString();
             }
         }
+        else this.ipAddress = ipAddress;
+        this.port = port;
 
         Debug.Log("Sender using IP address: " + ipAddress + ":" + port);
 
@@ -118,9 +117,12 @@ public abstract class SocketScript : MonoBehaviour
         return 1;
     }
 
-    protected void ClearMessagesToSend() { messagesToSend.Clear(); }
+    protected void ClearMessagesToSend()
+    {
+        lock(threadLocks[1]) { messagesToSend.Clear(); }
+    }
 
-    // Called from non-network class.
+    // Called from ControllerScript.
     public int[][] MessagesReceived {
         get {
             lock (threadLocks[0])
@@ -133,7 +135,7 @@ public abstract class SocketScript : MonoBehaviour
         }
     }
 
-    // Called from non-network class.
+    // Called from ControllerScript.
     public void SendSignals(params Signal[] signals) {
         lock (threadLocks[1])
         {

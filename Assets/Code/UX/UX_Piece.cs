@@ -39,15 +39,15 @@ public class UX_Piece : MonoBehaviour
     }
 
     /// <summary>Called once before the match begins.</summary>
-    public void Init(Piece piece)
+    public void Init(Piece piece, int layerCount)
     {
         this.piece = piece;
         tra = GetComponent<Transform>();
 
         if (piece.pieceType == Piece.Type.MASTER)
         {
-            lifeBar = new GameObject[UX_Match.localPlayerCount];
-            for (int i = 0; i < UX_Match.localPlayerCount; i++)
+            lifeBar = new GameObject[layerCount];
+            for (int i = 0; i < layerCount; i++)
             {
                 lifeBar[i] = Instantiate(lifeBar_base, tra);
                 lifeBar[i].layer = LAYER + i;
@@ -57,16 +57,16 @@ public class UX_Piece : MonoBehaviour
         }
         else if (piece.pieceType == Piece.Type.CREATURE)
         {
-            attackBar = new GameObject[UX_Match.localPlayerCount];
-            for (int i = 0; i < UX_Match.localPlayerCount; i++)
+            attackBar = new GameObject[layerCount];
+            for (int i = 0; i < layerCount; i++)
             {
                 attackBar[i] = Instantiate(attackBar_base, tra);
                 attackBar[i].layer = LAYER + i;
                 attackBar[i].name = "Attack Bar - view " + i;
             }
             SetActive(attackBar, true);
-            defenseBar = new GameObject[UX_Match.localPlayerCount];
-            for (int i = 0; i < UX_Match.localPlayerCount; i++)
+            defenseBar = new GameObject[layerCount];
+            for (int i = 0; i < layerCount; i++)
             {
                 defenseBar[i] = Instantiate(defenseBar_base, tra);
                 defenseBar[i].layer = LAYER + i;
@@ -75,12 +75,12 @@ public class UX_Piece : MonoBehaviour
             SetActive(defenseBar, true);
         }
 
-        art = new GameObject[UX_Match.localPlayerCount];
+        art = new GameObject[layerCount];
         artMat = new Material(
             art_base.GetComponent<MeshRenderer>().sharedMaterial);
         artMat.name = "Piece Art Material - " + piece.Name;
         artMat.mainTexture = piece.Art;
-        for (int i = 0; i < UX_Match.localPlayerCount; i++)
+        for (int i = 0; i < layerCount; i++)
         {
             art[i] = Instantiate(art_base, tra);
             art[i].GetComponent<MeshRenderer>().material = artMat;
@@ -88,8 +88,8 @@ public class UX_Piece : MonoBehaviour
             art[i].name = "Art - view " + i;
         }
         SetActive(art, true);
-        frame = new GameObject[UX_Match.localPlayerCount];
-        for (int i = 0; i < UX_Match.localPlayerCount; i++)
+        frame = new GameObject[layerCount];
+        for (int i = 0; i < layerCount; i++)
         {
             frame[i] = Instantiate(frame_base, tra);
             frame[i].layer = LAYER + i;
@@ -101,24 +101,24 @@ public class UX_Piece : MonoBehaviour
         }
         SetActive(frame, true);
 
-        hover = new GameObject[UX_Match.localPlayerCount];
-        for (int i = 0; i < UX_Match.localPlayerCount; i++)
+        hover = new GameObject[layerCount];
+        for (int i = 0; i < layerCount; i++)
         {
             hover[i] = Instantiate(hover_base, tra);
             hover[i].layer = LAYER + i;
             hover[i].name = "Hover Crown - view " + i;
         }
         SetActive(hover, false);
-        select = new GameObject[UX_Match.localPlayerCount];
-        for (int i = 0; i < UX_Match.localPlayerCount; i++)
+        select = new GameObject[layerCount];
+        for (int i = 0; i < layerCount; i++)
         {
             select[i] = Instantiate(select_base, tra);
             select[i].layer = LAYER + i;
             select[i].name = "Select Crown - view " + i;
         }
         SetActive(select, false);
-        target = new GameObject[UX_Match.localPlayerCount];
-        for (int i = 0; i < UX_Match.localPlayerCount; i++)
+        target = new GameObject[layerCount];
+        for (int i = 0; i < layerCount; i++)
         {
             target[i] = Instantiate(target_base, tra);
             target[i].layer = LAYER + i;

@@ -31,9 +31,51 @@ public class SignalFromHost : Signal
         }
     }
 
-    public enum Request { ADD_PIECE, REMOVE_PIECE, MOVE_PIECE,
+    public enum Request { SET_CHUNK_SIZE, ADD_PLAYER, ADD_BOARD,
+        ADD_PIECE, REMOVE_PIECE, MOVE_PIECE,
         ADD_CARD, REMOVE_CARD,
         ADD_WAYPOINT, REMOVE_WAYPOINT }
+
+    // Only used before match starts.
+    public static SignalFromHost SetChunkSize(int chunkSize)
+    {
+        return new SignalFromHost(
+            (int) Request.SET_CHUNK_SIZE,   // Request enum
+            chunkSize                       // How many tiles long is a chunk
+        );
+    }
+
+    // Only used before match starts.
+    public static SignalFromHost AddPlayer(int playerID, int clientID,
+        bool isBot, string name)
+    {
+        int[] data = new int[5 + name.Length];
+        data[0] = (int) Request.ADD_PLAYER; // Request enum
+        data[1] = playerID;                 // Player ID
+        data[2] = clientID;                 // What machine she's from
+        data[3] = isBot ? 1 : 0;            // If it's a bot
+        data[4] = name.Length;              // How many chars in the name
+        for (int i = 5, j = 0; j < name.Length; i++, j++)
+        {
+            data[i] = name[j];
+        }
+        return new SignalFromHost(data);
+    }
+
+    // Only used before match starts.
+    public static SignalFromHost AddBoard(int boardID, int size, string name)
+    {
+        int[] data = new int[4 + name.Length];
+        data[0] = (int) Request.ADD_BOARD;  // Request enum
+        data[1] = boardID;                  // Board ID
+        data[2] = size;                     // How many chunks long is a board
+        data[3] = name.Length;              // How many chars in the name
+        for (int i = 4, j = 0; j < name.Length; i++, j++)
+        {
+            data[i] = name[j];
+        }
+        return new SignalFromHost(data);
+    }
 
     public static SignalFromHost AddPiece(int playerID, int cardID,
         int pieceID, Coord tile)

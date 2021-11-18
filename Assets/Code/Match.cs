@@ -10,14 +10,21 @@ using UnityEngine;
 
 public class Match
 {
-    private static class InitInfo
-    {
-        public static Player[] players;
-    }
-    public static Player[] Players {
-        set { InitInfo.players = value; } }
+    private Player[] players;
+    private Board[] boards;
 
-    private Board[] boards = new Board[2];
+    public void ApplyMessagesFromClient(params int[][] messages)
+    {
+        if (messages == null) return;
+        for (int i = 0; i < messages.Length; i++)
+        {
+            int[] message = messages[i];
+            if (message[1] == (int) SignalFromClient.Request.CAST_SPELL)
+            {
+                Debug.Log("Cast Spell");
+            }
+        }
+    }
 
     // private static List<Signal> skinTickets = new List<Signal>();
     // public static void AddSkinTicket(Signal ticket)
@@ -49,17 +56,26 @@ public class Match
     //     }
     // }
 
-    public Match()
+    private static Player[] parsePlayerData(int[][] data)
     {
-        boards[0] = new Board("Main", 0);
-        boards[1] = new Board("Sheol", 1, 1);
+        Player[] players = new Player[data.Length];
+        return players;
     }
-    public void InitUX(UX_Match uxMatch)
+    private static Board[] parseBoardData(int[][] data)
     {
-        uxMatch.Init(InitInfo.players, boards);
+        Board[] boards = new Board[data.Length];
+        return boards;
+    }
+    public Match(int[][] playerData, int[][] boardData)
+        : this(parsePlayerData(playerData), parseBoardData(boardData)) { }
+
+    public Match(Player[] players, Board[] boards)
+    {
+        this.players = players;
+        this.boards = boards;
 
         // Set initial masters.
-        boards[0].InitMasters(InitInfo.players);
+        boards[0].InitMasters(players);
     }
 
     public void MainLoop()

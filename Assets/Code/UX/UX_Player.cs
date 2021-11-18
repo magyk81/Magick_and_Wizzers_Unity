@@ -50,7 +50,8 @@ public class UX_Player : MonoBehaviour
     }
 
     /// <summary>Called once before the match begins.</summary>
-    public void Init(int playerIdx, int localPlayerIdx, float[][] boardBounds)
+    public void Init(int playerIdx, int localPlayerIdx, float[][] boardBounds,
+        int quadSize)
     {
         this.playerIdx = playerIdx;
         this.localPlayerIdx = localPlayerIdx;
@@ -64,10 +65,10 @@ public class UX_Player : MonoBehaviour
 
         // Generate tile colliders.
         UX_Collider[,] tileColls = new UX_Collider[
-            Chunk.Size / 2, Chunk.Size / 2];
-        for (int i = 0; i < Chunk.Size / 2; i++)
+            quadSize, quadSize];
+        for (int i = 0; i < quadSize; i++)
         {
-            for (int j = 0; j < Chunk.Size/ 2; j++)
+            for (int j = 0; j < quadSize; j++)
             {
                 tileColls[i, j] = Instantiate(
                     baseColl.gameObject,

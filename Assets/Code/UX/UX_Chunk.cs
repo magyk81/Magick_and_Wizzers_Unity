@@ -29,7 +29,7 @@ public class UX_Chunk : MonoBehaviour
     }
 
     /// <summary>Called once before the match begins.</summary>
-    public void Init(Coord pos, int boardIdx, UX_Tile[,] tiles)
+    public void Init(Coord pos, int boardIdx, UX_Tile[,] tiles, int layerCount)
     {
         this.boardIdx = boardIdx;
         this.pos = pos.Copy();
@@ -39,8 +39,8 @@ public class UX_Chunk : MonoBehaviour
 
         // Generate colliders.
         Transform tra = GetComponent<Transform>();
-        colliders = new UX_Collider[UX_Match.localPlayerCount];
-        for (int i = 0; i < UX_Match.localPlayerCount; i++)
+        colliders = new UX_Collider[layerCount];
+        for (int i = 0; i < layerCount; i++)
         {
             UX_Collider coll = Instantiate(baseCollider, tra)
                 .GetComponent<UX_Collider>();

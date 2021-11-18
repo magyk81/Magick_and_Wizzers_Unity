@@ -25,7 +25,7 @@ public class UX_Board : MonoBehaviour
     private int boardIdx, cloneIdx;
 
     /// <summary>Called once before the match begins.</summary>
-    public void Init(int size, int boardIdx,
+    public void Init(int size, int totalSize, int layerCount, int boardIdx,
         int cloneIdx = -1, UX_Board realBoard = null)
     {
         this.boardIdx = boardIdx;
@@ -41,29 +41,29 @@ public class UX_Board : MonoBehaviour
                 || cloneIdx == Util.UP_RIGHT)
             {
                 jEnd = cloneLength;
-                cloneOffsetZ = size * Chunk.Size;
+                cloneOffsetZ = totalSize;
             }
             if (cloneIdx == Util.DOWN || cloneIdx == Util.DOWN_LEFT
                 || cloneIdx == Util.DOWN_RIGHT)
             {
                 j0 = size - cloneLength;
-                cloneOffsetZ = -size * Chunk.Size;
+                cloneOffsetZ = -totalSize;
             }
             if (cloneIdx == Util.RIGHT || cloneIdx == Util.UP_RIGHT
                 || cloneIdx == Util.DOWN_RIGHT)
             {
                 iEnd = cloneLength;
-                cloneOffsetX = size * Chunk.Size;
+                cloneOffsetX = totalSize;
             }
             if (cloneIdx == Util.LEFT || cloneIdx == Util.UP_LEFT
                 || cloneIdx == Util.DOWN_LEFT)
             {
                 i0 = size - cloneLength;
-                cloneOffsetX = -size * Chunk.Size;
+                cloneOffsetX = -totalSize;
             }
         }
 
-        tiles = new UX_Tile[size * Chunk.Size, size * Chunk.Size];
+        tiles = new UX_Tile[totalSize, totalSize];
         chunks = new UX_Chunk[size, size];
 
         Transform chunkParent = new GameObject().GetComponent<Transform>();
@@ -94,31 +94,32 @@ public class UX_Board : MonoBehaviour
                 }
                 
                 // Position and scale chunks.
+                int chunkSize = totalSize / size;
                 Transform chunkTra = chunks[i, j].GetComponent<Transform>();
                 chunkTra.localScale = new Vector3(
-                    Chunk.Size, Chunk.Size, 1);
+                    chunkSize, chunkSize, 1);
                 Coord chunkPos = Coord._(
-                    (i * Chunk.Size) + cloneOffsetX + apartOffset,
-                    (j * Chunk.Size) + cloneOffsetZ);
+                    (i * chunkSize) + cloneOffsetX + apartOffset,
+                    (j * chunkSize) + cloneOffsetZ);
                 chunkTra.localPosition = new Vector3(
-                    chunkPos.X + ((float) Chunk.Size / 2F),
+                    chunkPos.X + ((float) chunkSize / 2F),
                     0,
-                    chunkPos.Z + ((float) Chunk.Size / 2F));
+                    chunkPos.Z + ((float) chunkSize / 2F));
 
                 // Generate tiles.
-                UX_Tile[,] chunkTiles = new UX_Tile[Chunk.Size, Chunk.Size];
-                for (int a = 0; a < Chunk.Size; a++)
+                UX_Tile[,] chunkTiles = new UX_Tile[chunkSize, chunkSize];
+                for (int a = 0; a < chunkSize; a++)
                 {
-                    for (int b = 0; b < Chunk.Size; b++)
+                    for (int b = 0; b < chunkSize; b++)
                     {
                         Coord tilePos = Coord._(
-                            i * Chunk.Size + a, j * Chunk.Size + b);
+                            i * chunkSize + a, j * chunkSize + b);
                         tiles[tilePos.X, tilePos.Z] = new UX_Tile(
-                            tilePos, size * Chunk.Size, apartOffset,
+                            tilePos, size * chunkSize, apartOffset,
                             cloneIdx, boardIdx);
                         chunkTiles[
-                            tilePos.X - (i * Chunk.Size),
-                            tilePos.Z - (j * Chunk.Size)]
+                            tilePos.X - (i * chunkSize),
+                            tilePos.Z - (j * chunkSize)]
                             = tiles[tilePos.X, tilePos.Z];
                         
                         if (cloneIdx != -1)
@@ -129,7 +130,7 @@ public class UX_Board : MonoBehaviour
                     }
                 }
 
-                chunks[i, j].Init(Coord._(i, j), boardIdx, chunkTiles);
+                chunks[i, j].Init(Coord._(i, j), boardIdx, chunkTiles, layerCount);
                 chunks[i, j].gameObject.SetActive(true);
             }
         }
@@ -151,7 +152,7 @@ public class UX_Board : MonoBehaviour
         return bounds;
     }
 
-    public void AddPiece(Piece piece)
+    public void AddPiece(Piece piece, int layerCount)
     {
         UX_Piece uxPiece = Instantiate(
             basePiece.gameObject,
@@ -160,7 +161,7 @@ public class UX_Board : MonoBehaviour
         uxPiece.gameObject.name = piece.Name;
         pieces.Add(piece, uxPiece);
 
-        uxPiece.Init(piece);
+        uxPiece.Init(piece, layerCount);
         MovePiece(piece);
     }
 

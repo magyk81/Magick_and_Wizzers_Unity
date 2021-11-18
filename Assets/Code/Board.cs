@@ -10,36 +10,28 @@ using UnityEngine;
 
 public class Board
 {
-    private static class InitInfo
-    {
-        public static int size;
-    }
-    private int customSize = 0;
-    public static int Size { set { InitInfo.size = value; } }
-    public int GetSize()
-    {
-        if (customSize > 0) return customSize;
-        else return InitInfo.size;
-    }
-
+    private readonly int SIZE;
     private readonly int TOTAL_SIZE;
+    public int Size { get { return SIZE; } }
+    public int TotalSize { get { return TOTAL_SIZE; } }
     private Chunk[,] chunks;
     private List<Piece> pieces = new List<Piece>();
     private string name;
     public string Name { get { return name; } }
     private int idx;
-    public Board(string name, int idx, int customSize = 0)
+    public int Idx { get { return idx; } }
+    public Board(string name, int idx, int size, int chunkSize)
     {
         this.name = name;
         this.idx = idx;
-        this.customSize = customSize;
-        TOTAL_SIZE = Chunk.Size * InitInfo.size;
-        chunks = new Chunk[GetSize(), GetSize()];
-        for (int i = 0; i < GetSize(); i++)
+        SIZE = size;
+        TOTAL_SIZE = size * chunkSize;
+        chunks = new Chunk[size, size];
+        for (int i = 0; i < size; i++)
         {
-            for (int j = 0; j < GetSize(); j++)
+            for (int j = 0; j < size; j++)
             {
-                chunks[i, j] = new Chunk(Coord._(i, j));
+                chunks[i, j] = new Chunk(Coord._(i, j), chunkSize);
             }
         }
     }
@@ -79,7 +71,8 @@ public class Board
     /// </returns>
     public Coord TileToChunk(Coord tile)
     {
-        return Coord._(tile.X / Chunk.Size, tile.Z / Chunk.Size);
+        int chunkSize = chunks[0, 0].Size;
+        return Coord._(tile.X / chunkSize, tile.Z / chunkSize);
     }
 
     /// <returns>True if the piece was successfully added. False otherwise.

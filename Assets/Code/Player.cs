@@ -14,13 +14,15 @@ public class Player
     public string Name { get { return name; } }
     private readonly int idx;
     public int Idx { get { return idx; } }
-    public enum Type { LOCAL_PLAYER, REMOTE_PLAYER, BOT }
-    private readonly Type PLAYER_TYPE;
-    public Type PlayerType { get { return PLAYER_TYPE; } }
-    public Player(string name, int idx, Type playerType)
+    private readonly int CLIENT_ID;
+    public int ClientID { get { return CLIENT_ID; } }
+    private bool isBot;
+    public bool IsBot { get { return isBot; } }
+    public Player(string name, int idx, int clientID, bool isBot)
     {
         this.name = name;
         this.idx = idx;
-        PLAYER_TYPE = playerType;
+        CLIENT_ID = clientID;
+        this.isBot = isBot;
     }
 }

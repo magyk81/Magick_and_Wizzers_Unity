@@ -17,9 +17,21 @@ public class UX_Match : MonoBehaviour
 
     private UX_Player[] players;
     public UX_Player[] Players { get { return players; } }
-    public static int localPlayerCount;
     private UX_Board[][] boards;
     public UX_Board[][] Boards { get { return boards; } }
+
+    public void ApplyMessagesFromHost(params int[][] messages)
+    {
+        if (messages == null) return;
+        for (int i = 0; i < messages.Length; i++)
+        {
+            int[] message = messages[i];
+            if (message[0] == (int) SignalFromHost.Request.ADD_PIECE)
+            {
+                Debug.Log("Add Piece");
+            }
+        }
+    }
 
     // private static List<Signal> signals = new List<Signal>();
     // public static void AddSkinTicket(Signal signal)
@@ -58,81 +70,81 @@ public class UX_Match : MonoBehaviour
     // }
 
     /// <summary>Called once before the match begins.</summary>
-    public void Init(Player[] players, Board[] boards)
+    public void Init(int[] playerIDs, string[] playerNames, int[][] boardData,
+        int chunkSize)
     {
         // Prep uxBoard bounds.
-        float[][] boardBounds = new float[boards.Length][];
-
-        // Calculate number of local players.
-        int localPlayerCount = 0;
-        for (int i = 0; i < players.Length; i++)
-        {
-            if (players[i].PlayerType == Player.Type.LOCAL_PLAYER)
-                localPlayerCount++;
-        }
-        UX_Match.localPlayerCount = localPlayerCount;
+        float[][] boardBounds = new float[boardData.Length][];
 
         // Generate uxBoards.
         Transform boardGroup = new GameObject().GetComponent<Transform>();
         boardGroup.gameObject.name = "Boards";
-        this.boards = new UX_Board[boards.Length][];
+        boards = new UX_Board[boardData.Length][];
         for (int i = 0; i < boards.Length; i++)
         {
+            // Get name from boardData's char array
+            char[] boardDataChars = new char[boardData[i][3]];
+            for (int j = 0; j < boardData[i][3]; j++)
+            {
+                boardDataChars[j] = (char) boardData[i][j + 4];
+            }
+
             // 1 real uxBoard + 8 clone uxBoards
-            this.boards[i] = new UX_Board[9];
+            boards[i] = new UX_Board[9];
             Transform boardParent = new GameObject().GetComponent<Transform>();
             boardParent.parent = boardGroup;
-            boardParent.gameObject.name = boards[i].Name;
+            boardParent.gameObject.name = boardDataChars.ToString();
             boardParent.gameObject.SetActive(true);
 
-            for (int j = 0; j < this.boards[i].Length; j++)
+            int boardTotalSize = boardData[i][2] * chunkSize;
+
+            for (int j = 0; j < boards[i].Length; j++)
             {
-                this.boards[i][j] = Instantiate(
+                boards[i][j] = Instantiate(
                     baseBoard.gameObject,
                     boardParent).GetComponent<UX_Board>();
                 if (j == 0)
                 {
-                    this.boards[i][j].gameObject.name = "Board - Real";
-                    this.boards[i][j].Init(boards[i].GetSize(), i);
-                    boardBounds[i] = this.boards[i][j].GetBounds();
+                    boards[i][j].gameObject.name = "Board - Real";
+                    boards[i][j].Init(
+                        boardData[i][2], boardTotalSize, playerIDs.Length, i);
+                    boardBounds[i] = boards[i][j].GetBounds();
                 }
                 else
                 {
-                    this.boards[i][j].gameObject.name = "Board - Clone "
+                    boards[i][j].gameObject.name = "Board - Clone "
                         + Util.DirToString(j - 1);
-                    this.boards[i][j].Init(
-                        boards[i].GetSize(), i, j - 1, this.boards[i][0]);
+                    boards[i][j].Init(
+                        boardData[i][2], boardTotalSize, playerIDs.Length, i,
+                        j - 1, boards[i][0]);
                 }
             }
         }
 
         // Generate uxPlayers
-        this.players = new UX_Player[localPlayerCount];
+        players = new UX_Player[playerIDs.Length];
         Transform playerGroup = new GameObject().GetComponent<Transform>();
         playerGroup.gameObject.name = "Players";
-        for (int i = 0, j = 0; i < players.Length; i++)
+        for (int i = 0; i < playerIDs.Length; i++)
         {
-            if (players[i].PlayerType == Player.Type.LOCAL_PLAYER)
-            {
-                this.players[j] = Instantiate(
-                    basePlayer.gameObject,
-                    playerGroup
-                ).GetComponent<UX_Player>();
-                this.players[j].gameObject.name = players[i].Name;
-                this.players[j].gameObject.SetActive(true);
-                this.players[j].Init(i, j, boardBounds);
-
-                j++;
-            }
+            players[i] = Instantiate(basePlayer.gameObject, playerGroup)
+                .GetComponent<UX_Player>();
+            players[i].gameObject.name = playerNames[i];
+            players[i].gameObject.SetActive(true);
+            players[i].Init(playerIDs[i], i, boardBounds, chunkSize / 2);
         }
     }
 
     public void Update()
     {
-        foreach (UX_Player player in players)
+        if (players != null)
         {
-            player.QueryCamera();
-            player.QueryGamepad();
+            foreach (UX_Player player in players)
+            {
+                player.QueryCamera();
+                player.QueryGamepad();
+            }
         }
+        
     }
 }
