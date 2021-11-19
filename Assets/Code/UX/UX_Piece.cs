@@ -17,14 +17,14 @@ public class UX_Piece : MonoBehaviour
         select, target;
     private enum Part {
         ART, FRAME, ATTACK, DEFENSE, LIFE, HOVER, SELECT, TARGET, COUNT };
-    private Piece piece;
-    public Piece Piece { get { return piece; } }
     private Transform tra;
     private Material artMat;
     private UX_Tile[] waypoints = new UX_Tile[Piece.MAX_WAYPOINTS];
     public UX_Tile[] Waypoints { get { return waypoints; } }
     private readonly static float LIFT_DIST = 0.1F;
     public readonly static int LAYER = 6;
+
+    private int playerID; public int PlayerID { get { return playerID; } }
 
     // Start is called before the first frame update
     void Start()
@@ -39,12 +39,11 @@ public class UX_Piece : MonoBehaviour
     }
 
     /// <summary>Called once before the match begins.</summary>
-    public void Init(Piece piece, int layerCount)
+    public void Init(SignalFromHost signal, string pieceName, int layerCount)
     {
-        this.piece = piece;
         tra = GetComponent<Transform>();
 
-        if (piece.pieceType == Piece.Type.MASTER)
+        if (signal.PieceType == (int) Piece.Type.MASTER)
         {
             lifeBar = new GameObject[layerCount];
             for (int i = 0; i < layerCount; i++)
@@ -55,7 +54,7 @@ public class UX_Piece : MonoBehaviour
             }
             SetActive(lifeBar, true);
         }
-        else if (piece.pieceType == Piece.Type.CREATURE)
+        else if (signal.PieceType == (int) Piece.Type.CREATURE)
         {
             attackBar = new GameObject[layerCount];
             for (int i = 0; i < layerCount; i++)
@@ -78,8 +77,8 @@ public class UX_Piece : MonoBehaviour
         art = new GameObject[layerCount];
         artMat = new Material(
             art_base.GetComponent<MeshRenderer>().sharedMaterial);
-        artMat.name = "Piece Art Material - " + piece.Name;
-        artMat.mainTexture = piece.Art;
+        artMat.name = "Piece Art Material - " + pieceName;
+        // artMat.mainTexture = piece.Art;
         for (int i = 0; i < layerCount; i++)
         {
             art[i] = Instantiate(art_base, tra);
@@ -126,9 +125,9 @@ public class UX_Piece : MonoBehaviour
         }
         SetActive(target, false);
 
-        if (piece.pieceType == Piece.Type.MASTER)
-            gameObject.name = "Master - " + piece.Name;
-        else gameObject.name = "Piece - " + piece.Name;
+        if (signal.PieceType == (int) Piece.Type.MASTER)
+            gameObject.name = "Master - " + pieceName;
+        else gameObject.name = "Piece - " + pieceName;
     }
 
     private void SetActive(GameObject[] obj, bool active)

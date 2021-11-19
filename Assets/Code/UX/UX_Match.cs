@@ -20,6 +20,8 @@ public class UX_Match : MonoBehaviour
     private UX_Board[][] boards;
     public UX_Board[][] Boards { get { return boards; } }
 
+    private string[] playerNames;
+
     public void ApplyMessagesFromHost(params int[][] messages)
     {
         if (messages == null) return;
@@ -29,6 +31,12 @@ public class UX_Match : MonoBehaviour
             if (message[0] == (int) SignalFromHost.Request.ADD_PIECE)
             {
                 Debug.Log("Add Piece");
+                SignalFromHost signal = SignalFromHost.FromMessage(message);
+                string pieceName = signal.PieceType == (int) Piece.Type.MASTER
+                    ? playerNames[signal.PlayerID]
+                    : Card.friend_cards[signal.CardID].Name;
+                foreach (UX_Board board in boards[signal.BoardID])
+                { board.AddPiece(signal, pieceName, players.Length); }
             }
         }
     }
@@ -70,8 +78,8 @@ public class UX_Match : MonoBehaviour
     // }
 
     /// <summary>Called once before the match begins.</summary>
-    public void Init(int[] playerIDs, string[] playerNames, int[][] boardData,
-        int chunkSize)
+    public void Init(int[] localPlayerIDs, string[] playerNames,
+        int[][] boardData, int chunkSize)
     {
         // Prep uxBoard bounds.
         float[][] boardBounds = new float[boardData.Length][];
@@ -82,7 +90,7 @@ public class UX_Match : MonoBehaviour
         boards = new UX_Board[boardData.Length][];
         for (int i = 0; i < boards.Length; i++)
         {
-            // Get name from boardData's char array
+            // Get name from boardData's char array.
             char[] boardDataChars = new char[boardData[i][3]];
             for (int j = 0; j < boardData[i][3]; j++)
             {
@@ -93,7 +101,7 @@ public class UX_Match : MonoBehaviour
             boards[i] = new UX_Board[9];
             Transform boardParent = new GameObject().GetComponent<Transform>();
             boardParent.parent = boardGroup;
-            boardParent.gameObject.name = boardDataChars.ToString();
+            boardParent.gameObject.name = new string(boardDataChars);
             boardParent.gameObject.SetActive(true);
 
             int boardTotalSize = boardData[i][2] * chunkSize;
@@ -107,7 +115,8 @@ public class UX_Match : MonoBehaviour
                 {
                     boards[i][j].gameObject.name = "Board - Real";
                     boards[i][j].Init(
-                        boardData[i][2], boardTotalSize, playerIDs.Length, i);
+                        boardData[i][2], boardTotalSize,
+                        localPlayerIDs.Length, i);
                     boardBounds[i] = boards[i][j].GetBounds();
                 }
                 else
@@ -115,24 +124,28 @@ public class UX_Match : MonoBehaviour
                     boards[i][j].gameObject.name = "Board - Clone "
                         + Util.DirToString(j - 1);
                     boards[i][j].Init(
-                        boardData[i][2], boardTotalSize, playerIDs.Length, i,
-                        j - 1, boards[i][0]);
+                        boardData[i][2], boardTotalSize, localPlayerIDs.Length,
+                        i, j - 1, boards[i][0]);
                 }
             }
         }
 
-        // Generate uxPlayers
-        players = new UX_Player[playerIDs.Length];
+        // Generate uxPlayers.
+        players = new UX_Player[localPlayerIDs.Length];
         Transform playerGroup = new GameObject().GetComponent<Transform>();
         playerGroup.gameObject.name = "Players";
-        for (int i = 0; i < playerIDs.Length; i++)
+        for (int i = 0; i < localPlayerIDs.Length; i++)
         {
             players[i] = Instantiate(basePlayer.gameObject, playerGroup)
                 .GetComponent<UX_Player>();
-            players[i].gameObject.name = playerNames[i];
+            players[i].gameObject.name = playerNames[localPlayerIDs[i]];
             players[i].gameObject.SetActive(true);
-            players[i].Init(playerIDs[i], i, boardBounds, chunkSize / 2);
+            players[i].Init(localPlayerIDs[i], i, boardBounds, chunkSize / 2);
         }
+
+        // Store all player names.
+        this.playerNames = new string[playerNames.Length];
+        playerNames.CopyTo(this.playerNames, 0);
     }
 
     public void Update()

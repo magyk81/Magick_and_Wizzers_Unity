@@ -23,7 +23,8 @@ public class Piece
     private string name;
     public string Name { get { return name; } }
     public enum Type { MASTER, CREATURE, ITEM, CHARM }
-    public Type pieceType;
+    protected Type pieceType;
+    public Type PieceType { get { return pieceType; } }
     private int playerIdx, boardIdx, boardTotalSize;
     public int PlayerIdx { get { return playerIdx; } }
     public int BoardIdx { get { return boardIdx; } }
@@ -46,13 +47,17 @@ public class Piece
     private Waypoint[] waypoints;
     // public Waypoint NextWaypoint { get { return waypoints[0]; } }
     public static readonly int MAX_WAYPOINTS = 5;
-    public Piece(int playerIdx, int boardIdx, Card card)
+
+    // Non-master type piece
+    public Piece(int playerIdx, int boardIdx, Coord tile, Card card)
     {
         ID = ++ID_count;
 
         this.name = card.Name;
         this.playerIdx = playerIdx;
         this.boardIdx = boardIdx;
+        pieceType = Type.CREATURE;
+        pos = tile.Copy();
         this.card = card;
         
         waypoints = new Waypoint[MAX_WAYPOINTS];
@@ -61,12 +66,18 @@ public class Piece
             waypoints[i] = new Waypoint();
         }
     }
-    public Piece(string name, int playerIdx, int boardIdx, Texture art)
+
+    // Master type piece
+    public Piece(string name, int playerIdx, int boardIdx, Coord tile,
+        Texture art)
     {
         ID = ++ID_count;
 
         this.name = name;
         this.playerIdx = playerIdx;
+        this.boardIdx = boardIdx;
+        pieceType = Type.MASTER;
+        pos = tile.Copy();
         this.art = art;
 
         waypoints = new Waypoint[MAX_WAYPOINTS];

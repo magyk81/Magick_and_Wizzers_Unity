@@ -59,24 +59,48 @@ public class Match
     private static Player[] parsePlayerData(int[][] data)
     {
         Player[] players = new Player[data.Length];
+        for (int i = 0; i < data.Length; i++)
+        {
+            int[] d = data[i];
+            char[] name = new char[d[4]];
+            for (int j = 0; j < name.Length; j++)
+            {
+                name[j] = (char) d[5 + j];
+            }
+            int idx = d[1];
+            int clientID = d[2];
+            bool isBot = d[3] == 1;
+            players[i] = new Player(new string(name), idx, clientID, isBot);
+        }
         return players;
     }
-    private static Board[] parseBoardData(int[][] data)
+    private static Board[] parseBoardData(int[][] data, int chunkSize)
     {
         Board[] boards = new Board[data.Length];
+        for (int i = 0; i < data.Length; i++)
+        {
+            int[] d = data[i];
+            char[] name = new char[d[3]];
+            for (int j = 0; j < name.Length; j++)
+            {
+                name[j] = (char) d[4 + j];
+            }
+            int idx = d[1];
+            int size = d[2];
+            boards[i] = new Board(new string(name), idx, size, chunkSize);
+        }
         return boards;
     }
-    public Match(int[][] playerData, int[][] boardData)
-        : this(parsePlayerData(playerData), parseBoardData(boardData)) { }
+    public Match(int[][] playerData, int[][] boardData, int chunkSize) : this(
+            parsePlayerData(playerData),
+            parseBoardData(boardData, chunkSize)) { }
 
     public Match(Player[] players, Board[] boards)
     {
         this.players = players;
         this.boards = boards;
-
-        // Set initial masters.
-        boards[0].InitMasters(players);
     }
+    public SignalFromHost[] Init() { return boards[0].InitMasters(players); }
 
     public void MainLoop()
     {

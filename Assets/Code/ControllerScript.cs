@@ -47,14 +47,11 @@ public class ControllerScript : MonoBehaviour
             client = new Client(ipAddress, port, 0);
 
             List<int> localPlayerIDs = new List<int>();
-            List<string> localPlayerNames = new List<string>();
+            List<string> playerNames = new List<string>();
             foreach (Player player in players)
             {
-                if (!player.IsBot)
-                {
-                    localPlayerIDs.Add(player.Idx);
-                    localPlayerNames.Add(player.Name);
-                }
+                if (!player.IsBot) localPlayerIDs.Add(player.Idx);
+                playerNames.Add(player.Name);
             }
             List<int[]> boardData = new List<int[]>();
             foreach (Board board in boards)
@@ -69,8 +66,9 @@ public class ControllerScript : MonoBehaviour
                 }
                 boardData.Add(data);
             }
-            uxMatch.Init(localPlayerIDs.ToArray(), localPlayerNames.ToArray(),
+            uxMatch.Init(localPlayerIDs.ToArray(), playerNames.ToArray(),
                 boardData.ToArray(), chunkSize);
+            host.SendSignals(match.Init());
         }
         // If this machine is not the host.
         else if (host == null)
@@ -99,7 +97,7 @@ public class ControllerScript : MonoBehaviour
                         {
                             playerName[i] = (char) info[j];
                         }
-                        localPlayerNames.Add(playerName.ToString());
+                        localPlayerNames.Add(new string(playerName));
                     }
                 }
                 else if (info[0] == (int) SignalFromHost.Request.ADD_BOARD)
@@ -109,9 +107,11 @@ public class ControllerScript : MonoBehaviour
                     chunkSize = info[1];
             }
 
-            match = new Match(playerData.ToArray(), boardData.ToArray());
+            match = new Match(playerData.ToArray(), boardData.ToArray(),
+                chunkSize);
             uxMatch.Init(localPlayerIDs.ToArray(), localPlayerNames.ToArray(),
                 boardData.ToArray(), chunkSize);
+            host.SendSignals(match.Init());
         }
         matchInfo.Clear();
     }

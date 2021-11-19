@@ -38,7 +38,7 @@ public class Board
 
     /// <summary>Adds 1 master to the boards for each player. The masters'
     ///     starting positions depend on the number of players.</summary>
-    public void InitMasters(Player[] players)
+    public SignalFromHost[] InitMasters(Player[] players)
     {
         Coord[] masterStartPos = new Coord[players.Length];
         if (players.Length == 2) masterStartPos = new Coord[] {
@@ -53,18 +53,20 @@ public class Board
             Coord._(TOTAL_SIZE / 4 * 3, TOTAL_SIZE / 4),
             Coord._(TOTAL_SIZE / 4    , TOTAL_SIZE / 4 * 3),
             Coord._(TOTAL_SIZE / 4 * 3, TOTAL_SIZE / 4 * 3) };
+        SignalFromHost[] signals = new SignalFromHost[players.Length];
         for (int i = 0; i < players.Length; i++)
         {
             Texture masterTex = Resources.Load<Texture>(
                 "Textures/Debug_Card_Art/Master_" + players[i].Name);
 
             Master initialMaster = new Master(
-                players[i], i, 0, masterTex);
-            AddPiece(initialMaster, masterStartPos[i]);
+                players[i], i, 0, masterStartPos[i], masterTex);
+            signals[i] = AddPiece(initialMaster);
 
             // The 5 cards that players start with at the beginning of a match.
             initialMaster.DrawCards(20);
         }
+        return signals;
     }
 
     /// <returns>The chunk that the tile belongs to.
@@ -77,22 +79,20 @@ public class Board
 
     /// <returns>True if the piece was successfully added. False otherwise.
     /// </returns>
-    public bool AddPiece(int playerIdx, Card card, Coord tile)
+    public SignalFromHost AddPiece(int playerIdx, Coord tile, Card card)
     {
-        Piece piece = new Piece(playerIdx, idx, card);
-        return AddPiece(piece, tile);
+        Piece piece = new Piece(playerIdx, idx, tile, card);
+        return AddPiece(piece);
     }
-    private bool AddPiece(Piece piece, Coord tile)
+    private SignalFromHost AddPiece(Piece piece)
     {
         foreach (Piece p in pieces)
         {
-            if (p.Pos == piece.Pos) return false;
+            if (p.Pos == piece.Pos) return null;
         }
-        piece.Pos = tile;
         piece.BoardTotalSize = TOTAL_SIZE;
         pieces.Add(piece);
-        // Match.AddSkinTicket(new Signal(piece, Signal.Type.ADD_PIECE));
-        return true;
+        return SignalFromHost.AddPiece(piece);
     }
 
     public void Update()

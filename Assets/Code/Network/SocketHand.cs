@@ -58,17 +58,19 @@ public abstract class SocketHand
 
     protected int ReceiveMessages(Socket socket)
     {
-        if (socket.Available == 0) return 1;
+        if (socket.Available > 0)
+        {
+            int bytesReceived;
+            try { bytesReceived = socket.Receive(msgData); }
+            catch (SocketException e) {
+                Debug.Log(e);
+                Terminate();
+                return -1;
+            }
 
-        int bytesReceived;
-        try { bytesReceived = socket.Receive(msgData); }
-        catch (SocketException e) {
-            Debug.Log(e);
-            Terminate();
-            return -1;
+            msgReceiveBytes.AddRange(msgData.Take(bytesReceived));
         }
-
-        msgReceiveBytes.AddRange(msgData.Take(bytesReceived));
+        else if (msgReceiveBytes.Count == 0) return 1;
 
         byte[] bytesArray;
         if (msgReceiveSize == 0)

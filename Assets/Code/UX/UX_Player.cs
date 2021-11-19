@@ -270,7 +270,7 @@ public class UX_Player : MonoBehaviour
                     }
                     // Can only select this piece if it's under this player's
                     // control.
-                    else if (hoveredPiece.Piece.PlayerIdx == playerIdx)
+                    else if (hoveredPiece.PlayerID == playerIdx)
                     {
                         hoveredPiece.Select(localPlayerIdx);
                         selectedPieces.Add(hoveredPiece);
@@ -331,7 +331,7 @@ public class UX_Player : MonoBehaviour
             {
                 if (hoveredPiece != null)
                 {
-                    hand.Show(hoveredPiece.Piece);
+                    // hand.Show(hoveredPiece.Piece);
                     SetMode(Mode.HAND);
                 }
             }
@@ -453,12 +453,12 @@ public class UX_Player : MonoBehaviour
         {
             for (int i = 1; i < selectedPieces.Count; i++)
             {
-                if (!selectedPieces[i].Piece.HasSameWaypoints(
-                    selectedPieces[0].Piece))
-                {
-                    waypointsAreCommon = false;
-                    break;
-                }
+                // if (!selectedPieces[i].Piece.HasSameWaypoints(
+                //     selectedPieces[0].Piece))
+                // {
+                //     waypointsAreCommon = false;
+                //     break;
+                // }
             }
         }
     }   
