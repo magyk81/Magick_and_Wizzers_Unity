@@ -24,12 +24,19 @@ public class UX_Piece : MonoBehaviour
     private readonly static float LIFT_DIST = 0.1F;
     public readonly static int LAYER = 6;
 
+    private int pieceID; public int PieceID { get { return pieceID; } }
     private int playerID; public int PlayerID { get { return playerID; } }
 
-    // Start is called before the first frame update
-    void Start()
+    private List<int> hand = new List<int>();
+    public Card[] Hand
     {
-        
+        get
+        {
+            Card[] hand = new Card[this.hand.Count];
+            for (int i = 0; i < hand.Length; i++)
+            { hand[i] = Card.friend_cards[this.hand[i]]; }
+            return hand;
+        }
     }
 
     // Cleans memory if/when application is stopped.
@@ -41,6 +48,8 @@ public class UX_Piece : MonoBehaviour
     /// <summary>Called once before the match begins.</summary>
     public void Init(SignalFromHost signal, string pieceName, int layerCount)
     {
+        pieceID = signal.PieceID;
+
         tra = GetComponent<Transform>();
 
         if (signal.PieceType == (int) Piece.Type.MASTER)
@@ -78,7 +87,9 @@ public class UX_Piece : MonoBehaviour
         artMat = new Material(
             art_base.GetComponent<MeshRenderer>().sharedMaterial);
         artMat.name = "Piece Art Material - " + pieceName;
-        // artMat.mainTexture = piece.Art;
+        Texture cardArt = signal.CardID == -1 ? null
+            : Card.friend_cards[signal.CardID].Art;
+        if (cardArt != null) artMat.mainTexture = cardArt;
         for (int i = 0; i < layerCount; i++)
         {
             art[i] = Instantiate(art_base, tra);
@@ -181,9 +192,13 @@ public class UX_Piece : MonoBehaviour
         select[localPlayerCount].SetActive(false);
     }
 
-    // Update is called once per frame
-    void Update()
+    public void AddCard(int cardID)
     {
-        
+        hand.Add(cardID);
+    }
+
+    public void RemoveCard(int cardID)
+    {
+        hand.Remove(cardID);
     }
 }

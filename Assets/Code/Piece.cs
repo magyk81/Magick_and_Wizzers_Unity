@@ -25,9 +25,9 @@ public class Piece
     public enum Type { MASTER, CREATURE, ITEM, CHARM }
     protected Type pieceType;
     public Type PieceType { get { return pieceType; } }
-    private int playerIdx, boardIdx, boardTotalSize;
-    public int PlayerIdx { get { return playerIdx; } }
-    public int BoardIdx { get { return boardIdx; } }
+    private int playerID, boardID, boardTotalSize;
+    public int PlayerID { get { return playerID; } }
+    public int BoardID { get { return boardID; } }
     public int BoardTotalSize { set { boardTotalSize = value; } }
 
     private Card card;
@@ -49,13 +49,13 @@ public class Piece
     public static readonly int MAX_WAYPOINTS = 5;
 
     // Non-master type piece
-    public Piece(int playerIdx, int boardIdx, Coord tile, Card card)
+    public Piece(int playerID, int boardID, Coord tile, Card card)
     {
-        ID = ++ID_count;
+        ID = ID_count++;
 
         this.name = card.Name;
-        this.playerIdx = playerIdx;
-        this.boardIdx = boardIdx;
+        this.playerID = playerID;
+        this.boardID = boardID;
         pieceType = Type.CREATURE;
         pos = tile.Copy();
         this.card = card;
@@ -68,14 +68,14 @@ public class Piece
     }
 
     // Master type piece
-    public Piece(string name, int playerIdx, int boardIdx, Coord tile,
+    public Piece(string name, int playerID, int boardID, Coord tile,
         Texture art)
     {
-        ID = ++ID_count;
+        ID = ID_count++;
 
         this.name = name;
-        this.playerIdx = playerIdx;
-        this.boardIdx = boardIdx;
+        this.playerID = playerID;
+        this.boardID = boardID;
         pieceType = Type.MASTER;
         pos = tile.Copy();
         this.art = art;
@@ -98,18 +98,38 @@ public class Piece
 
     }
 
-    public void AddWaypoint(Coord tile)
+    public void AddWaypoint(Coord tile, int orderPlace)
     {
-        for (int i = 0; i < MAX_WAYPOINTS; i++)
+        for (int i = orderPlace; i >= 0; i--)
         {
-            if (!waypoints[i].IsSet)
+            if (waypoints[i].IsSet)
             {
-                if (i > 0 && waypoints[i - 1].Tile == tile) return;
-                waypoints[i].Tile = tile;
-                UpdateWaypoints();
+                orderPlace = Mathf.Min(i + 1, MAX_WAYPOINTS - 1);
                 break;
             }
+            else if (i == 0)
+            {
+                waypoints[0].Tile = tile;
+                return;
+            }
         }
+
+        for (int i = MAX_WAYPOINTS - 1; i > orderPlace; i--)
+        {
+            if (i > 0) waypoints[i].Tile = waypoints[i - 1].Tile;
+        }
+        waypoints[orderPlace].Tile = tile;
+
+        // for (int i = 0; i < MAX_WAYPOINTS; i++)
+        // {
+        //     if (!waypoints[i].IsSet)
+        //     {
+        //         if (i > 0 && waypoints[i - 1].Tile == tile) return;
+        //         waypoints[i].Tile = tile;
+        //         UpdateWaypoints();
+        //         break;
+        //     }
+        // }
     }
     public void RemoveWaypoint(Coord tile)
     {
@@ -159,16 +179,48 @@ public class Piece
         }
         return true;
     }
+
+    public int[] GetWaypointData()
+    {
+        int[] data = new int[2 * MAX_WAYPOINTS];
+        for (int i = 0; i < data.Length; i += 2)
+        {
+            Coord tile = waypoints[i / 2].Tile;
+            data[i] = tile.X;
+            data[i + 1] = tile.Z;
+        }
+        return data;
+    }
+
     public virtual int Level { get
     {
         if (card != null) return card.Level;
         return 0;
     } }
-    public void DrawCards(int count)
+    public SignalFromHost[] DrawCards(int count)
     {
-        for (int i = 0; i < count; i++) { AddToHand(deck.DrawCard()); }
+        SignalFromHost[] signals = new SignalFromHost[count];
+        for (int i = 0; i < count; i++)
+        { signals[i] = AddToHand(deck.DrawCard()); }
+        return signals;
     }
 
-    private void AddToHand(Card card) { hand.Add(card); }
+    private SignalFromHost AddToHand(Card card)
+    {
+        hand.Add(card);
+        return SignalFromHost.AddCard(ID, card.ID);
+    }
     public void RemoveFromHand(Card card) { hand.Remove(card); }
+
+    public SignalFromHost[] CastSpell(Card card, Board board, Coord tile)
+    {
+        // Skipped a lot of steps here.
+        hand.Remove(card);
+        Piece piece = new Piece(playerID, board.ID, tile, card);
+        return new SignalFromHost[]
+        {
+            SignalFromHost.RemoveCard(ID, card.ID),
+            SignalFromHost.AddPiece(piece)
+        };
+    }
 }

@@ -22,14 +22,13 @@ public class UX_Board : MonoBehaviour
     public UX_Chunk[,] Chunks { get { return chunks; } }
     private Dictionary<int, UX_Piece> pieces
         = new Dictionary<int, UX_Piece>();
-    private int boardID, cloneIdx;
+    private int boardID;
 
     /// <summary>Called once before the match begins.</summary>
     public void Init(int size, int totalSize, int layerCount, int boardID,
         int cloneIdx = -1, UX_Board realBoard = null)
     {
         this.boardID = boardID;
-        this.cloneIdx = cloneIdx;
 
         int i0 = 0, j0 = 0, iEnd = size, jEnd = size;
         int cloneOffsetX = 0, cloneOffsetZ = 0,
@@ -163,6 +162,16 @@ public class UX_Board : MonoBehaviour
         pieces.Add(signal.PieceID, uxPiece);
         uxPiece.Init(signal, pieceName, layerCount);
         MovePiece(signal.PieceID, signal.Tile);
+    }
+
+    public void AddCard(SignalFromHost signal)
+    {
+        pieces[signal.PieceID].AddCard(signal.CardID);
+    }
+
+    public void RemoveCard(SignalFromHost signal)
+    {
+        pieces[signal.PieceID].RemoveCard(signal.CardID);
     }
 
     /// <summary>Updates the piece's position on the board between the tiles

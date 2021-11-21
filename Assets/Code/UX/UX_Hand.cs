@@ -116,17 +116,16 @@ public class UX_Hand : MonoBehaviour
     private UX_Card[] cards = new UX_Card[MAX_HAND_CARDS];
     private RectTransform playCard;
     private int cursorIdx = 0, count = 0;
-    private Piece piece;
+    private UX_Piece piece;
 
-    [SerializeField]
-    private float cursorThickness;
+    private readonly float CURSOR_THICKNESS = 25;
     private float cardWidth, cardHeight;
 
     private RectTransform tra, cardParent;
     private Coord camDims;
     private bool isShown = false, setupDone = false;
 
-    public void Show(Piece piece)
+    public void Show(UX_Piece piece)
     {
         if (setupDone && piece != null)
         {
@@ -192,7 +191,7 @@ public class UX_Hand : MonoBehaviour
         // Setup play-card visualization.
         playCard = Instantiate(baseCard, tra).GetComponent<RectTransform>();
         playCard.sizeDelta = new Vector2(
-            cardWidth + cursorThickness, cardHeight + cursorThickness);
+            cardWidth + CURSOR_THICKNESS, cardHeight + CURSOR_THICKNESS);
         playCard.anchoredPosition
             = Coord._(0, (int) (camDims.Z - cardHeight) / 2).ToVec2();
         playCard.gameObject.SetActive(false);
@@ -209,9 +208,9 @@ public class UX_Hand : MonoBehaviour
         // Setup cursor.
         cursor = Instantiate(cursor, tra).GetComponent<RectTransform>();
         cursor.sizeDelta = new Vector2(
-            cardWidth + cursorThickness, cardHeight + cursorThickness);
+            cardWidth + CURSOR_THICKNESS, cardHeight + CURSOR_THICKNESS);
         cursor.sizeDelta = new Vector2(
-            cardWidth + cursorThickness, cardHeight + cursorThickness);
+            cardWidth + CURSOR_THICKNESS, cardHeight + CURSOR_THICKNESS);
         cursor.anchoredPosition = GetCardPos(0).ToVec2();
         cursor.gameObject.SetActive(false);        
 
@@ -306,14 +305,18 @@ public class UX_Hand : MonoBehaviour
         }
     }
 
-    public Card Select()
+    public int[] Select()
     {
         if (cursorIdx < count && cursorIdx >= 0)
         {
-            playCard.gameObject.GetComponent<RawImage>().texture
-                = cards[cursorIdx].Art;
-            playCard.gameObject.SetActive(true);
-            return piece.Hand[cursorIdx];
+            if (piece.Hand.Length >= 0)
+            {
+                playCard.gameObject.GetComponent<RawImage>().texture
+                    = cards[cursorIdx].Art;
+                playCard.gameObject.SetActive(true);
+                return new int[] { piece.Hand[cursorIdx].ID, piece.PieceID };
+            }
+            else Debug.Log("Cannot select card because this hand is empty.");
         }
         return null;
     }

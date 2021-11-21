@@ -12,6 +12,18 @@ public class Match
 {
     private Player[] players;
     private Board[] boards;
+    
+    private readonly int STARTING_HAND_COUNT = 3;
+
+
+    private List<SignalFromHost> signalsToSend = new List<SignalFromHost>();
+    public SignalFromHost[] SignalsToSend {
+        get {
+            SignalFromHost[] array = signalsToSend.ToArray();
+            signalsToSend.Clear();
+            return array;
+        }
+    }
 
     public void ApplyMessagesFromClient(params int[][] messages)
     {
@@ -19,9 +31,21 @@ public class Match
         for (int i = 0; i < messages.Length; i++)
         {
             int[] message = messages[i];
-            if (message[1] == (int) SignalFromClient.Request.CAST_SPELL)
+            SignalFromHost[] outcomeArr; SignalFromHost outcome;
+            SignalFromClient signal = SignalFromClient.FromMessage(message);
+            switch (signal.ClientRequest)
             {
-                Debug.Log("Cast Spell");
+                case SignalFromClient.Request.CAST_SPELL:
+                    Debug.Log("Cast Spell");
+                    outcomeArr = boards[signal.BoardID].CastSpell(
+                        signal, boards[signal.BoardID]);
+                    if (outcomeArr != null) signalsToSend.AddRange(outcomeArr);
+                    break;
+                case SignalFromClient.Request.GIVE_WAYPOINT:
+                    Debug.Log("Give Waypoint");
+                    outcome = boards[signal.BoardID].GiveWaypoint(signal);
+                    if (outcome != null) signalsToSend.Add(outcome);
+                    break;
             }
         }
     }
@@ -100,7 +124,8 @@ public class Match
         this.players = players;
         this.boards = boards;
     }
-    public SignalFromHost[] Init() { return boards[0].InitMasters(players); }
+    public SignalFromHost[] Init()
+    { return boards[0].InitMasters(players, STARTING_HAND_COUNT); }
 
     public void MainLoop()
     {

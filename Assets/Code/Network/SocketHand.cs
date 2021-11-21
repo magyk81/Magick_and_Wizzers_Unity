@@ -77,8 +77,9 @@ public abstract class SocketHand
         {
             if (msgReceiveBytes.Count == 0) return 1;
 
-            bytesArray = msgReceiveBytes.ToArray();
-            msgReceiveSize = bytesArray[0];
+            // bytesArray = msgReceiveBytes.ToArray();
+            // msgReceiveSize = bytesArray[0];
+            msgReceiveSize = msgReceiveBytes[0];
             Debug.Log("Message size: " + msgReceiveSize);
             msgReceiveBytes = msgReceiveBytes.Skip(1).ToList();
         }
@@ -87,14 +88,13 @@ public abstract class SocketHand
 
         bytesArray = msgReceiveBytes.ToArray();
         Debug.Log("bytesArray length: " + bytesArray.Length);
-        int[] completedMessage = new int[msgReceiveSize];
+        int[] completedMessage = new int[msgReceiveSize / sizeof(int)];
         for (int n = 0; n < msgReceiveSize; n += sizeof(int))
         {
             completedMessage[n / sizeof(int)]
                 = BitConverter.ToInt32(bytesArray, n);
         }
         lock (threadLocks[0]) { messagesReceived.Add(completedMessage); }
-        Debug.Log(completedMessage[2]);
             
         msgReceiveBytes = msgReceiveBytes.Skip(msgReceiveSize).ToList();
         msgReceiveSize = 0;

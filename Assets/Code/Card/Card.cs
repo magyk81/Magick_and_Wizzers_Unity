@@ -22,7 +22,7 @@ public abstract class Card
     protected Card(string name, Texture art, int level,
         GameTerrain terrain)
     {
-        ID = ++ID_count;
+        ID = ID_count++;
 
         this.name = name;
         this.art = art;

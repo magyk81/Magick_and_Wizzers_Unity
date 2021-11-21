@@ -20,7 +20,19 @@ public class UX_Match : MonoBehaviour
     private UX_Board[][] boards;
     public UX_Board[][] Boards { get { return boards; } }
 
+    private Dictionary<int, int> boardWithPiece = new Dictionary<int, int>();
+
     private string[] playerNames;
+
+    private List<SignalFromClient> signalsToSend
+        = new List<SignalFromClient>();
+    public SignalFromClient[] SignalsToSend {
+        get {
+            SignalFromClient[] array = signalsToSend.ToArray();
+            signalsToSend.Clear();
+            return array;
+        }
+    }
 
     public void ApplyMessagesFromHost(params int[][] messages)
     {
@@ -28,15 +40,38 @@ public class UX_Match : MonoBehaviour
         for (int i = 0; i < messages.Length; i++)
         {
             int[] message = messages[i];
-            if (message[0] == (int) SignalFromHost.Request.ADD_PIECE)
+            SignalFromHost signal = SignalFromHost.FromMessage(message);
+            switch (signal.HostRequest)
             {
-                Debug.Log("Add Piece");
-                SignalFromHost signal = SignalFromHost.FromMessage(message);
-                string pieceName = signal.PieceType == (int) Piece.Type.MASTER
-                    ? playerNames[signal.PlayerID]
-                    : Card.friend_cards[signal.CardID].Name;
-                foreach (UX_Board board in boards[signal.BoardID])
-                { board.AddPiece(signal, pieceName, players.Length); }
+                case SignalFromHost.Request.ADD_PIECE:
+                    Debug.Log("Add Piece");
+                    signal = SignalFromHost.FromMessage(message);
+                    string pieceName = signal.PieceType
+                        == (int) Piece.Type.MASTER
+                        ? playerNames[signal.PlayerID]
+                        : Card.friend_cards[signal.CardID].Name;
+                    foreach (UX_Board board in boards[signal.BoardID])
+                    { board.AddPiece(signal, pieceName, players.Length); }
+                    boardWithPiece.Add(signal.PieceID, signal.BoardID);
+                    break;
+                case SignalFromHost.Request.ADD_CARD:
+                    Debug.Log("Add Card");
+                    signal = SignalFromHost.FromMessage(message);
+                    foreach (UX_Board board in
+                        boards[boardWithPiece[signal.PieceID]])
+                    { board.AddCard(signal); }
+                    break;
+                case SignalFromHost.Request.REMOVE_CARD:
+                    Debug.Log("Remove Card");
+                    signal = SignalFromHost.FromMessage(message);
+                    foreach (UX_Board board in
+                        boards[boardWithPiece[signal.PieceID]])
+                    { board.RemoveCard(signal); }
+                    break;
+                case SignalFromHost.Request.UPDATE_WAYPOINTS:
+                    Debug.Log("Update Waypoints");
+                    
+                    break;
             }
         }
     }
@@ -155,7 +190,8 @@ public class UX_Match : MonoBehaviour
             foreach (UX_Player player in players)
             {
                 player.QueryCamera();
-                player.QueryGamepad();
+                SignalFromClient signal = player.QueryGamepad();
+                if (signal != null) signalsToSend.Add(signal);
             }
         }
         

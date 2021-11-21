@@ -36,16 +36,18 @@ public class SignalFromHost : Signal
     public enum Request { SET_CHUNK_SIZE, ADD_PLAYER, ADD_BOARD,
         ADD_PIECE, REMOVE_PIECE, MOVE_PIECE,
         ADD_CARD, REMOVE_CARD,
-        ADD_WAYPOINT, REMOVE_WAYPOINT }
+        UPDATE_WAYPOINTS }
     
     #region member getters
     private Request request;
     private bool isBot;
     private int clientID, playerID, boardID, pieceID, cardID, size, chunkSize,
         tileLerp, orderPlace, pieceType;
+    private int[] miscData;
     private Coord tile = Coord.Null, tileNext = Coord.Null,
         tilePrev = Coord.Null;
     private string name, artPath;
+    public Request HostRequest { get { return request; } }
     public bool IsBot { get { return isBot; } }
     public int ClientID { get { return clientID; } }
     public int PlayerID { get { return playerID; } }
@@ -57,9 +59,9 @@ public class SignalFromHost : Signal
     public int TileLerp { get { return tileLerp; } }
     public int OrderPlace { get { return orderPlace; } }
     public int PieceType { get { return pieceType; } }
-    public Coord Tile { get { return tile; } }
-    public Coord TileNext { get { return tileNext; } }
-    public Coord TilePrev { get { return tilePrev; } }
+    public Coord Tile { get { return tile.Copy(); } }
+    public Coord TileNext { get { return tileNext.Copy(); } }
+    public Coord TilePrev { get { return tilePrev.Copy(); } }
     public string Name { get { return name; } }
     public string ArtPath { get { return artPath; } }
     #endregion
@@ -70,12 +72,12 @@ public class SignalFromHost : Signal
     {
         SignalFromHost signal = new SignalFromHost();
         char[] name;
-        switch (message[0])
+        switch ((Request) message[0])
         {
-            case (int) Request.SET_CHUNK_SIZE:
+            case Request.SET_CHUNK_SIZE:
                 signal.chunkSize = message[1];
                 break;
-            case (int) Request.ADD_PLAYER:
+            case Request.ADD_PLAYER:
                 signal.playerID = message[1];
                 signal.clientID = message[2];
                 signal.isBot = message[3] == 1;
@@ -84,7 +86,7 @@ public class SignalFromHost : Signal
                 { name[i] = (char) message[5 + i]; }
                 signal.name = new string(name);
                 break;
-            case (int) Request.ADD_BOARD:
+            case Request.ADD_BOARD:
                 signal.boardID = message[1];
                 signal.size = message[2];
                 name = new char[message[3]];
@@ -92,7 +94,7 @@ public class SignalFromHost : Signal
                 { name[i] = (char) message[4 + i]; }
                 signal.name = new string(name);
                 break;
-            case (int) Request.ADD_PIECE:
+            case Request.ADD_PIECE:
                 signal.playerID = message[1];
                 signal.cardID = message[2];
                 signal.pieceID = message[3];
@@ -100,26 +102,28 @@ public class SignalFromHost : Signal
                 signal.pieceType = message[5];
                 signal.tile = Coord._(message[6], message[7]);
                 break;
-            case (int) Request.REMOVE_PIECE:
+            case Request.REMOVE_PIECE:
                 signal.pieceID = message[1];
                 break;
-            case (int) Request.MOVE_PIECE:
+            case Request.MOVE_PIECE:
                 signal.pieceID = message[1];
                 signal.tilePrev = Coord._(message[2], message[3]);
                 signal.tileNext = Coord._(message[4], message[5]);
                 signal.tileLerp = message[6];
                 break;
-            case (int) Request.ADD_CARD:
+            case Request.ADD_CARD:
                 signal.pieceID = message[1];
                 signal.cardID = message[2];
                 break;
-            case (int) Request.REMOVE_CARD:
+            case Request.REMOVE_CARD:
                 signal.pieceID = message[1];
                 signal.cardID = message[2];
                 break;
-            case (int) Request.ADD_WAYPOINT:
-                signal.tile = Coord._(message[1], message[2]);
-                signal.orderPlace = message[3];
+            case Request.UPDATE_WAYPOINTS:
+                signal.size = message[1];
+                signal.miscData = new int[message[2]];
+                for (int i = 0; i < message[2]; i++)
+                { signal.miscData[i] = message[3 + i]; }
                 break;
             default: signal = null; break;
         }
@@ -171,7 +175,7 @@ public class SignalFromHost : Signal
     public static SignalFromHost AddPiece(Piece piece)
     {
         int pieceCardID = (piece.Card == null) ? -1 : piece.Card.ID;
-        return AddPiece(piece.PlayerIdx, pieceCardID, piece.ID, piece.BoardIdx,
+        return AddPiece(piece.PlayerID, pieceCardID, piece.ID, piece.BoardID,
             piece.PieceType, piece.Pos);
     }
     public static SignalFromHost AddPiece(int playerID, int cardID,
@@ -226,13 +230,17 @@ public class SignalFromHost : Signal
         );
     }
 
-    public static SignalFromHost AddWaypoint(int pieceID, Coord tile,
-        int orderPlace)
+    public static SignalFromHost UpdateWaypoints(Piece[] pieces)
     {
-        return new SignalFromHost(
-            (int) Request.ADD_WAYPOINT, // Request enum
-            tile.X, tile.Z,             // Tile where it's going onto
-            orderPlace                  // If it's the 1st, 2nd, 3rd, etc.
-        );
+        int piecesDataLength = pieces.Length * Piece.MAX_WAYPOINTS * 2;
+        int[] data = new int[2 + piecesDataLength];
+        data[0] = (int) Request.UPDATE_WAYPOINTS;   // Request enum
+        // How many pieces were updated
+        data[1] = piecesDataLength;                 
+        for (int i = 0; i < data[1]; i += Piece.MAX_WAYPOINTS * 2)
+        {
+            pieces[i].GetWaypointData().CopyTo(data, i + 2);
+        }
+        return new SignalFromHost(data);
     }
 }

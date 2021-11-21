@@ -10,11 +10,9 @@ using UnityEngine;
 
 public class Master : Piece
 {
-    private int playerIdx;
-
-    public Master(Player player, int playerIdx, int boardIdx, Coord tile,
+    public Master(Player player, int playerID, int boardID, Coord tile,
         Texture art)
-        : base(player.Name, playerIdx, boardIdx, tile, art)
+        : base(player.Name, playerID, boardID, tile, art)
     {
         pieceType = Type.MASTER;
 

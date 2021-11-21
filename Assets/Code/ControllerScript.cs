@@ -57,7 +57,7 @@ public class ControllerScript : MonoBehaviour
             foreach (Board board in boards)
             {
                 int[] data = new int[4 + board.Name.Length];
-                data[1] = board.Idx;
+                data[1] = board.ID;
                 data[2] = board.Size;
                 data[3] = board.Name.Length;
                 for (int i = 4, j = 0; j < board.Name.Length; i++, j++)
@@ -119,11 +119,15 @@ public class ControllerScript : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        client.SendSignals(uxMatch.SignalsToSend);
+
         if (host != null)
         {
+            host.SendSignals(match.SignalsToSend);
             match.ApplyMessagesFromClient(host.MessagesReceived);
             match.MainLoop();
         }
+
         uxMatch.ApplyMessagesFromHost(client.MessagesReceived);
     }
 

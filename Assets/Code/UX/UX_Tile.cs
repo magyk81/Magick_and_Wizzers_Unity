@@ -23,15 +23,16 @@ public class UX_Tile
             }
     }
     private UX_Tile real = null;
-    private int boardIdx;
+    private int boardID;
+    public int BoardID { get { return boardID; } }
 
     public readonly static int LAYER = 10;
 
     public UX_Tile(Coord pos, int boardTotalSize, int apartOffset,
-        int cloneIdx, int boardIdx)
+        int cloneIdx, int boardID)
     {
         this.pos = pos.Copy();
-        this.boardIdx = boardIdx;
+        this.boardID = boardID;
 
         // Set physical position.
         float x = pos.X + 0.5F + apartOffset, z = pos.Z + 0.5F;
@@ -65,4 +66,6 @@ public class UX_Tile
         uxPosAll[cloneIdx + 1] = new Vector3(
             tileClone.uxPos.x, LIFT_DIST, tileClone.uxPos.z);
     }
+
+    public static implicit operator Coord(UX_Tile t) => t.pos.Copy();
 }

@@ -16,14 +16,14 @@ public class Board
     public int TotalSize { get { return TOTAL_SIZE; } }
     private Chunk[,] chunks;
     private List<Piece> pieces = new List<Piece>();
+    private Dictionary<int, Piece> piecesWithID = new Dictionary<int, Piece>();
     private string name;
     public string Name { get { return name; } }
-    private int idx;
-    public int Idx { get { return idx; } }
-    public Board(string name, int idx, int size, int chunkSize)
+    public readonly int ID;
+    public Board(string name, int ID, int size, int chunkSize)
     {
         this.name = name;
-        this.idx = idx;
+        this.ID = ID;
         SIZE = size;
         TOTAL_SIZE = size * chunkSize;
         chunks = new Chunk[size, size];
@@ -38,7 +38,8 @@ public class Board
 
     /// <summary>Adds 1 master to the boards for each player. The masters'
     ///     starting positions depend on the number of players.</summary>
-    public SignalFromHost[] InitMasters(Player[] players)
+    public SignalFromHost[] InitMasters(
+        Player[] players, int startingHandCount)
     {
         Coord[] masterStartPos = new Coord[players.Length];
         if (players.Length == 2) masterStartPos = new Coord[] {
@@ -53,18 +54,26 @@ public class Board
             Coord._(TOTAL_SIZE / 4 * 3, TOTAL_SIZE / 4),
             Coord._(TOTAL_SIZE / 4    , TOTAL_SIZE / 4 * 3),
             Coord._(TOTAL_SIZE / 4 * 3, TOTAL_SIZE / 4 * 3) };
-        SignalFromHost[] signals = new SignalFromHost[players.Length];
+        SignalFromHost[] signals = new SignalFromHost[
+            players.Length * (startingHandCount + 1)];
         for (int i = 0; i < players.Length; i++)
         {
             Texture masterTex = Resources.Load<Texture>(
                 "Textures/Debug_Card_Art/Master_" + players[i].Name);
 
+            int signalIdx = i * (startingHandCount + 1);
+
             Master initialMaster = new Master(
                 players[i], i, 0, masterStartPos[i], masterTex);
-            signals[i] = AddPiece(initialMaster);
+            signals[signalIdx] = AddPiece(initialMaster);
 
             // The 5 cards that players start with at the beginning of a match.
-            initialMaster.DrawCards(20);
+            SignalFromHost[] drawCardSignals = initialMaster.DrawCards(
+                startingHandCount);
+            for (int j = 0; j < drawCardSignals.Length; j++)
+            {
+                signals[j + 1 + signalIdx] = drawCardSignals[j];
+            }
         }
         return signals;
     }
@@ -79,9 +88,9 @@ public class Board
 
     /// <returns>True if the piece was successfully added. False otherwise.
     /// </returns>
-    public SignalFromHost AddPiece(int playerIdx, Coord tile, Card card)
+    public SignalFromHost AddPiece(int playerID, Coord tile, Card card)
     {
-        Piece piece = new Piece(playerIdx, idx, tile, card);
+        Piece piece = new Piece(playerID, ID, tile, card);
         return AddPiece(piece);
     }
     private SignalFromHost AddPiece(Piece piece)
@@ -92,7 +101,44 @@ public class Board
         }
         piece.BoardTotalSize = TOTAL_SIZE;
         pieces.Add(piece);
+        piecesWithID.Add(piece.ID, piece);
         return SignalFromHost.AddPiece(piece);
+    }
+
+    public SignalFromHost GiveWaypoint(SignalFromClient signal)
+    {
+        List<Piece> piecesGivenWaypoint = new List<Piece>();
+        for (int i = 0; i < signal.PieceIDs.Length; i++)
+        {
+            Piece piece = piecesWithID[signal.PieceIDs[i]];
+            if (piece.PlayerID == signal.ActingPlayerID)
+            {
+                piece.AddWaypoint(signal.Tile, signal.OrderPlace);
+                piecesGivenWaypoint.Add(piece);
+            }
+            else
+            {
+                Debug.Log("Error: Attempted to add waypoint to the piece "
+                    + piece.Name + " but it does not belong to player #"
+                    + signal.ActingPlayerID);
+            }
+        }
+        if (piecesGivenWaypoint.Count > 0)
+        {
+            return SignalFromHost.UpdateWaypoints(
+                piecesGivenWaypoint.ToArray());
+        }
+        return null;
+    }
+
+    public SignalFromHost[] CastSpell(SignalFromClient signal,
+        Board boardCastedOn)
+    {
+        Piece caster = piecesWithID[signal.PieceID];
+        if (signal.ActingPlayerID == caster.PlayerID)
+            return caster.CastSpell(
+                Card.friend_cards[signal.CardID], boardCastedOn, signal.Tile);
+        return null;
     }
 
     public void Update()

@@ -23,7 +23,7 @@ public class UX_Player : MonoBehaviour
     private CameraScript cam;
     private CanvasScript canv;
     private UX_Hand hand;
-    private Card playCard;
+    private int playCardID, casterPieceID;
     private Transform[] tileHover;
     private UX_Waypoint[][] waypoints;
     private Gamepad gamepad;
@@ -34,7 +34,7 @@ public class UX_Player : MonoBehaviour
         TARGET_CHUNK, TARGET_TILE, BOARD_SWITCH, HAND, DETAIL, SURRENDER,
         PAUSE }
     private Mode mode = Mode.PAUSE;
-    private int playerIdx, localPlayerIdx;
+    private int playerID, localPlayerIdx;
 
     private bool waypointsAreCommon = false;
 
@@ -50,10 +50,10 @@ public class UX_Player : MonoBehaviour
     }
 
     /// <summary>Called once before the match begins.</summary>
-    public void Init(int playerIdx, int localPlayerIdx, float[][] boardBounds,
+    public void Init(int playerID, int localPlayerIdx, float[][] boardBounds,
         int quadSize)
     {
-        this.playerIdx = playerIdx;
+        this.playerID = playerID;
         this.localPlayerIdx = localPlayerIdx;
 
         // Setup gamepad.
@@ -220,8 +220,9 @@ public class UX_Player : MonoBehaviour
     }
 
     private bool holdingTriggerL = false, holdingTriggerR = false;
-    public void QueryGamepad()
+    public SignalFromClient QueryGamepad()
     {
+        SignalFromClient signal = null;
         int[] gamepadInput = gamepad.PadInput;
 
         // <D-pad down | Down arrow>
@@ -270,7 +271,7 @@ public class UX_Player : MonoBehaviour
                     }
                     // Can only select this piece if it's under this player's
                     // control.
-                    else if (hoveredPiece.PlayerID == playerIdx)
+                    else if (hoveredPiece.PlayerID == playerID)
                     {
                         hoveredPiece.Select(localPlayerIdx);
                         selectedPieces.Add(hoveredPiece);
@@ -283,21 +284,16 @@ public class UX_Player : MonoBehaviour
             {
                 if (selectedPieces.Count > 0)
                 {
-                    foreach (UX_Piece piece in selectedPieces)
-                    {
-                        // UX_Match.AddSkinTicket(new Signal(
-                        //     piece.Piece, hoveredTile.Pos,
-                        //     Signal.Type.ADD_WAYPOINT));
-                    }
+                    signal = SignalFromClient.GiveWaypoint(
+                        hoveredTile, 3, selectedPieces.ToArray());
                 }
             }
             // Play the selected card.
             else if (mode == Mode.TARGET_TILE)
             {
-                // UX_Match.AddSkinTicket(new Signal(
-                //     playerIdx, cam.BoardIdx, hoveredPiece.Piece, playCard,
-                //     hoveredTile.Pos, Signal.Type.ADD_PIECE));
-                playCard = null;
+                signal = SignalFromClient.CastSpell(
+                    playCardID, casterPieceID, hoveredTile);
+                playCardID = -1;
                 hand.Hide();
                 UnhoverTile();
                 SetMode(Mode.PLAIN);
@@ -305,9 +301,14 @@ public class UX_Player : MonoBehaviour
             // Select the hovered card.
             else if (mode == Mode.HAND)
             {
-                playCard = hand.Select();
-                hand.Hide(false);
-                SetMode(Mode.TARGET_TILE);
+                int[] vals = hand.Select();
+                if (vals != null)
+                {
+                    playCardID = vals[0];
+                    casterPieceID = vals[1];
+                    hand.Hide(false);
+                    SetMode(Mode.TARGET_TILE);
+                }
             }
         }
 
@@ -331,7 +332,7 @@ public class UX_Player : MonoBehaviour
             {
                 if (hoveredPiece != null)
                 {
-                    // hand.Show(hoveredPiece.Piece);
+                    hand.Show(hoveredPiece);
                     SetMode(Mode.HAND);
                 }
             }
@@ -353,6 +354,9 @@ public class UX_Player : MonoBehaviour
             holdingTriggerR = true;
         else if (gamepadInput[(int) Gamepad.Button.R_TRIG] == -1)
             holdingTriggerR = false;
+        
+        if (signal != null) signal.PlayerID = playerID;
+        return signal;
     }
 
     private Mode GetTriggerCombo()
