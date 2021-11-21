@@ -43,9 +43,9 @@ public class SignalFromHost : Signal
     private bool isBot;
     private int clientID, playerID, boardID, pieceID, cardID, size, chunkSize,
         tileLerp, orderPlace, pieceType;
-    private int[] miscData;
     private Coord tile = Coord.Null, tileNext = Coord.Null,
         tilePrev = Coord.Null;
+    private Coord[] tiles;
     private string name, artPath;
     public Request HostRequest { get { return request; } }
     public bool IsBot { get { return isBot; } }
@@ -62,6 +62,7 @@ public class SignalFromHost : Signal
     public Coord Tile { get { return tile.Copy(); } }
     public Coord TileNext { get { return tileNext.Copy(); } }
     public Coord TilePrev { get { return tilePrev.Copy(); } }
+    public Coord[] Tiles { get { return tiles; } }
     public string Name { get { return name; } }
     public string ArtPath { get { return artPath; } }
     #endregion
@@ -120,10 +121,10 @@ public class SignalFromHost : Signal
                 signal.cardID = message[2];
                 break;
             case Request.UPDATE_WAYPOINTS:
-                signal.size = message[1];
-                signal.miscData = new int[message[2]];
-                for (int i = 0; i < message[2]; i++)
-                { signal.miscData[i] = message[3 + i]; }
+                signal.pieceID = message[1];
+                signal.tiles = new Coord[Piece.MAX_WAYPOINTS];
+                for (int i = 0; i < Piece.MAX_WAYPOINTS * 2; i += 2)
+                { signal.tiles[i / 2] = Coord._(message, i + 2); }
                 break;
             default: signal = null; break;
         }
@@ -230,17 +231,12 @@ public class SignalFromHost : Signal
         );
     }
 
-    public static SignalFromHost UpdateWaypoints(Piece[] pieces)
+    public static SignalFromHost UpdateWaypoints(Piece piece)
     {
-        int piecesDataLength = pieces.Length * Piece.MAX_WAYPOINTS * 2;
-        int[] data = new int[2 + piecesDataLength];
+        int[] data = new int[(2 * Piece.MAX_WAYPOINTS) + 2];
         data[0] = (int) Request.UPDATE_WAYPOINTS;   // Request enum
-        // How many pieces were updated
-        data[1] = piecesDataLength;                 
-        for (int i = 0; i < data[1]; i += Piece.MAX_WAYPOINTS * 2)
-        {
-            pieces[i].GetWaypointData().CopyTo(data, i + 2);
-        }
+        data[1] = piece.ID;                         // Piece ID
+        piece.GetWaypointData().CopyTo(data, 2);    // List of tile coords
         return new SignalFromHost(data);
     }
 }

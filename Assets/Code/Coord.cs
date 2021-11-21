@@ -66,6 +66,9 @@ public struct Coord
             (int) Math.Round(zDist) + a.Z);
     }
     public static Coord _(int x, int z) { return new Coord(x, z); }
+    public static Coord _(int[] arr, int i) {
+        return new Coord(arr[i], arr[i + 1]);
+    }
     public override string ToString() { return "[" + X + ", " + Z + "]"; }
 
 

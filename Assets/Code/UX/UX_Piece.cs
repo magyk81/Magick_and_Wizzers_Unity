@@ -21,6 +21,7 @@ public class UX_Piece : MonoBehaviour
     private Material artMat;
     private UX_Tile[] waypoints = new UX_Tile[Piece.MAX_WAYPOINTS];
     public UX_Tile[] Waypoints { get { return waypoints; } }
+    private int waypointHoverIdx;
     private readonly static float LIFT_DIST = 0.1F;
     public readonly static int LAYER = 6;
 
@@ -160,6 +161,16 @@ public class UX_Piece : MonoBehaviour
         }
     }
 
+    public void HoverWaypoint(int idx)
+    {
+        waypointHoverIdx = 0;
+        for (int i = 0; i < waypoints.Length - 1; i++)
+        {
+            if (waypoints[i] != null) waypointHoverIdx++;
+            else break;
+        }
+    }
+
     public void UpdateWaypoints(UX_Tile[] tiles)
     {
         for (int i = 0; i < waypoints.Length; i++)
@@ -168,18 +179,18 @@ public class UX_Piece : MonoBehaviour
         }
     }
 
-    public void Hover(int localPlayerIdx)
+    public void Hover(int localPlayerID)
     {
-        hover[localPlayerIdx].SetActive(true);
+        hover[localPlayerID].SetActive(true);
 
         // Not using SetActive(false) because the collider needs to work.
-        frame[localPlayerIdx].GetComponent<MeshRenderer>().enabled = false;
+        frame[localPlayerID].GetComponent<MeshRenderer>().enabled = false;
     }
 
-    public void Unhover(int localPlayerIdx)
+    public void Unhover(int localPlayerID)
     {
-        hover[localPlayerIdx].SetActive(false);
-        frame[localPlayerIdx].GetComponent<MeshRenderer>().enabled = true;
+        hover[localPlayerID].SetActive(false);
+        frame[localPlayerID].GetComponent<MeshRenderer>().enabled = true;
     }
 
     public void Select(int localPlayerCount)

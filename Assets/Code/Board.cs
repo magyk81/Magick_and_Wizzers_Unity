@@ -105,16 +105,16 @@ public class Board
         return SignalFromHost.AddPiece(piece);
     }
 
-    public SignalFromHost GiveWaypoint(SignalFromClient signal)
+    public SignalFromHost[] GiveWaypoint(SignalFromClient signal)
     {
-        List<Piece> piecesGivenWaypoint = new List<Piece>();
+        List<SignalFromHost> waypointUpdates = new List<SignalFromHost>();
         for (int i = 0; i < signal.PieceIDs.Length; i++)
         {
             Piece piece = piecesWithID[signal.PieceIDs[i]];
             if (piece.PlayerID == signal.ActingPlayerID)
             {
                 piece.AddWaypoint(signal.Tile, signal.OrderPlace);
-                piecesGivenWaypoint.Add(piece);
+                waypointUpdates.Add(SignalFromHost.UpdateWaypoints(piece));
             }
             else
             {
@@ -123,12 +123,7 @@ public class Board
                     + signal.ActingPlayerID);
             }
         }
-        if (piecesGivenWaypoint.Count > 0)
-        {
-            return SignalFromHost.UpdateWaypoints(
-                piecesGivenWaypoint.ToArray());
-        }
-        return null;
+        return waypointUpdates.ToArray();
     }
 
     public SignalFromHost[] CastSpell(SignalFromClient signal,

@@ -31,7 +31,7 @@ public class Match
         for (int i = 0; i < messages.Length; i++)
         {
             int[] message = messages[i];
-            SignalFromHost[] outcomeArr; SignalFromHost outcome;
+            SignalFromHost[] outcomeArr;
             SignalFromClient signal = SignalFromClient.FromMessage(message);
             switch (signal.ClientRequest)
             {
@@ -43,8 +43,8 @@ public class Match
                     break;
                 case SignalFromClient.Request.GIVE_WAYPOINT:
                     Debug.Log("Give Waypoint");
-                    outcome = boards[signal.BoardID].GiveWaypoint(signal);
-                    if (outcome != null) signalsToSend.Add(outcome);
+                    outcomeArr = boards[signal.BoardID].GiveWaypoint(signal);
+                    if (outcomeArr != null) signalsToSend.AddRange(outcomeArr);
                     break;
             }
         }
