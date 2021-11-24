@@ -100,84 +100,40 @@ public class Piece
 
     public void AddWaypoint(Coord tile, int orderPlace)
     {
-        for (int i = orderPlace; i >= 0; i--)
-        {
-            if (waypoints[i].IsSet)
-            {
-                orderPlace = Mathf.Min(i + 1, MAX_WAYPOINTS - 1);
-                break;
-            }
-            else if (i == 0)
-            {
-                waypoints[0].Tile = tile;
-                return;
-            }
-        }
-
-        for (int i = MAX_WAYPOINTS - 1; i > orderPlace; i--)
-        {
-            if (i > 0) waypoints[i].Tile = waypoints[i - 1].Tile;
-        }
         waypoints[orderPlace].Tile = tile;
-
-        // for (int i = 0; i < MAX_WAYPOINTS; i++)
-        // {
-        //     if (!waypoints[i].IsSet)
-        //     {
-        //         if (i > 0 && waypoints[i - 1].Tile == tile) return;
-        //         waypoints[i].Tile = tile;
-        //         UpdateWaypoints();
-        //         break;
-        //     }
-        // }
+        UpdateWaypoints();
     }
-    public void RemoveWaypoint(Coord tile)
+    public void RemoveWaypoint(int orderPlace)
     {
-        for (int i = 0; i < MAX_WAYPOINTS; i++)
-        {
-            if (waypoints[i].IsSet && waypoints[i].Tile == tile)
-            {
-                waypoints[i].Reset();
-                UpdateWaypoints();
-                break;
-            }
-        }
+        waypoints[orderPlace].Reset();
+        UpdateWaypoints();
     }
     private void UpdateWaypoints()
     {
         // Move all waypoints to the left, removing any gaps.
         for (int i = 0; i < Piece.MAX_WAYPOINTS - 1; i++)
         {
-            if (!waypoints[i].IsSet)
+            int k = Piece.MAX_WAYPOINTS - i;
+            while (!waypoints[i].IsSet && k >= 0)
             {
                 for (int j = i + 1; j < Piece.MAX_WAYPOINTS; j++)
                 {
                     if (waypoints[j].IsSet)
                     {
-                        waypoints[i] = waypoints[j];
+                        waypoints[j - 1] = waypoints[j].Copy();
                         waypoints[j].Reset();
                     }
                 }
+                k--;
             }
         }
 
-        // Convert waypoints to tiles for ticket.
-        Coord[] waypointTiles = new Coord[Piece.MAX_WAYPOINTS];
+        string _ = "";
         for (int i = 0; i < Piece.MAX_WAYPOINTS; i++)
         {
-            waypointTiles[i] = waypoints[i].Tile;
+            _ += waypoints[i].ToString() + ", ";
         }
-
-        // Match.AddSkinTicket(new Signal(
-        //     this, waypointTiles, Signal.Type.UPDATE_WAYPOINTS));
-    }
-    public bool HasSameWaypoints(Piece piece)
-    {
-        for (int i = 0; i < waypoints.Length; i++)
-        {
-            if (waypoints[i] != piece.waypoints[i]) return false;
-        }
-        return true;
+        Debug.Log(_);
     }
 
     public int[] GetWaypointData()

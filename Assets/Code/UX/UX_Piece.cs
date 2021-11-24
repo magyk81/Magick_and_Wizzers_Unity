@@ -21,7 +21,6 @@ public class UX_Piece : MonoBehaviour
     private Material artMat;
     private UX_Tile[] waypoints = new UX_Tile[Piece.MAX_WAYPOINTS];
     public UX_Tile[] Waypoints { get { return waypoints; } }
-    private int waypointHoverIdx;
     private readonly static float LIFT_DIST = 0.1F;
     public readonly static int LAYER = 6;
 
@@ -161,22 +160,21 @@ public class UX_Piece : MonoBehaviour
         }
     }
 
-    public void HoverWaypoint(int idx)
-    {
-        waypointHoverIdx = 0;
-        for (int i = 0; i < waypoints.Length - 1; i++)
-        {
-            if (waypoints[i] != null) waypointHoverIdx++;
-            else break;
-        }
-    }
-
     public void UpdateWaypoints(UX_Tile[] tiles)
     {
         for (int i = 0; i < waypoints.Length; i++)
         {
             waypoints[i] = tiles[i];
         }
+    }
+
+    public bool HasSameWaypoints(UX_Piece piece)
+    {
+        for (int i = 0; i < waypoints.Length; i++)
+        {
+            if (waypoints[i].Pos != piece.waypoints[i].Pos) return false;
+        }
+        return true;
     }
 
     public void Hover(int localPlayerID)

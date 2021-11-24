@@ -90,35 +90,15 @@ public class Host : SocketHand
 
                 int rm = ReceiveMessages(clientSockets[i]);
                 if (rm == 0)
-                    Debug.Log("Host received message from client #" + i + ".");
+                {
+                    /*Debug.Log(
+                        "Host received message from client #" + i + ".");*/
+                }
                 else if (rm == -1) Terminate();
             }
             if (sm == 0) ClearMessagesToSend();
         }
     }
-
-    // Update is called once per frame
-    // private void Update()
-    // {
-    //     if (debugKey != KeyCode.None && connected && !terminating)
-    //     {
-    //         if (Input.GetKeyDown(debugKey))
-    //         {
-    //             // Generate random data.
-    //             System.Random rand = new System.Random();
-    //             int GetRandInt() { return rand.Next() % 100; };
-    //             int randPlayerID = GetRandInt(),
-    //                 randCardID = GetRandInt(),
-    //                 randPieceID = GetRandInt();
-    //             Coord randTile = Coord._(GetRandInt(), GetRandInt());
-
-    //             SignalFromHost signal = SignalFromHost.AddPiece(
-    //                 randPlayerID, randCardID, randPieceID, randTile);
-
-    //             SendSignals(signal);
-    //         }
-    //     }
-    // }
 
     public override void Terminate()
     {

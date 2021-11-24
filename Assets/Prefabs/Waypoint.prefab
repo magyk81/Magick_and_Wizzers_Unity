@@ -94,5 +94,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cdee0ed1c4be20e4ab3c149ff4450613, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  opaqueMat: {fileID: 2100000, guid: 4dcb6b6c22201804fa83239492490031, type: 2}
-  semitransMat: {fileID: 2100000, guid: 47059d7921961eb40b5dc9b334bc07ef, type: 2}
+  opaqueRedMat: {fileID: 2100000, guid: 4dcb6b6c22201804fa83239492490031, type: 2}
+  semitransRedMat: {fileID: 2100000, guid: 47059d7921961eb40b5dc9b334bc07ef, type: 2}
+  opaqueYellowMat: {fileID: 2100000, guid: eca293a160a396245b097514b5911293, type: 2}
+  semitransYellowMat: {fileID: 2100000, guid: e8cc8a7d2ba8b4d469dc6b4a8034722b, type: 2}

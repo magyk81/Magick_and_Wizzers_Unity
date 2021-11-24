@@ -45,7 +45,7 @@ public class Client : SocketHand
         while (!terminating)
         {
             int rm = ReceiveMessages(socket);
-            if (rm == 0) Debug.Log("Client received message.");
+            if (rm == 0) { /*Debug.Log("Client received message.");*/ }
             else if (rm == -1) Terminate();
 
             SendMessages(socket);

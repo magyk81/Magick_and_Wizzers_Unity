@@ -105,7 +105,7 @@ public class Board
         return SignalFromHost.AddPiece(piece);
     }
 
-    public SignalFromHost[] GiveWaypoint(SignalFromClient signal)
+    public SignalFromHost[] SetWaypoint(SignalFromClient signal, bool add)
     {
         List<SignalFromHost> waypointUpdates = new List<SignalFromHost>();
         for (int i = 0; i < signal.PieceIDs.Length; i++)
@@ -113,7 +113,8 @@ public class Board
             Piece piece = piecesWithID[signal.PieceIDs[i]];
             if (piece.PlayerID == signal.ActingPlayerID)
             {
-                piece.AddWaypoint(signal.Tile, signal.OrderPlace);
+                if (add) piece.AddWaypoint(signal.Tile, signal.OrderPlace);
+                else piece.RemoveWaypoint(signal.OrderPlace);
                 waypointUpdates.Add(SignalFromHost.UpdateWaypoints(piece));
             }
             else

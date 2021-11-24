@@ -70,9 +70,12 @@ public class UX_Match : MonoBehaviour
                     break;
                 case SignalFromHost.Request.UPDATE_WAYPOINTS:
                     Debug.Log("Update Waypoints");
-                    foreach (UX_Board board in
-                        boards[boardWithPiece[signal.PieceID]])
+                    UX_Board[] _boards = boards[
+                        boardWithPiece[signal.PieceID]];
+                    foreach (UX_Board board in _boards)
                     { board.UpdateWaypoints(signal.PieceID, signal.Tiles); }
+                    Players[_boards[0].PlayerWithPiece(signal.PieceID)]
+                        .ResetPotentialWaypoint();
                     break;
             }
         }

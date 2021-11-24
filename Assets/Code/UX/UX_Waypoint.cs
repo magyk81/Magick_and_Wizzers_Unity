@@ -11,7 +11,13 @@ using UnityEngine;
 public class UX_Waypoint : MonoBehaviour
 {
     [SerializeField]
-    private Material opaqueMat, semitransMat;
+    private Material opaqueRedMat, semitransRedMat, opaqueYellowMat,
+        semitransYellowMat;
+    private Material rendMaterial {
+        set {
+            if (rend.material != value) rend.material = value;
+        }
+    }
 
     private UX_Tile tile;
     public UX_Tile Tile
@@ -27,15 +33,17 @@ public class UX_Waypoint : MonoBehaviour
     private Transform tra;
     private Renderer rend;
 
-    public void Show(bool opaque)
+    public void Show(bool opaque, bool hovered)
     {
         if (opaque)
         {
-            if (rend.material != opaqueMat) rend.material = opaqueMat;
+            if (hovered) rendMaterial = opaqueYellowMat;
+            else rendMaterial = opaqueRedMat;
         }
         else
         {
-            if (rend.material != semitransMat) rend.material = semitransMat;
+            if (hovered) rendMaterial = semitransYellowMat;
+            else rendMaterial = semitransRedMat;
         }
         gameObject.SetActive(true);
     }

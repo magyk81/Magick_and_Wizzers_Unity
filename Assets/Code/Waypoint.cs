@@ -15,14 +15,19 @@ public class Waypoint
     private Piece piece;
     public Piece Piece { set { piece = value; } }
     public bool IsSet { get { return tile != Coord.Null && piece == null; } }
-    public Waypoint()
-    {
-        Reset();
-    }
+    public Waypoint() { Reset(); }
     public void Reset()
     {
         tile = Coord.Null.Copy();
         piece = null;
+    }
+
+    public Waypoint Copy()
+    {
+        Waypoint copy = new Waypoint();
+        copy.tile = tile;
+        copy.piece = piece;
+        return copy;
     }
 
     public static bool operator ==(Waypoint a, Waypoint b)
@@ -48,6 +53,6 @@ public class Waypoint
 
     public override string ToString()
     {
-        return base.ToString();
+        return IsSet ? tile.ToString() : "[]";
     }
 }

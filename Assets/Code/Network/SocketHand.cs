@@ -80,14 +80,14 @@ public abstract class SocketHand
             // bytesArray = msgReceiveBytes.ToArray();
             // msgReceiveSize = bytesArray[0];
             msgReceiveSize = msgReceiveBytes[0];
-            Debug.Log("Message size: " + msgReceiveSize);
+            // Debug.Log("Message size: " + msgReceiveSize);
             msgReceiveBytes = msgReceiveBytes.Skip(1).ToList();
         }
 
         if (msgReceiveBytes.Count < msgReceiveSize) return 1;
 
         bytesArray = msgReceiveBytes.ToArray();
-        Debug.Log("bytesArray length: " + bytesArray.Length);
+        // Debug.Log("bytesArray length: " + bytesArray.Length);
         int[] completedMessage = new int[msgReceiveSize / sizeof(int)];
         for (int n = 0; n < msgReceiveSize; n += sizeof(int))
         {
@@ -109,7 +109,7 @@ public abstract class SocketHand
         {
             foreach (Signal signal in messagesToSend)
             {
-                Debug.Log("Signal set to send: " + signal);
+                // Debug.Log("Signal set to send: " + signal);
                 socket.Send(signal);
             }
             count = messagesToSend.Count;

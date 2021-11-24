@@ -151,6 +151,11 @@ public class UX_Board : MonoBehaviour
         return bounds;
     }
 
+    public int PlayerWithPiece(int pieceID)
+    {
+        return pieces[pieceID].PlayerID;
+    }
+
     public void AddPiece(SignalFromHost signal, string pieceName,
         int layerCount)
     {

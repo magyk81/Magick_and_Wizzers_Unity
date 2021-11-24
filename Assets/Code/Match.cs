@@ -41,9 +41,16 @@ public class Match
                         signal, boards[signal.BoardID]);
                     if (outcomeArr != null) signalsToSend.AddRange(outcomeArr);
                     break;
-                case SignalFromClient.Request.GIVE_WAYPOINT:
-                    Debug.Log("Give Waypoint");
-                    outcomeArr = boards[signal.BoardID].GiveWaypoint(signal);
+                case SignalFromClient.Request.ADD_WAYPOINT:
+                    Debug.Log("Add Waypoint");
+                    outcomeArr = boards[signal.BoardID].SetWaypoint(
+                        signal, true);
+                    if (outcomeArr != null) signalsToSend.AddRange(outcomeArr);
+                    break;
+                case SignalFromClient.Request.REMOVE_WAYPOINT:
+                    Debug.Log("Remove Waypoint");
+                    outcomeArr = boards[signal.BoardID].SetWaypoint(
+                        signal, false);
                     if (outcomeArr != null) signalsToSend.AddRange(outcomeArr);
                     break;
             }

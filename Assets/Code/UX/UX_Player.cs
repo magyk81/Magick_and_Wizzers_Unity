@@ -26,7 +26,9 @@ public class UX_Player : MonoBehaviour
     private int playCardID, casterPieceID;
     private Transform[] tileHover;
     private UX_Waypoint[][] waypoints;
+    private UX_Waypoint[] potentialWaypoint;
     private Gamepad gamepad;
+    private int hoveredWaypoint, hoveredWaypointMax;
     private UX_Piece hoveredPiece;
     private UX_Tile hoveredTile;
     private List<UX_Piece> selectedPieces = new List<UX_Piece>();
@@ -138,6 +140,24 @@ public class UX_Player : MonoBehaviour
             }
         }
 
+        // Generate potential waypoint.
+        potentialWaypoint = new UX_Waypoint[9];
+        for (int j = 0; j < 9; j++)
+        {
+            potentialWaypoint[j] = Instantiate(baseWaypoint.gameObject,
+                waypointsParent).GetComponent<UX_Waypoint>();
+            if (j == 0)
+            {
+                potentialWaypoint[j].gameObject.name
+                    = "Potential Waypoint - Real";
+            }
+            else
+            {
+                potentialWaypoint[j].gameObject.name
+                    = "Waypoint - Clone " + Util.DirToString(j - 1);
+            }
+        }
+
         // Setup camera.
         cam = Instantiate(
             baseCam.gameObject,
@@ -225,6 +245,13 @@ public class UX_Player : MonoBehaviour
         SignalFromClient signal = null;
         int[] gamepadInput = gamepad.PadInput;
 
+        // <D-pad up | Up arrow>
+        if (gamepadInput[(int) Gamepad.Button.UP] == 1)
+        {
+            if (mode == Mode.WAYPOINT_PIECE || mode == Mode.WAYPOINT_TILE)
+                hoveredWaypoint++;
+        }
+
         // <D-pad down | Down arrow>
         if (gamepadInput[(int) Gamepad.Button.DOWN] == 1)
         {
@@ -234,6 +261,8 @@ public class UX_Player : MonoBehaviour
                 if (cam.BoardIdx != 1) cam.BoardIdx = 1;
                 else cam.BoardIdx = 0;
             }
+            else if (mode == Mode.WAYPOINT_PIECE || mode == Mode.WAYPOINT_TILE)
+                hoveredWaypoint--;
         }
 
         // <D-pad | Arrows>
@@ -284,8 +313,23 @@ public class UX_Player : MonoBehaviour
             {
                 if (selectedPieces.Count > 0)
                 {
-                    signal = SignalFromClient.GiveWaypoint(
-                        hoveredTile, 3, selectedPieces.ToArray());
+                    int orderPlace = hoveredWaypoint;
+                    if (hoveredWaypoint == -1
+                        || hoveredWaypoint >= Piece.MAX_WAYPOINTS)
+                        orderPlace = hoveredWaypointMax;
+                    if (selectedPieces[0].Waypoints[orderPlace] != null
+                        &&selectedPieces[0].Waypoints[orderPlace].Pos
+                        == hoveredTile.Pos)
+                    {
+                        signal = SignalFromClient.RemoveWaypoint(
+                            hoveredTile.BoardID, orderPlace,
+                            selectedPieces.ToArray());
+                    }
+                    else
+                    {
+                        signal = SignalFromClient.AddWaypoint(
+                            hoveredTile, orderPlace, selectedPieces.ToArray());
+                    }
                 }
             }
             // Play the selected card.
@@ -385,6 +429,7 @@ public class UX_Player : MonoBehaviour
         {
             // In WAYPOINT modes, show opaque waypoints if pieces are selected
             // and if those pieces all share identical waypoints.
+            // Also show semitrans waypoint where new waypoint can go.
             if (selectedPieces.Count > 0)
             {
                 if (waypointsAreCommon) ShowWaypoints(true);
@@ -419,7 +464,7 @@ public class UX_Player : MonoBehaviour
             Vector3[] tilePosAll = tiles[i].UX_PosAll;
             for (int j = 0; j < 9; j++)
             {
-                waypoints[i][j].Show(opaque);
+                waypoints[i][j].Show(opaque, i == hoveredWaypoint);
                 waypoints[i][j].SetPos(tilePosAll[j]);
             }
         }
@@ -430,6 +475,29 @@ public class UX_Player : MonoBehaviour
             for (int j = 0; j < 9; j++)
             {
                 waypoints[i][j].Hide();
+            }
+        }
+
+        if (opaque)
+        {
+            // Update hovered waypoint index max to equal the number of shown
+            // waypoints, but do not let it exceed the max waypoint index.
+            hoveredWaypointMax = Mathf.Min(Piece.MAX_WAYPOINTS - 1, nullTileIdx);
+
+            // Update hovered waypoint index.
+            if (hoveredWaypoint < 0) hoveredWaypoint = hoveredWaypointMax;
+            else if (hoveredWaypoint > hoveredWaypointMax) hoveredWaypoint = 0;
+
+            // Show potential waypoint.
+            if (hoveredTile != null)
+            {
+                Vector3[] tilePosAll_ = hoveredTile.UX_PosAll;
+                for (int j = 0; j < 9; j++)
+                {
+                    potentialWaypoint[j].Show(false,
+                        hoveredWaypoint < nullTileIdx);
+                    potentialWaypoint[j].SetPos(tilePosAll_[j]);
+                }
             }
         }
     }
@@ -443,6 +511,16 @@ public class UX_Player : MonoBehaviour
                 waypoints[i][j].Hide();
             }
         }
+        for (int j = 0; j < 9; j++)
+        {
+            potentialWaypoint[j].Hide();
+        }
+        hoveredWaypoint = -1;
+    }
+
+    public void ResetPotentialWaypoint()
+    {
+        hoveredWaypoint = -1;
     }
 
     /// <summary>Called whenever the number of waypoints changes or the number
@@ -457,12 +535,11 @@ public class UX_Player : MonoBehaviour
         {
             for (int i = 1; i < selectedPieces.Count; i++)
             {
-                // if (!selectedPieces[i].Piece.HasSameWaypoints(
-                //     selectedPieces[0].Piece))
-                // {
-                //     waypointsAreCommon = false;
-                //     break;
-                // }
+                if (!selectedPieces[i].HasSameWaypoints(selectedPieces[0]))
+                {
+                    waypointsAreCommon = false;
+                    break;
+                }
             }
         }
     }   
