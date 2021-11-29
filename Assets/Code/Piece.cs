@@ -98,9 +98,10 @@ public class Piece
 
     }
 
-    public void AddWaypoint(Coord tile, int orderPlace)
+    public void AddWaypoint(Coord tile, Piece piece, int orderPlace)
     {
-        waypoints[orderPlace].Tile = tile;
+        if (piece != null) waypoints[orderPlace].Piece = piece;
+        else waypoints[orderPlace].Tile = tile;
         UpdateWaypoints();
     }
     public void RemoveWaypoint(int orderPlace)

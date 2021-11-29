@@ -19,6 +19,11 @@ public class UX_Piece : MonoBehaviour
         ART, FRAME, ATTACK, DEFENSE, LIFE, HOVER, SELECT, TARGET, COUNT };
     private Transform tra;
     private Material artMat;
+    private struct Waypoint
+    {
+        UX_Tile t;
+        int p;
+    }
     private UX_Tile[] waypoints = new UX_Tile[Piece.MAX_WAYPOINTS];
     public UX_Tile[] Waypoints { get { return waypoints; } }
     private readonly static float LIFT_DIST = 0.1F;

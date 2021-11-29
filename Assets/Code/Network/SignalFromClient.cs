@@ -72,11 +72,12 @@ public class SignalFromClient : Signal
                 break;
             case Request.ADD_WAYPOINT:
                 signal.tile = Coord._(message[2], message[3]);
-                signal.boardID = message[4];
-                signal.orderPlace = message[5];
-                signal.pieceIDs = new int[message[6]];
-                for (int i = 0; i < message[6]; i++)
-                { signal.pieceIDs[i] = message[7 + i]; }
+                signal.pieceID = message[4];
+                signal.boardID = message[5];
+                signal.orderPlace = message[6];
+                signal.pieceIDs = new int[message[7]];
+                for (int i = 0; i < message[7]; i++)
+                { signal.pieceIDs[i] = message[8 + i]; }
                 break;
             case Request.REMOVE_WAYPOINT:
                 signal.boardID = message[2];
@@ -108,18 +109,19 @@ public class SignalFromClient : Signal
         );
     }
 
-    public static SignalFromClient AddWaypoint(UX_Tile tile,
+    public static SignalFromClient AddWaypoint(UX_Tile tile, int pieceID,
         int orderPlace, params UX_Piece[] pieces)
     {
-        Coord tileCoord = (Coord) tile;
-        int[] data = new int[6 + pieces.Length];
+        Coord tileCoord = tile != null ? (Coord) tile : Coord.Null;
+        int[] data = new int[7 + pieces.Length];
         data[0] = (int) Request.ADD_WAYPOINT;   // Request enum
         data[1] = tileCoord.X;                  // Tile where it's going onto
         data[2] = tileCoord.Z;
-        data[3] = tile.BoardID;                 // Board ID
-        data[4] = orderPlace;                   // Its order among the others
-        data[5] = pieces.Length;                // How many pieces are getting
-        for (int i = 6, j = 0; j < pieces.Length; i++, j++)
+        data[3] = pieceID;                      // Target (-1 if no target)
+        data[4] = tile.BoardID;                 // Board ID
+        data[5] = orderPlace;                   // Its order among the others
+        data[6] = pieces.Length;                // How many pieces are getting
+        for (int i = 7, j = 0; j < pieces.Length; i++, j++)
         {
             data[i] = pieces[j].PieceID;
         }

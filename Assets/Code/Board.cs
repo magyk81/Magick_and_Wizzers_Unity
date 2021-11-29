@@ -113,7 +113,13 @@ public class Board
             Piece piece = piecesWithID[signal.PieceIDs[i]];
             if (piece.PlayerID == signal.ActingPlayerID)
             {
-                if (add) piece.AddWaypoint(signal.Tile, signal.OrderPlace);
+                if (add)
+                {
+                    Piece waypointTarget = (signal.PieceID == -1)
+                        ? null : piecesWithID[signal.PieceID];
+                    piece.AddWaypoint(signal.Tile, waypointTarget,
+                        signal.OrderPlace);
+                }
                 else piece.RemoveWaypoint(signal.OrderPlace);
                 waypointUpdates.Add(SignalFromHost.UpdateWaypoints(piece));
             }

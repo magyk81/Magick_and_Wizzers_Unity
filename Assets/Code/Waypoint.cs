@@ -11,9 +11,21 @@ using UnityEngine;
 public class Waypoint
 {
     private Coord tile;
-    public Coord Tile { get { return tile; } set { tile = value; } }
+    public Coord Tile {
+        get { return tile; }
+        set {
+                tile = value;
+                piece = null;
+            }
+    }
     private Piece piece;
-    public Piece Piece { set { piece = value; } }
+    public Piece Piece {
+        get { return piece; }
+        set {
+                piece = value;
+                tile = Coord.Null;
+            }
+    }
     public bool IsSet { get { return tile != Coord.Null && piece == null; } }
     public Waypoint() { Reset(); }
     public void Reset()
@@ -32,11 +44,11 @@ public class Waypoint
 
     public static bool operator ==(Waypoint a, Waypoint b)
     {
-        return a.tile == b.tile;
+        return a.tile == b.tile && a.piece == b.piece;
     }
     public static bool operator !=(Waypoint a, Waypoint b)
     {
-        return a.tile != b.tile;
+        return a.tile != b.tile || a.piece != b.piece;
     }
 
 
@@ -53,6 +65,6 @@ public class Waypoint
 
     public override string ToString()
     {
-        return IsSet ? tile.ToString() : "[]";
+        return IsSet ? ((piece != null) ? piece.Name : tile.ToString()) : "[]";
     }
 }

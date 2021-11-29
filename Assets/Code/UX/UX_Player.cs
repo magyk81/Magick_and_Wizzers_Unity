@@ -318,7 +318,7 @@ public class UX_Player : MonoBehaviour
                         || hoveredWaypoint >= Piece.MAX_WAYPOINTS)
                         orderPlace = hoveredWaypointMax;
                     if (selectedPieces[0].Waypoints[orderPlace] != null
-                        &&selectedPieces[0].Waypoints[orderPlace].Pos
+                        && selectedPieces[0].Waypoints[orderPlace].Pos
                         == hoveredTile.Pos)
                     {
                         signal = SignalFromClient.RemoveWaypoint(
@@ -327,9 +327,34 @@ public class UX_Player : MonoBehaviour
                     }
                     else
                     {
-                        signal = SignalFromClient.AddWaypoint(
-                            hoveredTile, orderPlace, selectedPieces.ToArray());
+                        signal = SignalFromClient.AddWaypoint(hoveredTile, -1,
+                            orderPlace, selectedPieces.ToArray());
                     }
+                }
+            }
+            else if (mode == Mode.WAYPOINT_PIECE)
+            {
+                if (selectedPieces.Count > 0)
+                {
+                    // int orderPlace = hoveredWaypoint;
+                    // if (hoveredWaypoint == -1
+                    //     || hoveredWaypoint >= Piece.MAX_WAYPOINTS)
+                    //     orderPlace = hoveredWaypointMax;
+                    // if (selectedPieces[0].Waypoints[orderPlace] != null
+                    //     && selectedPieces[0].Waypoints[orderPlace].
+                    //     == hoveredTile.Pos)
+                    // {
+                    //     signal = SignalFromClient.RemoveWaypoint(
+                    //         hoveredTile.BoardID, orderPlace,
+                    //         selectedPieces.ToArray());
+                    // }
+                    // else
+                    // {
+                    //     int targetID = hoveredPiece != null
+                    //         ? hoveredPiece.PieceID : -1;
+                    //     signal = SignalFromClient.AddWaypoint(null, targetID,
+                    //         orderPlace, selectedPieces.ToArray());
+                    // }
                 }
             }
             // Play the selected card.
