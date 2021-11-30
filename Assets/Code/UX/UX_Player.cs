@@ -154,7 +154,7 @@ public class UX_Player : MonoBehaviour
             else
             {
                 potentialWaypoint[j].gameObject.name
-                    = "Waypoint - Clone " + Util.DirToString(j - 1);
+                    = "Potential Waypoint - Clone " + Util.DirToString(j - 1);
             }
         }
 
@@ -317,8 +317,8 @@ public class UX_Player : MonoBehaviour
                     if (hoveredWaypoint == -1
                         || hoveredWaypoint >= Piece.MAX_WAYPOINTS)
                         orderPlace = hoveredWaypointMax;
-                    if (selectedPieces[0].Waypoints[orderPlace] != null
-                        && selectedPieces[0].Waypoints[orderPlace].Pos
+                    if (selectedPieces[0].WaypointTiles[orderPlace] != null
+                        && selectedPieces[0].WaypointTiles[orderPlace].Pos
                         == hoveredTile.Pos)
                     {
                         signal = SignalFromClient.RemoveWaypoint(
@@ -327,7 +327,7 @@ public class UX_Player : MonoBehaviour
                     }
                     else
                     {
-                        signal = SignalFromClient.AddWaypoint(hoveredTile, -1,
+                        signal = SignalFromClient.AddWaypoint(hoveredTile,
                             orderPlace, selectedPieces.ToArray());
                     }
                 }
@@ -336,25 +336,26 @@ public class UX_Player : MonoBehaviour
             {
                 if (selectedPieces.Count > 0)
                 {
-                    // int orderPlace = hoveredWaypoint;
-                    // if (hoveredWaypoint == -1
-                    //     || hoveredWaypoint >= Piece.MAX_WAYPOINTS)
-                    //     orderPlace = hoveredWaypointMax;
-                    // if (selectedPieces[0].Waypoints[orderPlace] != null
-                    //     && selectedPieces[0].Waypoints[orderPlace].
-                    //     == hoveredTile.Pos)
-                    // {
-                    //     signal = SignalFromClient.RemoveWaypoint(
-                    //         hoveredTile.BoardID, orderPlace,
-                    //         selectedPieces.ToArray());
-                    // }
-                    // else
-                    // {
-                    //     int targetID = hoveredPiece != null
-                    //         ? hoveredPiece.PieceID : -1;
-                    //     signal = SignalFromClient.AddWaypoint(null, targetID,
-                    //         orderPlace, selectedPieces.ToArray());
-                    // }
+                    int orderPlace = hoveredWaypoint;
+                    if (hoveredWaypoint == -1
+                        || hoveredWaypoint >= Piece.MAX_WAYPOINTS)
+                        orderPlace = hoveredWaypointMax;
+                    if (selectedPieces[0].WaypointPieces[orderPlace] != null
+                        && selectedPieces[0].WaypointPieces[orderPlace].PieceID
+                        == hoveredPiece.PieceID)
+                    {
+                        signal = SignalFromClient.RemoveWaypoint(
+                            hoveredPiece.BoardID, orderPlace,
+                            selectedPieces.ToArray());
+                    }
+                    else
+                    {
+                        int targetID = hoveredPiece != null
+                            ? hoveredPiece.PieceID : -1;
+                        signal = SignalFromClient.AddWaypoint(
+                            hoveredPiece.BoardID, targetID, orderPlace,
+                            selectedPieces.ToArray());
+                    }
                 }
             }
             // Play the selected card.
@@ -474,28 +475,47 @@ public class UX_Player : MonoBehaviour
     private void ShowWaypoints(bool opaque)
     {
         UX_Tile[] tiles;
-        if (opaque) tiles = selectedPieces[0].Waypoints;
-        else tiles = hoveredPiece.Waypoints;
-        int nullTileIdx = tiles.Length;
+        UX_Piece[] pieces;
+        if (opaque)
+        {
+            tiles = selectedPieces[0].WaypointTiles;
+            pieces = selectedPieces[0].WaypointPieces;
+        }
+        else
+        {
+            tiles = hoveredPiece.WaypointTiles;
+            pieces = hoveredPiece.WaypointPieces;
+        }
+        int nullIdx = tiles.Length;
 
         // Show waypoints that aren't null.
         for (int i = 0; i < tiles.Length; i++)
         {
-            if (tiles[i] == null)
+            if (tiles[i] == null && pieces[i] == null)
             {
-                nullTileIdx = i;
+                nullIdx = i;
                 break;
             }
             Vector3[] tilePosAll = tiles[i].UX_PosAll;
+            UX_Piece[] pieceAll = pieces[i].UX_All;
             for (int j = 0; j < 9; j++)
             {
                 waypoints[i][j].Show(opaque, i == hoveredWaypoint);
-                waypoints[i][j].SetPos(tilePosAll[j]);
+                if (waypoints[i][j].ForPiece())
+                {
+                    if (j == 0) waypoints[i][j].SetPiece(pieceAll[0]);
+                    else waypoints[i][j].SetPiece(pieceAll[j - 1]);
+                }
+                else
+                {
+                    waypoints[i][j].SetPos(tilePosAll[j]);
+                    waypoints[i][j].SetPiece(null);
+                }
             }
         }
 
         // Hide remaining waypoints.
-        for (int i = nullTileIdx; i < tiles.Length; i++)
+        for (int i = nullIdx; i < tiles.Length; i++)
         {
             for (int j = 0; j < 9; j++)
             {
@@ -507,7 +527,7 @@ public class UX_Player : MonoBehaviour
         {
             // Update hovered waypoint index max to equal the number of shown
             // waypoints, but do not let it exceed the max waypoint index.
-            hoveredWaypointMax = Mathf.Min(Piece.MAX_WAYPOINTS - 1, nullTileIdx);
+            hoveredWaypointMax = Mathf.Min(Piece.MAX_WAYPOINTS - 1, nullIdx);
 
             // Update hovered waypoint index.
             if (hoveredWaypoint < 0) hoveredWaypoint = hoveredWaypointMax;
@@ -520,8 +540,27 @@ public class UX_Player : MonoBehaviour
                 for (int j = 0; j < 9; j++)
                 {
                     potentialWaypoint[j].Show(false,
-                        hoveredWaypoint < nullTileIdx);
+                        hoveredWaypoint < nullIdx);
                     potentialWaypoint[j].SetPos(tilePosAll_[j]);
+                    potentialWaypoint[j].SetPiece(null);
+                }
+            }
+            else if (hoveredPiece != null)
+            {
+                UX_Piece[] pieceAll_ = hoveredPiece.UX_All;
+                for (int j = 0; j < 9; j++)
+                {
+                    potentialWaypoint[j].Show(false,
+                        hoveredWaypoint < nullIdx);
+                    if (j == 0) potentialWaypoint[j].SetPiece(hoveredPiece);
+                    else potentialWaypoint[j].SetPiece(pieceAll_[j - 1]);
+                }
+            }
+            else
+            {
+                for (int j = 0; j < 9; j++)
+                {
+                    potentialWaypoint[j].Hide();
                 }
             }
         }

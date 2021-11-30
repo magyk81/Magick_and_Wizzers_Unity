@@ -26,7 +26,7 @@ public class Waypoint
                 tile = Coord.Null;
             }
     }
-    public bool IsSet { get { return tile != Coord.Null && piece == null; } }
+    public bool IsSet { get { return tile != Coord.Null || piece != null; } }
     public Waypoint() { Reset(); }
     public void Reset()
     {

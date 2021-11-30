@@ -23,7 +23,20 @@ public class UX_Waypoint : MonoBehaviour
     private Mesh meshForTile, meshForPiece;
     private Mesh rendMesh {
         set {
-            if (filter.mesh != value) filter.mesh = value;
+            if (filter.mesh != value)
+            {
+                filter.mesh = value;
+                if (value == meshForTile)
+                {
+                    tra.localEulerAngles = new Vector3(0, 0, 0);
+                    tra.localScale = new Vector3(1, 1, 1);
+                }
+                else if (value == meshForPiece)
+                {
+                    tra.localEulerAngles = new Vector3(90, 0, 0);
+                    tra.localScale = new Vector3(2, 2, 1);
+                }
+            }
         }
     }
 
@@ -73,6 +86,7 @@ public class UX_Waypoint : MonoBehaviour
             rendMesh = meshForTile;
         }
     }
+    public bool ForPiece() { return pieceTra != null; }
 
     // Start is called before the first frame update
     private void Start()

@@ -142,9 +142,23 @@ public class Piece
         int[] data = new int[2 * MAX_WAYPOINTS];
         for (int i = 0; i < data.Length; i += 2)
         {
-            Coord tile = waypoints[i / 2].Tile;
-            data[i] = tile.X;
-            data[i + 1] = tile.Z;
+            Waypoint waypoint = waypoints[i / 2];
+
+            // Uses target piece. Send target pieceID as Z value.
+            if (waypoint.Piece != null)
+            {
+                data[i] = -1;
+                data[i + 1] = waypoint.Piece.ID;
+            }
+            // Uses target tile OR is not set.
+            // X and Z values both being -1 indicates that it's not set.
+            else
+            {
+                Coord tile = waypoint.Tile;
+                data[i] = tile.X;
+                data[i + 1] = tile.Z;
+            }
+            
         }
         return data;
     }
@@ -173,11 +187,10 @@ public class Piece
     {
         // Skipped a lot of steps here.
         hand.Remove(card);
-        Piece piece = new Piece(playerID, board.ID, tile, card);
         return new SignalFromHost[]
         {
             SignalFromHost.RemoveCard(ID, card.ID),
-            SignalFromHost.AddPiece(piece)
+            null // Indicates that piece should be added.
         };
     }
 }

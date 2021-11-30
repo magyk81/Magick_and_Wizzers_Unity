@@ -123,7 +123,7 @@ public class UX_Board : MonoBehaviour
                         
                         if (cloneIdx != -1)
                         {
-                            realBoard.tiles[tilePos.X, tilePos.Z].AddClone(
+                            realBoard.tiles[tilePos.X, tilePos.Z].SetClone(
                                 tiles[tilePos.X, tilePos.Z], cloneIdx);
                         }
                     }
@@ -156,7 +156,7 @@ public class UX_Board : MonoBehaviour
         return pieces[pieceID].PlayerID;
     }
 
-    public void AddPiece(SignalFromHost signal, string pieceName,
+    public UX_Piece AddPiece(SignalFromHost signal, string pieceName,
         int layerCount)
     {
         UX_Piece uxPiece = Instantiate(
@@ -167,6 +167,7 @@ public class UX_Board : MonoBehaviour
         pieces.Add(signal.PieceID, uxPiece);
         uxPiece.Init(signal, pieceName, layerCount);
         MovePiece(signal.PieceID, signal.Tile);
+        return uxPiece;
     }
 
     public void AddCard(SignalFromHost signal)
@@ -191,13 +192,28 @@ public class UX_Board : MonoBehaviour
 
     public void UpdateWaypoints(int pieceID, Coord[] coords)
     {
-        UX_Tile[] waypoints = new UX_Tile[coords.Length];
+        UX_Tile[] waypointTiles = new UX_Tile[coords.Length];
+        UX_Piece[] waypointPieces = new UX_Piece[coords.Length];
         for (int i = 0; i < coords.Length; i++)
         {
-            if (coords[i] == Coord.Null) waypoints[i] = null;
-            else waypoints[i] = tiles[coords[i].X, coords[i].Z];
+            if (coords[i] == Coord.Null)
+            {
+                waypointTiles[i] = null;
+                waypointPieces[i] = null;
+            }
+            else if (coords[i].X == -1)
+            {
+                waypointTiles[i] = null;
+                waypointPieces[i] = pieces[coords[i].Z];
+            }
+            else
+            {
+                waypointTiles[i] = tiles[coords[i].X, coords[i].Z];
+                waypointPieces[i] = null;
+            }
         }
-        pieces[pieceID].UpdateWaypoints(waypoints);
+
+        pieces[pieceID].UpdateWaypoints(waypointTiles, waypointPieces);
     }
 
     // Update is called once per frame

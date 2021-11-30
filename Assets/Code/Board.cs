@@ -102,6 +102,7 @@ public class Board
         piece.BoardTotalSize = TOTAL_SIZE;
         pieces.Add(piece);
         piecesWithID.Add(piece.ID, piece);
+        Debug.Log("piece.ID: " + piece.ID);
         return SignalFromHost.AddPiece(piece);
     }
 
@@ -115,6 +116,7 @@ public class Board
             {
                 if (add)
                 {
+                    Debug.Log("signal.PieceID: " + signal.PieceID);
                     Piece waypointTarget = (signal.PieceID == -1)
                         ? null : piecesWithID[signal.PieceID];
                     piece.AddWaypoint(signal.Tile, waypointTarget,
@@ -138,8 +140,23 @@ public class Board
     {
         Piece caster = piecesWithID[signal.PieceID];
         if (signal.ActingPlayerID == caster.PlayerID)
-            return caster.CastSpell(
-                Card.friend_cards[signal.CardID], boardCastedOn, signal.Tile);
+        {
+            Card card = Card.friend_cards[signal.CardID];
+
+
+            SignalFromHost[] signals = caster.CastSpell(card, boardCastedOn,
+                signal.Tile);
+            for (int i = 0; i < signals.Length; i++)
+            {
+                if (signals[i] == null)
+                {
+                    Piece piece = new Piece(caster.ID, ID, signal.Tile, card);
+                    AddPiece(piece);
+                    signals[i] = SignalFromHost.AddPiece(piece);
+                }
+            }
+            return signals;
+        }
         return null;
     }
 

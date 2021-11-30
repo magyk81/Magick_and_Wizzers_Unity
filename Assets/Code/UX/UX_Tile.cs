@@ -59,7 +59,7 @@ public class UX_Tile
 
     /// <summary>Called 8 times before the match begins: once for each clone
     /// needed.</summary>
-    public void AddClone(UX_Tile tileClone, int cloneIdx)
+    public void SetClone(UX_Tile tileClone, int cloneIdx)
     {
         tileClone.real = this;
 

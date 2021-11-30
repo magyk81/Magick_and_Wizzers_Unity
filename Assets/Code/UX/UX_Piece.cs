@@ -19,17 +19,25 @@ public class UX_Piece : MonoBehaviour
         ART, FRAME, ATTACK, DEFENSE, LIFE, HOVER, SELECT, TARGET, COUNT };
     private Transform tra;
     private Material artMat;
-    private struct Waypoint
-    {
-        UX_Tile t;
-        int p;
-    }
-    private UX_Tile[] waypoints = new UX_Tile[Piece.MAX_WAYPOINTS];
-    public UX_Tile[] Waypoints { get { return waypoints; } }
+
+    private UX_Tile[] waypointTiles = new UX_Tile[Piece.MAX_WAYPOINTS];
+    private UX_Piece[] waypointPieces = new UX_Piece[Piece.MAX_WAYPOINTS];
+    public UX_Tile[] WaypointTiles { get { return waypointTiles; } }
+    public UX_Piece[] WaypointPieces { get { return waypointPieces; } }
     private readonly static float LIFT_DIST = 0.1F;
     public readonly static int LAYER = 6;
 
+    private UX_Piece real = null;
+    private UX_Piece[] clones = null;
+    public UX_Piece[] UX_All {
+        get {
+                if (real != null) return real.clones;
+                return clones;
+            }
+    }
+
     private int pieceID; public int PieceID { get { return pieceID; } }
+    private int boardID; public int BoardID { get { return boardID; } }
     private int playerID; public int PlayerID { get { return playerID; } }
 
     private List<int> hand = new List<int>();
@@ -54,6 +62,7 @@ public class UX_Piece : MonoBehaviour
     public void Init(SignalFromHost signal, string pieceName, int layerCount)
     {
         pieceID = signal.PieceID;
+        boardID = signal.BoardID;
 
         tra = GetComponent<Transform>();
 
@@ -146,6 +155,13 @@ public class UX_Piece : MonoBehaviour
         else gameObject.name = "Piece - " + pieceName;
     }
 
+    public void AddClone(UX_Piece piece, int cloneIdx)
+    {
+        if (clones == null) clones = new UX_Piece[8];
+        clones[cloneIdx] = piece;
+    }
+    public void SetReal(UX_Piece real) { this.real = real; }
+
     private void SetActive(GameObject[] obj, bool active)
     {
         if (obj != null)
@@ -165,19 +181,29 @@ public class UX_Piece : MonoBehaviour
         }
     }
 
-    public void UpdateWaypoints(UX_Tile[] tiles)
+    public void UpdateWaypoints(UX_Tile[] tiles, UX_Piece[] pieces)
     {
-        for (int i = 0; i < waypoints.Length; i++)
+        for (int i = 0; i < waypointTiles.Length; i++)
         {
-            waypoints[i] = tiles[i];
+            waypointTiles[i] = tiles[i];
+        }
+        for (int i = 0; i < waypointPieces.Length; i++)
+        {
+            waypointPieces[i] = pieces[i];
         }
     }
 
     public bool HasSameWaypoints(UX_Piece piece)
     {
-        for (int i = 0; i < waypoints.Length; i++)
+        for (int i = 0; i < waypointTiles.Length; i++)
         {
-            if (waypoints[i].Pos != piece.waypoints[i].Pos) return false;
+            if (waypointTiles[i].Pos != piece.waypointTiles[i].Pos)
+                return false;
+        }
+        for (int i = 0; i < waypointPieces.Length; i++)
+        {
+            if (waypointPieces[i].PieceID != piece.waypointPieces[i].PieceID)
+                return false;
         }
         return true;
     }

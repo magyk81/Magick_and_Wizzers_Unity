@@ -109,16 +109,15 @@ public class SignalFromClient : Signal
         );
     }
 
-    public static SignalFromClient AddWaypoint(UX_Tile tile, int pieceID,
-        int orderPlace, params UX_Piece[] pieces)
+    private static SignalFromClient AddWaypoint(int boardID, Coord tile,
+        int pieceID, int orderPlace, params UX_Piece[] pieces)
     {
-        Coord tileCoord = tile != null ? (Coord) tile : Coord.Null;
         int[] data = new int[7 + pieces.Length];
         data[0] = (int) Request.ADD_WAYPOINT;   // Request enum
-        data[1] = tileCoord.X;                  // Tile where it's going onto
-        data[2] = tileCoord.Z;
+        data[1] = tile.X;                       // Tile where it's going onto
+        data[2] = tile.Z;
         data[3] = pieceID;                      // Target (-1 if no target)
-        data[4] = tile.BoardID;                 // Board ID
+        data[4] = boardID;                      // Board ID
         data[5] = orderPlace;                   // Its order among the others
         data[6] = pieces.Length;                // How many pieces are getting
         for (int i = 7, j = 0; j < pieces.Length; i++, j++)
@@ -127,9 +126,18 @@ public class SignalFromClient : Signal
         }
         return new SignalFromClient(data);
     }
-
-    public static SignalFromClient RemoveWaypoint(int boardID,
+    public static SignalFromClient AddWaypoint(UX_Tile tile, int orderPlace,
+        params UX_Piece[] pieces)
+    {
+        return AddWaypoint(tile.BoardID, tile.Pos, -1, orderPlace, pieces);
+    }
+    public static SignalFromClient AddWaypoint(int boardID, int pieceID,
         int orderPlace, params UX_Piece[] pieces)
+    {
+        return AddWaypoint(boardID, Coord.Null, pieceID, orderPlace, pieces);
+    }
+    public static SignalFromClient RemoveWaypoint(int boardID, int orderPlace,
+        params UX_Piece[] pieces)
     {
         int[] data = new int[4 + pieces.Length];
         data[0] = (int) Request.REMOVE_WAYPOINT;    // Request enum
