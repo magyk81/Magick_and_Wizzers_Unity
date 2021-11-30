@@ -53,12 +53,12 @@ public class UX_Match : MonoBehaviour
                     UX_Board[] b = boards[signal.BoardID];
                     UX_Piece real = b[0].AddPiece(signal, pieceName,
                         players.Length);
+                    real.SetReal();
                     for (int j = 1; j < b.Length; j++)
                     {
                         UX_Piece clone = b[j].AddPiece(signal, pieceName,
                             players.Length);
-                        clone.SetReal(real);
-                        real.AddClone(clone, j - 1);
+                        real.AddClone(clone, j);
                     }
                     boardWithPiece.Add(signal.PieceID, signal.BoardID);
                     break;

@@ -188,7 +188,12 @@ public class UX_Player : MonoBehaviour
         }
         else if (mode == Mode.WAYPOINT_TILE || mode == Mode.WAYPOINT_PIECE)
         {
-            if (SetMode(GetTriggerCombo())) UnhoverTile();
+            SetMode(GetTriggerCombo());
+        }
+        if (mode != Mode.WAYPOINT_TILE && mode != Mode.TARGET_TILE)
+        {
+            UnhoverTile();
+            hoveredTile = null;
         }
     }
 
@@ -231,12 +236,9 @@ public class UX_Player : MonoBehaviour
                     }
                 }
             }
-            // Show that tile is unhovered.
-            else UnhoverTile();
         }
 
-        UpdateWaypointDisplay(mode == Mode.WAYPOINT_PIECE
-            || mode == Mode.WAYPOINT_TILE);
+        UpdateWaypointDisplay();
     }
 
     private bool holdingTriggerL = false, holdingTriggerR = false;
@@ -365,7 +367,6 @@ public class UX_Player : MonoBehaviour
                     playCardID, casterPieceID, hoveredTile);
                 playCardID = -1;
                 hand.Hide();
-                UnhoverTile();
                 SetMode(Mode.PLAIN);
             }
             // Select the hovered card.
@@ -449,9 +450,9 @@ public class UX_Player : MonoBehaviour
         }
     }
 
-    private void UpdateWaypointDisplay(bool waypointMode)
+    private void UpdateWaypointDisplay()
     {
-        if (waypointMode)
+        if (mode == Mode.WAYPOINT_PIECE || mode == Mode.WAYPOINT_TILE)
         {
             // In WAYPOINT modes, show opaque waypoints if pieces are selected
             // and if those pieces all share identical waypoints.
@@ -496,15 +497,18 @@ public class UX_Player : MonoBehaviour
                 nullIdx = i;
                 break;
             }
-            Vector3[] tilePosAll = tiles[i].UX_PosAll;
-            UX_Piece[] pieceAll = pieces[i].UX_All;
+            Vector3[] tilePosAll = (tiles[i] != null)
+                ? tiles[i].UX_PosAll : null;
+            UX_Piece[] pieceAll = (pieces[i] != null)
+                ? pieces[i].UX_All : null;
             for (int j = 0; j < 9; j++)
             {
                 waypoints[i][j].Show(opaque, i == hoveredWaypoint);
-                if (waypoints[i][j].ForPiece())
+                if (pieceAll != null)
                 {
                     if (j == 0) waypoints[i][j].SetPiece(pieceAll[0]);
                     else waypoints[i][j].SetPiece(pieceAll[j - 1]);
+                    waypoints[i][j].SetPiece(pieceAll[j]);
                 }
                 else
                 {
@@ -582,10 +586,7 @@ public class UX_Player : MonoBehaviour
         hoveredWaypoint = -1;
     }
 
-    public void ResetPotentialWaypoint()
-    {
-        hoveredWaypoint = -1;
-    }
+    public void ResetPotentialWaypoint() { hoveredWaypoint = -1; }
 
     /// <summary>Called whenever the number of waypoints changes or the number
     /// of pieces changes. Sets waypointsAreCommon to True if all selected

@@ -28,11 +28,11 @@ public class UX_Piece : MonoBehaviour
     public readonly static int LAYER = 6;
 
     private UX_Piece real = null;
-    private UX_Piece[] clones = null;
+    private UX_Piece[] uxAll = null;
     public UX_Piece[] UX_All {
         get {
-                if (real != null) return real.clones;
-                return clones;
+                if (real != null) return real.uxAll;
+                return uxAll;
             }
     }
 
@@ -63,6 +63,7 @@ public class UX_Piece : MonoBehaviour
     {
         pieceID = signal.PieceID;
         boardID = signal.BoardID;
+        uxAll = new UX_Piece[9];
 
         tra = GetComponent<Transform>();
 
@@ -155,12 +156,17 @@ public class UX_Piece : MonoBehaviour
         else gameObject.name = "Piece - " + pieceName;
     }
 
+    public void SetReal()
+    {
+        real = this;
+        uxAll[0] = this;
+    }
     public void AddClone(UX_Piece piece, int cloneIdx)
     {
-        if (clones == null) clones = new UX_Piece[8];
-        clones[cloneIdx] = piece;
+        piece.real = this;
+        uxAll[cloneIdx] = piece;
     }
-    public void SetReal(UX_Piece real) { this.real = real; }
+    
 
     private void SetActive(GameObject[] obj, bool active)
     {
@@ -197,39 +203,71 @@ public class UX_Piece : MonoBehaviour
     {
         for (int i = 0; i < waypointTiles.Length; i++)
         {
-            if (waypointTiles[i].Pos != piece.waypointTiles[i].Pos)
+            if (waypointTiles[i] == null)
+            {
+                if (piece.waypointTiles[i] != null) return false;
+            }
+            else if (piece.waypointTiles[i] == null)
+            {
+                if (waypointTiles[i] != null) return false;
+            }
+            else if (waypointTiles[i].Pos != piece.waypointTiles[i].Pos)
                 return false;
         }
         for (int i = 0; i < waypointPieces.Length; i++)
         {
-            if (waypointPieces[i].PieceID != piece.waypointPieces[i].PieceID)
-                return false;
+            if (waypointPieces[i] == null)
+            {
+                if (piece.waypointPieces[i] == null) return false;
+            }
+            else if (piece.waypointPieces[i] == null)
+            {
+                if (waypointPieces[i] != null) return false;
+            }
+            else if (waypointPieces[i].PieceID
+                != piece.waypointPieces[i].PieceID) return false;
         }
         return true;
     }
 
+    // Called from UX_Player, so apply to every clone.
     public void Hover(int localPlayerID)
     {
-        hover[localPlayerID].SetActive(true);
+        foreach (UX_Piece piece in UX_All)
+        {
+            piece.hover[localPlayerID].SetActive(true);
 
-        // Not using SetActive(false) because the collider needs to work.
-        frame[localPlayerID].GetComponent<MeshRenderer>().enabled = false;
+            // Not using SetActive(false) because the collider needs to work.
+            piece.frame[localPlayerID].GetComponent<MeshRenderer>()
+                .enabled = false;
+        }
+        
     }
 
+    // Called from UX_Player, so apply to every clone.
     public void Unhover(int localPlayerID)
     {
-        hover[localPlayerID].SetActive(false);
-        frame[localPlayerID].GetComponent<MeshRenderer>().enabled = true;
+        foreach (UX_Piece piece in UX_All)
+        {
+            piece.hover[localPlayerID].SetActive(false);
+            piece.frame[localPlayerID].GetComponent<MeshRenderer>()
+                .enabled = true;
+        }
+        
     }
 
+    // Called from UX_Player, so apply to every clone.
     public void Select(int localPlayerCount)
     {
-        select[localPlayerCount].SetActive(true);
+        foreach (UX_Piece piece in UX_All)
+        { piece.select[localPlayerCount].SetActive(true); }
     }
 
+    // Called from UX_Player, so apply to every clone.
     public void Unselect(int localPlayerCount)
     {
-        select[localPlayerCount].SetActive(false);
+        foreach (UX_Piece piece in UX_All)
+        { piece.select[localPlayerCount].SetActive(false); }
     }
 
     public void AddCard(int cardID)
