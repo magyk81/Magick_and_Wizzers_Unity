@@ -109,26 +109,57 @@ public class Board
     public SignalFromHost[] SetWaypoint(SignalFromClient signal, bool add)
     {
         List<SignalFromHost> waypointUpdates = new List<SignalFromHost>();
+
+        Piece[] pieces = new Piece[signal.PieceIDs.Length];
+        for (int i = 0; i < signal.PieceIDs.Length; i++)
+        { pieces[i] = piecesWithID[signal.PieceIDs[i]]; }
+
+        // Check to see if the pieces have different waypoints.
+        bool waypointsCommon = true;
+        if (signal.PieceIDs.Length > 1)
+        {
+            for (int i = 1; i < signal.PieceIDs.Length; i++)
+            {
+                if (!pieces[i - 1].HasSameWaypoints(pieces[i]))
+                {
+                    waypointsCommon = false;
+                    break;
+                }
+            }
+        }
+        
+        // If pieces have different waypoints, clear all of their waypoints
+        // before adding the new ones, and no need to remove waypoints.
+        if (!waypointsCommon)
+        {
+            for (int i = 0; i < signal.PieceIDs.Length; i++)
+            {
+                pieces[i].ClearWaypoints();
+            }
+        }
+        
+        // Add/remove waypoints.
         for (int i = 0; i < signal.PieceIDs.Length; i++)
         {
-            Piece piece = piecesWithID[signal.PieceIDs[i]];
-            if (piece.PlayerID == signal.ActingPlayerID)
+            if (pieces[i].PlayerID == signal.ActingPlayerID)
             {
                 if (add)
                 {
                     Debug.Log("signal.PieceID: " + signal.PieceID);
                     Piece waypointTarget = (signal.PieceID == -1)
                         ? null : piecesWithID[signal.PieceID];
-                    piece.AddWaypoint(signal.Tile, waypointTarget,
+                    pieces[i].AddWaypoint(signal.Tile, waypointTarget,
                         signal.OrderPlace);
                 }
-                else piece.RemoveWaypoint(signal.OrderPlace);
-                waypointUpdates.Add(SignalFromHost.UpdateWaypoints(piece));
+                else if (!waypointsCommon)
+                    pieces[i].RemoveWaypoint(signal.OrderPlace);
+                
+                waypointUpdates.Add(SignalFromHost.UpdateWaypoints(pieces[i]));
             }
             else
             {
                 Debug.Log("Error: Attempted to add waypoint to the piece "
-                    + piece.Name + " but it does not belong to player #"
+                    + pieces[i].Name + " but it does not belong to player #"
                     + signal.ActingPlayerID);
             }
         }

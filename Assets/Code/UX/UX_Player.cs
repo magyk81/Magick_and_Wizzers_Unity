@@ -38,8 +38,6 @@ public class UX_Player : MonoBehaviour
     private Mode mode = Mode.PAUSE;
     private int playerID, localPlayerIdx;
 
-    private bool waypointsAreCommon = false;
-
     // Returns true if mode has changed.
     public bool SetMode(Mode mode)
     {
@@ -205,10 +203,16 @@ public class UX_Player : MonoBehaviour
             UX_Piece detectedPiece = cam.GetDetectedPiece();
             if (detectedPiece != null)
             {
-                hoveredPiece = detectedPiece;
+                if (hoveredPiece == null
+                    || hoveredPiece.PieceID != detectedPiece.PieceID)
+                {
+                    if (hoveredPiece != null)
+                        hoveredPiece.Unhover(localPlayerIdx);
+                    hoveredPiece = detectedPiece;
 
-                // Show that piece is hovered.
-                hoveredPiece.Hover(localPlayerIdx);
+                    // Show that piece is hovered.
+                    hoveredPiece.Hover(localPlayerIdx);
+                }
             }
             else if (hoveredPiece != null)
             {
@@ -459,67 +463,74 @@ public class UX_Player : MonoBehaviour
             // Also show semitrans waypoint where new waypoint can go.
             if (selectedPieces.Count > 0)
             {
-                if (waypointsAreCommon) ShowWaypoints(true);
+                if (CalcIfWaypointsCommon()) ShowWaypoints(1, true);
+                else ShowWaypoints(-1, true);
             }
             // Otherwise, show semitrans waypoint on hovered piece only.
-            else if (hoveredPiece != null) ShowWaypoints(false);
+            else if (hoveredPiece != null) ShowWaypoints(0, false);
             else HideWaypoints();
         }
         else
         {
             // In PLAIN mode, show semitrans waypoints on hovered piece only.
-            if (hoveredPiece != null) ShowWaypoints(false);
+            if (hoveredPiece != null) ShowWaypoints(0, false);
             else HideWaypoints();
         }
     }
 
-    private void ShowWaypoints(bool opaque)
+    // opaque == 1: visible, == 0: semi-transparent, == -1: invisible
+    private void ShowWaypoints(int opaque, bool showPotential)
     {
-        UX_Tile[] tiles;
-        UX_Piece[] pieces;
-        if (opaque)
+        UX_Tile[] tiles = null;
+        UX_Piece[] pieces = null;
+        
+        if (opaque == 1)
         {
             tiles = selectedPieces[0].WaypointTiles;
             pieces = selectedPieces[0].WaypointPieces;
         }
-        else
+        else if (opaque == 0)
         {
             tiles = hoveredPiece.WaypointTiles;
             pieces = hoveredPiece.WaypointPieces;
         }
-        int nullIdx = tiles.Length;
+        int nullIdx = Piece.MAX_WAYPOINTS;
 
         // Show waypoints that aren't null.
-        for (int i = 0; i < tiles.Length; i++)
+        if (opaque == 0 || opaque == 1)
         {
-            if (tiles[i] == null && pieces[i] == null)
+            for (int i = 0; i < tiles.Length; i++)
             {
-                nullIdx = i;
-                break;
-            }
-            Vector3[] tilePosAll = (tiles[i] != null)
-                ? tiles[i].UX_PosAll : null;
-            UX_Piece[] pieceAll = (pieces[i] != null)
-                ? pieces[i].UX_All : null;
-            for (int j = 0; j < 9; j++)
-            {
-                waypoints[i][j].Show(opaque, i == hoveredWaypoint);
-                if (pieceAll != null)
+                if (tiles[i] == null && pieces[i] == null)
                 {
-                    if (j == 0) waypoints[i][j].SetPiece(pieceAll[0]);
-                    else waypoints[i][j].SetPiece(pieceAll[j - 1]);
-                    waypoints[i][j].SetPiece(pieceAll[j]);
+                    nullIdx = i;
+                    break;
                 }
-                else
+                Vector3[] tilePosAll = (tiles[i] != null)
+                    ? tiles[i].UX_PosAll : null;
+                UX_Piece[] pieceAll = (pieces[i] != null)
+                    ? pieces[i].UX_All : null;
+                for (int j = 0; j < 9; j++)
                 {
-                    waypoints[i][j].SetPos(tilePosAll[j]);
-                    waypoints[i][j].SetPiece(null);
+                    waypoints[i][j].Show(opaque == 1, i == hoveredWaypoint);
+                    if (pieceAll != null)
+                    {
+                        if (j == 0) waypoints[i][j].SetPiece(pieceAll[0]);
+                        else waypoints[i][j].SetPiece(pieceAll[j - 1]);
+                        waypoints[i][j].SetPiece(pieceAll[j]);
+                    }
+                    else
+                    {
+                        waypoints[i][j].SetPos(tilePosAll[j]);
+                        waypoints[i][j].SetPiece(null);
+                    }
                 }
             }
         }
+        else nullIdx = 0;
 
         // Hide remaining waypoints.
-        for (int i = nullIdx; i < tiles.Length; i++)
+        for (int i = nullIdx; i < Piece.MAX_WAYPOINTS; i++)
         {
             for (int j = 0; j < 9; j++)
             {
@@ -527,7 +538,7 @@ public class UX_Player : MonoBehaviour
             }
         }
 
-        if (opaque)
+        if (showPotential)
         {
             // Update hovered waypoint index max to equal the number of shown
             // waypoints, but do not let it exceed the max waypoint index.
@@ -568,6 +579,13 @@ public class UX_Player : MonoBehaviour
                 }
             }
         }
+        else
+        {
+            for (int j = 0; j < 9; j++)
+            {
+                potentialWaypoint[j].Hide();
+            }
+        }
     }
 
     private void HideWaypoints()
@@ -592,9 +610,9 @@ public class UX_Player : MonoBehaviour
     /// of pieces changes. Sets waypointsAreCommon to True if all selected
     /// pieces share idential waypoints, otherwise it is set to False.
     /// </summary>
-    public void CalcIfWaypointsCommon()
+    private bool CalcIfWaypointsCommon()
     {
-        waypointsAreCommon = true;
+        bool waypointsAreCommon = true;
 
         if (selectedPieces.Count >= 2)
         {
@@ -607,5 +625,6 @@ public class UX_Player : MonoBehaviour
                 }
             }
         }
+        return waypointsAreCommon;
     }   
 }

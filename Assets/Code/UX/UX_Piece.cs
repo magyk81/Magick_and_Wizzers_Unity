@@ -218,7 +218,7 @@ public class UX_Piece : MonoBehaviour
         {
             if (waypointPieces[i] == null)
             {
-                if (piece.waypointPieces[i] == null) return false;
+                if (piece.waypointPieces[i] != null) return false;
             }
             else if (piece.waypointPieces[i] == null)
             {

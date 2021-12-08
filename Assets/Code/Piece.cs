@@ -109,6 +109,11 @@ public class Piece
         waypoints[orderPlace].Reset();
         UpdateWaypoints();
     }
+    public void ClearWaypoints()
+    {
+        foreach (Waypoint waypoint in waypoints) { waypoint.Reset(); }
+        UpdateWaypoints();
+    }
     private void UpdateWaypoints()
     {
         // Move all waypoints to the left, removing any gaps.
@@ -161,6 +166,15 @@ public class Piece
             
         }
         return data;
+    }
+
+    public bool HasSameWaypoints(Piece piece)
+    {
+        for (int i = 0; i < waypoints.Length; i++)
+        {
+            if (waypoints[i] != piece.waypoints[i]) return false;
+        }
+        return true;
     }
 
     public virtual int Level { get
