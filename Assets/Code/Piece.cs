@@ -108,6 +108,7 @@ public class Piece
     {
         waypoints[orderPlace].Reset();
         UpdateWaypoints();
+        Debug.Log("test");
     }
     public void ClearWaypoints()
     {

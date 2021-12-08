@@ -11,8 +11,9 @@ using UnityEngine;
 public class UX_Waypoint : MonoBehaviour
 {
     [SerializeField]
-    private Material opaqueRedMat, semitransRedMat, opaqueYellowMat,
-        semitransYellowMat;
+    private Material opaqueRedMat, semitransRedMat,
+        opaqueYellowMat, semitransYellowMat,
+        opaqueRedPMat, semitransRedPMat, opaqueYellowPMat, semitransYellowPMat;
     private Material rendMaterial {
         set {
             if (rend.material != value) rend.material = value;
@@ -57,15 +58,18 @@ public class UX_Waypoint : MonoBehaviour
 
     public void Show(bool opaque, bool hovered)
     {
+        bool onP = pieceTra != null;
         if (opaque)
         {
-            if (hovered) rendMaterial = opaqueYellowMat;
-            else rendMaterial = opaqueRedMat;
+            if (hovered)
+                rendMaterial = onP ? opaqueYellowPMat : opaqueYellowMat;
+            else rendMaterial = onP ? opaqueRedPMat : opaqueRedMat;
         }
         else
         {
-            if (hovered) rendMaterial = semitransYellowMat;
-            else rendMaterial = semitransRedMat;
+            if (hovered)
+                rendMaterial = onP ? semitransYellowPMat : semitransYellowMat;
+            else rendMaterial = onP ? semitransRedPMat : semitransRedMat;
         }
         UpdatePosToPiece();
         gameObject.SetActive(true);

@@ -212,6 +212,8 @@ public class UX_Player : MonoBehaviour
 
                     // Show that piece is hovered.
                     hoveredPiece.Hover(localPlayerIdx);
+
+                    // UpdateWaypointDisplay();
                 }
             }
             else if (hoveredPiece != null)
@@ -219,6 +221,8 @@ public class UX_Player : MonoBehaviour
                 // Show that piece is unhovered.
                 hoveredPiece.Unhover(localPlayerIdx);
                 hoveredPiece = null;
+
+                // UpdateWaypointDisplay();
             }
         }
 
@@ -238,11 +242,13 @@ public class UX_Player : MonoBehaviour
                         tileHover[i].gameObject.SetActive(true);
                         tileHover[i].localPosition = tileHoverPos[i];
                     }
+
+                    // UpdateWaypointDisplay();
                 }
             }
         }
 
-        UpdateWaypointDisplay();
+        // UpdateWaypointDisplay();
     }
 
     private bool holdingTriggerL = false, holdingTriggerR = false;
@@ -255,7 +261,10 @@ public class UX_Player : MonoBehaviour
         if (gamepadInput[(int) Gamepad.Button.UP] == 1)
         {
             if (mode == Mode.WAYPOINT_PIECE || mode == Mode.WAYPOINT_TILE)
+            {
                 hoveredWaypoint++;
+                // UpdateWaypointDisplay();
+            }
         }
 
         // <D-pad down | Down arrow>
@@ -268,7 +277,10 @@ public class UX_Player : MonoBehaviour
                 else cam.BoardIdx = 0;
             }
             else if (mode == Mode.WAYPOINT_PIECE || mode == Mode.WAYPOINT_TILE)
+            {
                 hoveredWaypoint--;
+                // UpdateWaypointDisplay();
+            }
         }
 
         // <D-pad | Arrows>
@@ -311,7 +323,8 @@ public class UX_Player : MonoBehaviour
                         hoveredPiece.Select(localPlayerIdx);
                         selectedPieces.Add(hoveredPiece);
                     }
-                    CalcIfWaypointsCommon();
+
+                    // UpdateWaypointDisplay();
                 }
             }
             // Set waypoint on hovered tile.
@@ -336,6 +349,7 @@ public class UX_Player : MonoBehaviour
                         signal = SignalFromClient.AddWaypoint(hoveredTile,
                             orderPlace, selectedPieces.ToArray());
                     }
+                    // UpdateWaypointDisplay();
                 }
             }
             else if (mode == Mode.WAYPOINT_PIECE)
@@ -362,6 +376,7 @@ public class UX_Player : MonoBehaviour
                             hoveredPiece.BoardID, targetID, orderPlace,
                             selectedPieces.ToArray());
                     }
+                    // UpdateWaypointDisplay();
                 }
             }
             // Play the selected card.
@@ -463,7 +478,7 @@ public class UX_Player : MonoBehaviour
             // Also show semitrans waypoint where new waypoint can go.
             if (selectedPieces.Count > 0)
             {
-                if (CalcIfWaypointsCommon()) ShowWaypoints(1, true);
+                if (AreWaypointsCommon()) ShowWaypoints(1, true);
                 else ShowWaypoints(-1, true);
             }
             // Otherwise, show semitrans waypoint on hovered piece only.
@@ -499,7 +514,7 @@ public class UX_Player : MonoBehaviour
         // Show waypoints that aren't null.
         if (opaque == 0 || opaque == 1)
         {
-            for (int i = 0; i < tiles.Length; i++)
+            for (int i = 0; i < Piece.MAX_WAYPOINTS; i++)
             {
                 if (tiles[i] == null && pieces[i] == null)
                 {
@@ -610,7 +625,7 @@ public class UX_Player : MonoBehaviour
     /// of pieces changes. Sets waypointsAreCommon to True if all selected
     /// pieces share idential waypoints, otherwise it is set to False.
     /// </summary>
-    private bool CalcIfWaypointsCommon()
+    private bool AreWaypointsCommon()
     {
         bool waypointsAreCommon = true;
 

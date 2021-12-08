@@ -98,5 +98,9 @@ MonoBehaviour:
   semitransRedMat: {fileID: 2100000, guid: 47059d7921961eb40b5dc9b334bc07ef, type: 2}
   opaqueYellowMat: {fileID: 2100000, guid: eca293a160a396245b097514b5911293, type: 2}
   semitransYellowMat: {fileID: 2100000, guid: e8cc8a7d2ba8b4d469dc6b4a8034722b, type: 2}
+  opaqueRedPMat: {fileID: 2100000, guid: 16899950facddf94c9fe46b1a985cfbf, type: 2}
+  semitransRedPMat: {fileID: 2100000, guid: 0b09b5a289d0b3c49a912097f633c789, type: 2}
+  opaqueYellowPMat: {fileID: 2100000, guid: feaf1c9999744ed4fbd7866c4facd915, type: 2}
+  semitransYellowPMat: {fileID: 2100000, guid: daa1553087c7356448adb75671352644, type: 2}
   meshForTile: {fileID: 10208, guid: 0000000000000000e000000000000000, type: 0}
   meshForPiece: {fileID: 10210, guid: 0000000000000000e000000000000000, type: 0}
