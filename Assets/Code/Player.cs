@@ -10,18 +10,20 @@ using UnityEngine;
 
 public class Player
 {
+    public readonly int ID;
+
     private readonly string name;
     public string Name { get { return name; } }
     private readonly int idx;
-    public int Idx { get { return idx; } }
     private readonly int CLIENT_ID;
     public int ClientID { get { return CLIENT_ID; } }
     private bool isBot;
     public bool IsBot { get { return isBot; } }
-    public Player(string name, int idx, int clientID, bool isBot)
+    public Player(string name, int clientID, bool isBot)
     {
+        ID = IdHandler.Create(GetType());
+
         this.name = name;
-        this.idx = idx;
         CLIENT_ID = clientID;
         this.isBot = isBot;
     }

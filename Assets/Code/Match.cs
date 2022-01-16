@@ -63,15 +63,14 @@ public class Match
         for (int i = 0; i < data.Length; i++)
         {
             int[] d = data[i];
-            char[] name = new char[d[4]];
+            char[] name = new char[d[3]];
             for (int j = 0; j < name.Length; j++)
             {
-                name[j] = (char) d[5 + j];
+                name[j] = (char) d[4 + j];
             }
-            int idx = d[1];
-            int clientID = d[2];
-            bool isBot = d[3] == 1;
-            players[i] = new Player(new string(name), idx, clientID, isBot);
+            int clientID = d[1];
+            bool isBot = d[2] == 1;
+            players[i] = new Player(new string(name), clientID, isBot);
         }
         return players;
     }
@@ -81,14 +80,13 @@ public class Match
         for (int i = 0; i < data.Length; i++)
         {
             int[] d = data[i];
-            char[] name = new char[d[3]];
+            char[] name = new char[d[2]];
             for (int j = 0; j < name.Length; j++)
             {
-                name[j] = (char) d[4 + j];
+                name[j] = (char) d[3 + j];
             }
-            int idx = d[1];
-            int size = d[2];
-            boards[i] = new Board(new string(name), idx, size, chunkSize);
+            int size = d[1];
+            boards[i] = new Board(new string(name), size, chunkSize);
         }
         return boards;
     }

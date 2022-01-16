@@ -10,6 +10,8 @@ using UnityEngine;
 
 public class Board
 {
+    public readonly int ID;
+
     private readonly int SIZE;
     private readonly int TOTAL_SIZE;
     public int Size { get { return SIZE; } }
@@ -19,11 +21,10 @@ public class Board
     private Dictionary<int, Piece> piecesWithID = new Dictionary<int, Piece>();
     private string name;
     public string Name { get { return name; } }
-    public readonly int ID;
-    public Board(string name, int ID, int size, int chunkSize)
+    public Board(string name, int size, int chunkSize)
     {
+        ID = IdHandler.Create(GetType());
         this.name = name;
-        this.ID = ID;
         SIZE = size;
         TOTAL_SIZE = size * chunkSize;
         chunks = new Chunk[size, size];

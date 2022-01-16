@@ -22,6 +22,7 @@ public class ControllerScript : MonoBehaviour
     void Start()
     {
         Application.targetFrameRate = 60;
+        IdHandler.Reset();
 
         uxMatch = GetComponent<UX_Match>();
 
@@ -31,13 +32,13 @@ public class ControllerScript : MonoBehaviour
         {            
             // Magic data for debugging.
             Player[] players = new Player[2];
-            players[0] = new Player("Brooke", 0, 0, false);
-            players[1] = new Player("Rachel", 1, 0, true);
+            players[0] = new Player("Brooke", 0, false);
+            players[1] = new Player("Rachel", 0, true);
 
             Board[] boards = new Board[2];
             int chunkSize = 10;
-            boards[0] = new Board("Main", 0, 2, chunkSize);
-            boards[1] = new Board("Sheol", 1, 1, chunkSize);
+            boards[0] = new Board("Main", 2, chunkSize);
+            boards[1] = new Board("Sheol", 1, chunkSize);
 
             match = new Match(players, boards);
 
@@ -50,7 +51,7 @@ public class ControllerScript : MonoBehaviour
             List<string> playerNames = new List<string>();
             foreach (Player player in players)
             {
-                if (!player.IsBot) localPlayerIDs.Add(player.Idx);
+                if (!player.IsBot) localPlayerIDs.Add(player.ID);
                 playerNames.Add(player.Name);
             }
             List<int[]> boardData = new List<int[]>();

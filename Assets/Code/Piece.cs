@@ -12,7 +12,6 @@ using System.Linq.Expressions;
 public class Piece
 {
     public readonly int ID;
-    private static int ID_count = 0;
 
     private Coord pos;
     public Coord Pos {
@@ -51,7 +50,7 @@ public class Piece
     // Non-master type piece
     public Piece(int playerID, int boardID, Coord tile, Card card)
     {
-        ID = ID_count++;
+        ID = IdHandler.Create(GetType());
 
         this.name = card.Name;
         this.playerID = playerID;
@@ -71,7 +70,7 @@ public class Piece
     public Piece(string name, int playerID, int boardID, Coord tile,
         Texture art)
     {
-        ID = ID_count++;
+        ID = IdHandler.Create(GetType());
 
         this.name = name;
         this.playerID = playerID;
