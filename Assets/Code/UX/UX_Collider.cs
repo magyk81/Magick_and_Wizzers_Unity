@@ -4,98 +4,73 @@
  * Written by Robin Campos <magyk81@gmail.com>, year 2021.
  */
 
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class UX_Collider : MonoBehaviour
 {
-    private Transform tra;
-    private UX_Tile tile;
-    private int quarter = -1;
-    private UX_Chunk chunk;
-    private UX_Piece piece;
-    private BoxCollider coll;
+    public enum ColliderType { NONE, TILE, QUARTER, CHUNK, PIECE }
 
-    public UX_Tile Tile
-    {
-        set
-        {
-            tile = value;
-            tra.localPosition = tile.UX_Pos;
-        }
-        get { return tile; }
+    private Transform mTran;
+    private UX_Tile mTile;
+    private int mQuarter = -1;
+    private UX_Chunk mChunk;
+    private UX_Piece mPiece;
+    private BoxCollider mColl;
+    private ColliderType mType = ColliderType.NONE;
+
+    public UX_Tile Tile {
+        set { mTile = value; mTran.localPosition = mTile.UX_Pos; }
+        get => mTile;
     }
 
     public int Quarter
     {
-        set { if (quarter == -1) { quarter = value; SetType(Type.QUARTER); } }
-        get { return quarter; }
+        set { if (mQuarter == -1) { mQuarter = value; Type = ColliderType.QUARTER; } }
+        get => mQuarter;
     }
 
     public UX_Chunk Chunk
     {
-        set { SetType(Type.CHUNK); chunk = value; }
-        get { return chunk; }
+        set { Type = ColliderType.CHUNK; mChunk = value; }
+        get => mChunk;
     }
 
     public UX_Piece Piece
     {
-        set { if (piece == null) piece = value; SetType(Type.PIECE); }
-        get { return piece; }
+        set { if (mPiece == null) mPiece = value; Type = ColliderType.PIECE; }
+        get => mPiece;
     }
 
-    public enum Type { NONE, TILE, QUARTER, CHUNK, PIECE }
-
-    private Type type = Type.NONE;
-    private void SetType(Type type)
-    {
-        if (type == Type.PIECE) this.type = type;
-        else if (type == Type.QUARTER)
-        {
-            if (this.type != Type.PIECE && this.type != Type.TILE)
-                this.type = type;
-        }
-        else if (type == Type.CHUNK)
-        {
-            if (this.type != Type.PIECE && this.type != Type.TILE
-                && this.type != Type.QUARTER)
-                this.type = type;
+    private ColliderType Type {
+        set {
+            if (value == ColliderType.PIECE) mType = value;
+            else if (value == ColliderType.QUARTER) {
+                if (mType != ColliderType.PIECE && mType != ColliderType.TILE) mType = value;
+            } else if (value == ColliderType.CHUNK) {
+                if (mType != ColliderType.PIECE && mType != ColliderType.TILE && mType != ColliderType.QUARTER)
+                    mType = value;
+            }
         }
     }
-    public void SetTypeTile() { type = Type.TILE; }
-    public bool IsType(Type type) { return this.type == type; }
-    public void Enable()
-    {
-        coll.enabled = true;
-    }
-    public void Disable()
-    {
-        coll.enabled = false;
-    }
 
-    public void Set(Vector3 position, Vector3 scale)
-    {
-        tra.localPosition = position;
-        tra.localScale = scale;
+    public void SetTypeTile() { mType = ColliderType.TILE; }
+    public bool IsType(ColliderType type) { return mType == type; }
+    public void Enable() { mColl.enabled = true; }
+    public void Disable() { mColl.enabled = false; }
+
+    public void Set(Vector3 position, Vector3 scale) {
+        mTran.localPosition = position;
+        mTran.localScale = scale;
     }
 
     // Start is called before the first frame update
-    void Start()
-    {
-        tra = GetComponent<Transform>();
-        coll = GetComponent<BoxCollider>();
-        if (IsType(Type.QUARTER) || IsType(Type.TILE)) Disable();
-        else
-        {
-            Disable();
-            Enable();
-        }
+    private void Start() {
+        mTran = GetComponent<Transform>();
+        mColl = GetComponent<BoxCollider>();
+        if (IsType(ColliderType.QUARTER) || IsType(ColliderType.TILE)) Disable();
+        else { Disable(); Enable(); }
     }
 
     // Update is called once per frame
-    void Update()
-    {
-        
-    }
+    private void Update() { }
 }

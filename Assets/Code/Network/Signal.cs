@@ -1,24 +1,19 @@
 using System.Text;
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
 
-public class Signal
-{    
-    protected byte[] message;
-    protected readonly int[] intMessage;
-    protected Signal(params int[] intMessage) { this.intMessage = intMessage; }
+public class Signal {
+    protected byte[] mByteMessage;
+    protected readonly int[] mIntMessage;
 
-    public override string ToString()
-    {
-        StringBuilder sb = new StringBuilder("[");
-        for (int i = 0; i < intMessage.Length; i++)
-        {
-            sb.Append(intMessage[i]);
-            sb.Append(i == intMessage.Length - 1 ? "]" : ", ");
+    public override string ToString() {
+        StringBuilder strBuilder = new StringBuilder("[");
+        for (int i = 0; i < mIntMessage.Length; i++) {
+            strBuilder.Append(mIntMessage[i]);
+            strBuilder.Append(i == mIntMessage.Length - 1 ? "]" : ", ");
         }
-        return sb.ToString();
+        return strBuilder.ToString();
     }
 
-    public static implicit operator byte[](Signal s) => s.message;
+    protected Signal(params int[] intMessage) { mIntMessage = intMessage; }
+
+    public static implicit operator byte[](Signal s) => s.mByteMessage;
 }

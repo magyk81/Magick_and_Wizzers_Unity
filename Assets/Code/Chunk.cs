@@ -4,21 +4,16 @@
  * Written by Robin Campos <magyk81@gmail.com>, year 2021.
  */
 
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+public class Chunk {
+    private readonly int mSize;
+    private readonly Coord mPos, mMinTile, mMaxTile;
 
-public class Chunk
-{
-    private int size;
-    public int Size { get { return size; } }
-    private Coord pos, minTile, maxTile;
-
-    public Chunk(Coord pos, int size)
-    {
-        this.pos = pos;
-        this.size = size;
-        minTile = pos * size;
-        maxTile = pos * (size + 1);
+    public Chunk(Coord pos, int size) {
+        mPos = pos;
+        mSize = size;
+        mMinTile = pos * size;
+        mMaxTile = pos * (size + 1);
     }
+
+    public int Size { get => mSize; }
 }

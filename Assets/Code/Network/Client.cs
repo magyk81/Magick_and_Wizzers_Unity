@@ -1,64 +1,49 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
 using UnityEngine;
 
-public class Client : SocketHand
-{
-    private int id = -1;
-    public int ID { get { return id; } }
+public class Client : SocketHand {
+    private int mId = -1;
 
-    public Client(string ipAddress, int port, int id) : base(ipAddress, port)
-    {
-        this.id = id;
+    public Client(string ipAddress, int port, int id) : base(ipAddress, port) { mId = id; }
+
+    public int ID { get => mId; }
+    public override void Terminate() {
+        if (!mTerminating) {
+            mTerminating = true;
+            if (mSocket != null) mSocket.Close();
+        }
     }
 
-    private bool OpenConnection()
-    {
-        IPEndPoint endPoint = new IPEndPoint(IPAddress.Parse(ipAddress), port);
+    protected override void Run() {
+        while (!OpenConnection() && !mTerminating) {
+            if (mSocket != null) mSocket.Close();
+            Thread.Sleep(1000);
+        }
+        mConnected = true;
+        Debug.Log("Client connected to host.");
+
+        while (!mTerminating) {
+            int rm = ReceiveMessages(mSocket);
+            if (rm == 0) { /*Debug.Log("Client received message.");*/ } else if (rm == -1) Terminate();
+
+            SendMessages(mSocket);
+            ClearMessagesToSend();
+        }
+    }
+
+    private bool OpenConnection() {
+        IPEndPoint endPoint = new IPEndPoint(IPAddress.Parse(mIpAddress), mPort);
         
         bool connectionSuccess = false;
         try {
-            socket.Connect(endPoint);
+            mSocket.Connect(endPoint);
             connectionSuccess = true;
         } catch (SocketException e) {
             Debug.LogException(e);
         }
 
         return connectionSuccess;
-    }
-
-    protected override void Run()
-    {
-        while (!OpenConnection() && !terminating)
-        {
-            if (socket != null) socket.Close();
-            Thread.Sleep(1000);
-        }
-        connected = true;
-        Debug.Log("Client connected to host.");
-
-        while (!terminating)
-        {
-            int rm = ReceiveMessages(socket);
-            if (rm == 0) { /*Debug.Log("Client received message.");*/ }
-            else if (rm == -1) Terminate();
-
-            SendMessages(socket);
-            ClearMessagesToSend();
-        }
-    }
-
-    public override void Terminate()
-    {
-        if (!terminating)
-        {
-            terminating = true;
-            if (socket != null) socket.Close();
-        }
     }
 }

@@ -4,207 +4,144 @@
  * Written by Robin Campos <magyk81@gmail.com>, year 2021.
  */
 
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using System.Linq.Expressions;
 
-public class Piece
-{
+public class Piece {
     public readonly int ID;
 
-    private Coord pos;
-    public Coord Pos {
-        get { return pos; }
-        set { pos = value; }
-    }
+    protected Deck mDeck;
+    protected Type mPieceType = Type.CREATURE;
+    protected string mName;   
 
-    private string name;
-    public string Name { get { return name; } }
-    public enum Type { MASTER, CREATURE, ITEM, CHARM }
-    protected Type pieceType;
-    public Type PieceType { get { return pieceType; } }
-    private int playerID, boardID, boardTotalSize;
-    public int PlayerID { get { return playerID; } }
-    public int BoardID { get { return boardID; } }
-    public int BoardTotalSize { set { boardTotalSize = value; } }
-
-    private Card card;
-    public Card Card { get { return card; } }
-    private Texture art;
-    public Texture Art
-    {
-        get
-        {
-            if (card != null) return card.Art;
-            return art;
-        }
-    }
-    protected Deck deck;
-    private List<Card> hand = new List<Card>();
-    public Card[] Hand { get { return hand.ToArray(); } }
-    private Waypoint[] waypoints;
+    private Coord mPos; 
+    private readonly int mPlayerID, mBoardID;
+    private readonly Card mCard;
+    private readonly List<Card> mHand = new List<Card>();
+    private readonly Waypoint[] mWaypoints = new Waypoint[MAX_WAYPOINTS];
     // public Waypoint NextWaypoint { get { return waypoints[0]; } }
+
     public static readonly int MAX_WAYPOINTS = 5;
 
+    public enum Type { MASTER, CREATURE, ITEM, CHARM }
+
     // Non-master type piece
-    public Piece(int playerID, int boardID, Coord tile, Card card)
-    {
+    public Piece(int playerID, int boardID, Coord tile, Card card) {
         ID = IdHandler.Create(GetType());
 
-        this.name = card.Name;
-        this.playerID = playerID;
-        this.boardID = boardID;
-        pieceType = Type.CREATURE;
-        pos = tile.Copy();
-        this.card = card;
-        
-        waypoints = new Waypoint[MAX_WAYPOINTS];
-        for (int i = 0; i < MAX_WAYPOINTS; i++)
-        {
-            waypoints[i] = new Waypoint();
-        }
+        mName = card.Name;
+        mPlayerID = playerID;
+        mBoardID = boardID;
+        mPos = tile.Copy();
+        mCard = card;
     }
 
-    // Master type piece
-    public Piece(string name, int playerID, int boardID, Coord tile,
-        Texture art)
-    {
-        ID = IdHandler.Create(GetType());
+    public Coord Pos { get => mPos; set { mPos = value; } }
+    public string Name { get => mName; }
+    public Type PieceType { get => mPieceType; }
+    public int PlayerID { get => mPlayerID; }
+    public int BoardID { get => mBoardID; }
+    public Card Card { get => mCard; }
+    public Card[] Hand { get => mHand.ToArray(); }
+    public virtual Texture Art { get => mCard.Art; }
+    public virtual int Level { get => mCard.Level; }
 
-        this.name = name;
-        this.playerID = playerID;
-        this.boardID = boardID;
-        pieceType = Type.MASTER;
-        pos = tile.Copy();
-        this.art = art;
-
-        waypoints = new Waypoint[MAX_WAYPOINTS];
-        for (int i = 0; i < MAX_WAYPOINTS; i++)
-        {
-            waypoints[i] = new Waypoint();
-        }
-    }
-
-    public void Update()
-    {
+    public void Update() {
 
     }
 
     /// <param name="dist">Goes from 0 to 100.</param>
-    public void Move(int dir, int dist)
-    {
+    public void Move(int dir, int dist) {
 
     }
 
-    public void AddWaypoint(Coord tile, Piece piece, int orderPlace)
-    {
-        if (piece != null) waypoints[orderPlace].Piece = piece;
-        else waypoints[orderPlace].Tile = tile;
-        UpdateWaypoints();
+    public void AddWaypoint(Coord tile, int orderPlace) {
+        mWaypoints[orderPlace] = new WaypointTile(tile);
+        ArrangeWaypointOrder();
     }
-    public void RemoveWaypoint(int orderPlace)
-    {
-        waypoints[orderPlace].Reset();
-        UpdateWaypoints();
-        Debug.Log("test");
+    public void AddWaypoint(Piece piece, int orderPlace) {
+        mWaypoints[orderPlace] = new WaypointPiece(piece);
+        ArrangeWaypointOrder();
     }
-    public void ClearWaypoints()
-    {
-        foreach (Waypoint waypoint in waypoints) { waypoint.Reset(); }
-        UpdateWaypoints();
+    public void RemoveWaypoint(int orderPlace) {
+        mWaypoints[orderPlace] = null;
+        ArrangeWaypointOrder();
     }
-    private void UpdateWaypoints()
-    {
-        // Move all waypoints to the left, removing any gaps.
-        for (int i = 0; i < Piece.MAX_WAYPOINTS - 1; i++)
-        {
-            int k = Piece.MAX_WAYPOINTS - i;
-            while (!waypoints[i].IsSet && k >= 0)
-            {
-                for (int j = i + 1; j < Piece.MAX_WAYPOINTS; j++)
-                {
-                    if (waypoints[j].IsSet)
-                    {
-                        waypoints[j - 1] = waypoints[j].Copy();
-                        waypoints[j].Reset();
-                    }
-                }
-                k--;
-            }
+    public void ClearWaypoints() {
+        for (int i = 0; i < mWaypoints.Length; i++) {
+            mWaypoints[i] = null;
         }
-
-        string _ = "";
-        for (int i = 0; i < Piece.MAX_WAYPOINTS; i++)
-        {
-            _ += waypoints[i].ToString() + ", ";
-        }
-        Debug.Log(_);
     }
 
     public int[] GetWaypointData()
     {
         int[] data = new int[2 * MAX_WAYPOINTS];
-        for (int i = 0; i < data.Length; i += 2)
-        {
-            Waypoint waypoint = waypoints[i / 2];
-
-            // Uses target piece. Send target pieceID as Z value.
-            if (waypoint.Piece != null)
-            {
+        for (int i = 0; i < data.Length; i += 2) {
+            Waypoint waypoint = mWaypoints[i / 2];
+            if (waypoint == null) { // No waypoint.
                 data[i] = -1;
-                data[i + 1] = waypoint.Piece.ID;
-            }
-            // Uses target tile OR is not set.
-            // X and Z values both being -1 indicates that it's not set.
-            else
-            {
-                Coord tile = waypoint.Tile;
+                data[i + 1] = -1;
+            } else if (waypoint is WaypointPiece) { // Waypoint on piece.
+                data[i] = -1;
+                data[i + 1] = (waypoint as WaypointPiece).Piece.ID;
+            } else { // Waypoint on tile.
+                Coord tile = (waypoint as WaypointTile).Tile;
                 data[i] = tile.X;
                 data[i + 1] = tile.Z;
             }
-            
         }
         return data;
     }
 
     public bool HasSameWaypoints(Piece piece)
     {
-        for (int i = 0; i < waypoints.Length; i++)
-        {
-            if (waypoints[i] != piece.waypoints[i]) return false;
+        for (int i = 0; i < mWaypoints.Length; i++) {
+            if (mWaypoints[i] != piece.mWaypoints[i]) return false;
         }
         return true;
     }
 
-    public virtual int Level { get
-    {
-        if (card != null) return card.Level;
-        return 0;
-    } }
-    public SignalFromHost[] DrawCards(int count)
-    {
+    public SignalFromHost[] DrawCards(int count) {
         SignalFromHost[] signals = new SignalFromHost[count];
         for (int i = 0; i < count; i++)
-        { signals[i] = AddToHand(deck.DrawCard()); }
+        { signals[i] = AddToHand(mDeck.DrawCard()); }
         return signals;
     }
 
-    private SignalFromHost AddToHand(Card card)
-    {
-        hand.Add(card);
-        return SignalFromHost.AddCard(ID, card.ID);
-    }
-    public void RemoveFromHand(Card card) { hand.Remove(card); }
+    public void RemoveFromHand(Card card) { mHand.Remove(card); }
 
-    public SignalFromHost[] CastSpell(Card card, Board board, Coord tile)
-    {
+    public SignalFromHost[] CastSpell(Card card, Board board, Coord tile) {
         // Skipped a lot of steps here.
-        hand.Remove(card);
-        return new SignalFromHost[]
-        {
+        mHand.Remove(card);
+        return new SignalFromHost[] {
             SignalFromHost.RemoveCard(ID, card.ID),
             null // Indicates that piece should be added.
         };
+    }
+
+    /// <summary>
+    /// Move all items in the array to the left, removing any gaps.
+    /// </summary>
+    private void ArrangeWaypointOrder() {
+        Queue<int> emptySlots = new Queue<int>();
+        for (int i = 0; i < mWaypoints.Length - 1; i++) {
+            if (mWaypoints[i] == null) emptySlots.Enqueue(i);
+            else if (emptySlots.Count > 0) {
+                mWaypoints[emptySlots.Dequeue()] = mWaypoints[i];
+                mWaypoints[i] = null;
+                emptySlots.Enqueue(i);
+            }
+        }
+
+        string _ = "";
+        for (int i = 0; i < Piece.MAX_WAYPOINTS; i++) {
+            _ += mWaypoints[i].ToString() + ", ";
+        }
+        Debug.Log(_);
+    }
+    
+    private SignalFromHost AddToHand(Card card) {
+        mHand.Add(card);
+        return SignalFromHost.AddCard(ID, card.ID);
     }
 }

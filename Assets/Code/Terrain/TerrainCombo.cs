@@ -4,20 +4,15 @@
  * Written by Robin Campos <magyk81@gmail.com>, year 2021.
  */
 
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-
-public class TerrainCombo : GameTerrain
-{
-    private TerrainBase.Type[] baseTypes;
+public class TerrainCombo : GameTerrain {
     public enum Adjacency { TWIN, FLEXIBLE, RIGID }
-    private Adjacency adjacency;
-    public TerrainCombo(string name, TerrainBase.Type[] baseTypes,
-        Adjacency adjacency)
-    {
-        this.baseTypes = new TerrainBase.Type[baseTypes.Length];
-        System.Array.Copy(baseTypes, this.baseTypes, baseTypes.Length);
-        this.adjacency = adjacency;
+
+    private readonly TerrainBase.Type[] mBaseTypes;
+    private readonly Adjacency mAdjacency;
+
+    public TerrainCombo(string name, TerrainBase.Type[] baseTypes, Adjacency adjacency) {
+        mBaseTypes = new TerrainBase.Type[baseTypes.Length];
+        System.Array.Copy(baseTypes, mBaseTypes, baseTypes.Length);
+        mAdjacency = adjacency;
     }
 }

@@ -4,38 +4,29 @@
  * Written by Robin Campos <magyk81@gmail.com>, year 2021.
  */
 
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
-public abstract class Card
-{
+public abstract class Card {
     public readonly int ID;
-    private static int ID_count = 0;
-    private string name;
-    public string Name { get { return name; } }
-    private Texture art;
-    public Texture Art { get { return art; } }
-    private int level;
-    public int Level { get { return level; } }
 
-    protected Card(string name, Texture art, int level,
-        GameTerrain terrain)
-    {
-        ID = ID_count++;
+    private readonly string mName;
+    private readonly Texture mArt;
+    private readonly int mLevel;
 
-        this.name = name;
-        this.art = art;
+    protected Card(string name, Texture art, int level, GameTerrain terrain) {
+        ID = IdHandler.Create(GetType());
+
+        mName = name;
+        mArt = art;
+        mLevel = level;
 
         // Load debugging art
-        if (art == null)
-        {
-            this.art = Resources.Load<Texture>(
-                "Textures/Debug_Card_Art/" + Util.ReplaceSpaces(name));
-        }
-
-        this.level = level;
+        mArt = Resources.Load<Texture>("Textures/Debug_Card_Art/" + Util.ReplaceSpaces(name));
     }
+
+    public string Name { get => mName; }
+    public Texture Art { get => mArt; }
+    public int Level { get => mLevel; }
 
     public abstract UX_Player.Mode GetPlayMode();
 

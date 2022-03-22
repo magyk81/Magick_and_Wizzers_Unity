@@ -4,44 +4,32 @@
  * Written by Robin Campos <magyk81@gmail.com>, year 2021.
  */
 
-using System.Collections;
 using System.Collections.Generic;
 using System;
-public class Deck
-{
-    private Stack<Card> cards;
-    private System.Random rand;
+public class Deck {
+    private readonly Random RAND = new Random();
+    private readonly Stack<Card> mCards = new Stack<Card>();
 
-    public Deck(Card[] cards)
-    {
-        rand = new Random();
-        this.cards = new Stack<Card>();
-        foreach (Card card in cards) { this.cards.Push(card); }
+    public Deck(Card[] cards) {
+        foreach (Card card in cards) { mCards.Push(card); }
     }
 
-    public Card DrawCard()
-    {
-        return cards.Pop();
+    public Card DrawCard() {
+        return mCards.Pop();
     }
-    public void Shuffle()
-    {
-        Card[] arr = cards.ToArray();
+    public void Shuffle() {
+        Card[] arr = mCards.ToArray();
 
-        /* The following while-loop was written by "grenade"
-         * (grenade.github.io) and edited by "Uwe Keim" (zeta-producer.com)
-         * from Stack Overflow.
-         */
+        // The following while-loop was written by "Matt Howells" from Stack Overflow.
         int n = arr.Length;
-        while (n > 1)
-        {
-            n--;
-            int k = rand.Next(n + 1);
-            Card value = arr[k];
-            arr[k] = arr[n];
-            arr[n] = value;
+        while (n > 1) {
+            int k = RAND.Next(n--);
+            Card temp = arr[k];
+            arr[n] = arr[k];
+            arr[k] = temp;
         }
 
-        cards = new Stack<Card>();
-        foreach (Card card in arr) { cards.Push(card); }
+        mCards.Clear();
+        foreach (Card card in arr) { mCards.Push(card); }
     }
 }

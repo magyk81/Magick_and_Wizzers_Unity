@@ -4,33 +4,36 @@
  * Written by Robin Campos <magyk81@gmail.com>, year 2021.
  */
 
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class ControllerScript : MonoBehaviour
-{
-    private static Host host;
-    private static Client client;
-    private static List<int[]> matchInfo = new List<int[]>();
-    public static void AddMatchInfo(int[] info) { matchInfo.Add(info); }
+public class ControllerScript : MonoBehaviour {
+    private Host mHost;
 
-    private Match match;
-    private UX_Match uxMatch;
+    /// <remarks>
+    /// This instance of <c>Client</c> is only used for debugging.
+    /// </remarks>
+    private Client mClient;
+    private Match mMatch;
+    private UX_Match mUxMatch;
+
+    private static List<int[]> sInfoForInit = new List<int[]>();
+
+    public void AddInfoForInit(int[] info) { sInfoForInit.Add(info); }
 
     // Start is called before the first frame update
-    void Start()
-    {
+    private void Start() {
         Application.targetFrameRate = 60;
+
+        // Every new entity to start from zero.
         IdHandler.Reset();
 
-        uxMatch = GetComponent<UX_Match>();
+        mUxMatch = GetComponent<UX_Match>();
 
-        // If starting from the Match scene.
-        // Assume this machine is the host and there are no remote clients.
-        if (client == null)
-        {            
-            // Magic data for debugging.
+        /* If starting from the Match scene in Unity Editor, which is only for debugging.
+         * Assume this machine is the host and there are no remote clients. */
+        if (mClient == null) {            
+            // Player and boards are magic data.
             Player[] players = new Player[2];
             players[0] = new Player("Brooke", 0, false);
             players[1] = new Player("Rachel", 0, true);
@@ -40,103 +43,107 @@ public class ControllerScript : MonoBehaviour
             boards[0] = new Board("Main", 2, chunkSize);
             boards[1] = new Board("Sheol", 1, chunkSize);
 
-            match = new Match(players, boards);
+            mMatch = new Match(players, boards);
 
+            // Remote connection setup.
             string ipAddress = "localhost";
             int port = 6969;
-            host = new Host(ipAddress, port, 1);
-            client = new Client(ipAddress, port, 0);
+            mHost = new Host(ipAddress, port, 1);
+            mClient = new Client(ipAddress, port, 0);
 
             List<int> localPlayerIDs = new List<int>();
             List<string> playerNames = new List<string>();
-            foreach (Player player in players)
-            {
-                if (!player.IsBot) localPlayerIDs.Add(player.ID);
-                playerNames.Add(player.Name);
+            foreach (Player player in players) {
+                if (!player.IS_BOT) localPlayerIDs.Add(player.ID);
+                playerNames.Add(player.NAME);
             }
+
             List<int[]> boardData = new List<int[]>();
-            foreach (Board board in boards)
-            {
+            foreach (Board board in boards) {
                 int[] data = new int[4 + board.Name.Length];
                 data[1] = board.ID;
                 data[2] = board.Size;
                 data[3] = board.Name.Length;
-                for (int i = 4, j = 0; j < board.Name.Length; i++, j++)
-                {
+                for (int i = 4, j = 0; j < board.Name.Length; i++, j++) {
                     data[i] = board.Name[j];
                 }
                 boardData.Add(data);
             }
-            uxMatch.Init(localPlayerIDs.ToArray(), playerNames.ToArray(),
+
+            // Setup the UX stuff.
+            mUxMatch.Init(localPlayerIDs.ToArray(), playerNames.ToArray(),
                 boardData.ToArray(), chunkSize);
-            host.SendSignals(match.Init());
+
+            // Signal that begins the match.
+            mHost.SendSignals(mMatch.Init());
         }
+
         // If this machine is not the host.
-        else if (host == null)
-        {
+        else if (mHost == null) {
 
         }
+
         // If this machine is the host.
-        else
-        {
+        else {
             List<int[]> playerData = new List<int[]>();
             List<int> localPlayerIDs = new List<int>();
             List<string> localPlayerNames = new List<string>();
             List<int[]> boardData = new List<int[]>();
             int chunkSize = 0;
-            foreach (int[] info in matchInfo)
-            {
-                if (info[0] == (int) SignalFromHost.Request.ADD_PLAYER)
-                {
+            foreach (int[] info in sInfoForInit) {
+                if (info[0] == (int) SignalFromHost.Request.ADD_PLAYER) {
                     playerData.Add(info);
-                    if (info[2] == client.ID && info[3] == 0)
-                    {
+                    if (info[2] == mClient.ID && info[3] == 0) {
                         localPlayerIDs.Add(info[1]);
 
                         char[] playerName = new char[info[4]];
-                        for (int i = 0, j = 5; j < info[4]; i++, j++)
-                        {
+                        for (int i = 0, j = 5; j < info[4]; i++, j++) {
                             playerName[i] = (char) info[j];
                         }
                         localPlayerNames.Add(new string(playerName));
                     }
                 }
-                else if (info[0] == (int) SignalFromHost.Request.ADD_BOARD)
-                    boardData.Add(info);
-                else if (info[0]
-                    == (int) SignalFromHost.Request.SET_CHUNK_SIZE)
-                    chunkSize = info[1];
+                else if (info[0] == (int) SignalFromHost.Request.ADD_BOARD) boardData.Add(info);
+                else if (info[0] == (int) SignalFromHost.Request.SET_CHUNK_SIZE) chunkSize = info[1];
             }
 
-            match = new Match(playerData.ToArray(), boardData.ToArray(),
+            mMatch = new Match(playerData.ToArray(), boardData.ToArray(),
                 chunkSize);
-            uxMatch.Init(localPlayerIDs.ToArray(), localPlayerNames.ToArray(),
+            mUxMatch.Init(localPlayerIDs.ToArray(), localPlayerNames.ToArray(),
                 boardData.ToArray(), chunkSize);
-            host.SendSignals(match.Init());
+            mHost.SendSignals(mMatch.Init());
         }
-        matchInfo.Clear();
+        sInfoForInit.Clear();
     }
 
     // Update is called once per frame
-    void Update()
+    private void Update()
     {
-        client.SendSignals(uxMatch.SignalsToSend);
+        // Client sends signals about player input to the host.
+        mClient.SendSignals(mUxMatch.SignalsToSend);
 
-        if (host != null)
+        // If this machine is the host.
+        if (mHost != null)
         {
-            host.SendSignals(match.SignalsToSend);
-            match.ApplyMessagesFromClient(host.MessagesReceived);
-            match.MainLoop();
+            // Host sends signals to update the clients.
+            mHost.SendSignals(mMatch.SignalsToSend);
+
+            // Host uses signals received from the clients to update the match.
+            mMatch.ApplyMessagesFromClient(mHost.MessagesReceived);
+
+            // Match runs 1 tick.
+            mMatch.MainLoop();
         }
 
-        uxMatch.ApplyMessagesFromHost(client.MessagesReceived);
+        // Client uses signals received from host to update UX.
+        mUxMatch.ApplyMessagesFromHost(mClient.MessagesReceived);
     }
 
     private void OnDestroy()
     {
-        if (host != null) host.Terminate();
-        if (client != null) client.Terminate();
-        host = null;
-        client = null;
+        if (mHost != null) mHost.Terminate();
+        if (mClient != null) mClient.Terminate();
+        mHost = null;
+        mClient = null;
     }
 }

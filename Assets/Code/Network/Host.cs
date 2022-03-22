@@ -1,120 +1,87 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
 using UnityEngine;
 
-public class Host : SocketHand
-{
-    private Socket[] clientSockets;
-    private int clientCount;
-    private int connClientCount = 0;
+public class Host : SocketHand {
+    private Socket[] mClientSockets;
+    private readonly int mClientCount;
+    private int mConnClientCount = 0;
 
-    public Host(string ipAddress, int port, int clientCount)
-        : base(ipAddress, port)
-    {
-        this.clientCount = clientCount;
-    }
+    public Host(string ipAddress, int port, int clientCount) : base(ipAddress, port) { mClientCount = clientCount; }
 
-    private bool OpenConnection(int idx)
-    {
-        bool connectionSuccess = false;
-        try {
-            clientSockets[idx] = socket.Accept();
-            if (clientSockets[idx] != null) connectionSuccess = true;
-        } catch (SocketException e) {
-            Debug.LogException(e);
+    public override void Terminate() {
+        if (!mTerminating) {
+            mTerminating = true;
+            if (mSocket != null) {
+                // socket.Shutdown(SocketShutdown.Both);
+                mSocket.Close();
+            }
+            for (int i = 0; i < mClientSockets.Length; i++) {
+                if (mClientSockets[i] != null) mClientSockets[i].Close();
+            }
         }
-
-        return connectionSuccess;
     }
 
-    protected override void Run()
-    {
-        clientSockets = new Socket[clientCount];
-        if (clientSockets.Length <= 0)
-        {
-            Debug.LogError("Error: clientSockets.Length is "
-                + clientSockets.Length);
+    protected override void Run() {
+        mClientSockets = new Socket[mClientCount];
+        if (mClientSockets.Length <= 0) {
+            Debug.LogError("Error: clientSockets.Length is " + mClientSockets.Length);
             return;
         }
 
-        while (!terminating && !connected)
-        {
+        while (!mTerminating && !mConnected) {
             IPEndPoint endPoint = new IPEndPoint(
-                IPAddress.Parse(ipAddress), port);
+                IPAddress.Parse(mIpAddress), mPort);
             
             try {
-                socket.Bind(endPoint);
-                socket.Listen(10);
+                mSocket.Bind(endPoint);
+                mSocket.Listen(10);
             } catch (SocketException e) {
                 Debug.LogException(e);
                 continue;
             }
 
-            Debug.Log("Host waiting for a connection [" + 1 + "/"
-                + clientSockets.Length + "]...");
-            while (!connected && !terminating)
-            {
-                if (OpenConnection(connClientCount))
-                {
-                    connClientCount++;
-                    if (connClientCount == clientSockets.Length)
-                        connected = true;
-                    else Debug.Log("Host waiting for a connection ["
-                        + (connClientCount + 1) + "/" + clientSockets.Length
-                        + "]...");
-                }
-                else Thread.Sleep(1000);
+            Debug.Log("Host waiting for a connection [" + 1 + "/" + mClientSockets.Length + "]...");
+            while (!mConnected && !mTerminating) {
+                if (OpenConnection(mConnClientCount)) {
+                    mConnClientCount++;
+                    if (mConnClientCount == mClientSockets.Length) mConnected = true;
+                    else Debug.Log("Host waiting for a connection [" + (mConnClientCount + 1) + "/"
+                        + mClientSockets.Length + "]...");
+                } else Thread.Sleep(1000);
             }
 
-            if (clientSockets.Length > 2)
-            {
-                Debug.Log("Host connected to all " + clientSockets.Length
-                    + " clients.");
-            }
-            else if (clientSockets.Length == 2)
-                Debug.Log("Host connected to both clients.");
+            if (mClientSockets.Length > 2) {
+                Debug.Log("Host connected to all " + mClientSockets.Length + " clients.");
+            } else if (mClientSockets.Length == 2) Debug.Log("Host connected to both clients.");
             else Debug.Log("Host connected to single client.");
         }
 
-        while (!terminating)
-        {
+        while (!mTerminating) {
             int sm = 1;
-            for (int i = 0; i < clientSockets.Length; i++)
-            {
-                sm = SendMessages(clientSockets[i]);
+            for (int i = 0; i < mClientSockets.Length; i++) {
+                sm = SendMessages(mClientSockets[i]);
 
-                int rm = ReceiveMessages(clientSockets[i]);
-                if (rm == 0)
-                {
+                int rm = ReceiveMessages(mClientSockets[i]);
+                if (rm == 0) {
                     /*Debug.Log(
                         "Host received message from client #" + i + ".");*/
-                }
-                else if (rm == -1) Terminate();
+                } else if (rm == -1) Terminate();
             }
             if (sm == 0) ClearMessagesToSend();
         }
     }
 
-    public override void Terminate()
-    {
-        if (!terminating)
-        {
-            terminating = true;
-            if (socket != null)
-            {
-                // socket.Shutdown(SocketShutdown.Both);
-                socket.Close();
-            }
-            for (int i = 0; i < clientSockets.Length; i++)
-            {
-                if (clientSockets[i] != null) clientSockets[i].Close();
-            }
+    private bool OpenConnection(int idx) {
+        bool connectionSuccess = false;
+        try {
+            mClientSockets[idx] = mSocket.Accept();
+            if (mClientSockets[idx] != null) connectionSuccess = true;
+        } catch (SocketException e) {
+            Debug.LogException(e);
         }
-        
+
+        return connectionSuccess;
     }
 }

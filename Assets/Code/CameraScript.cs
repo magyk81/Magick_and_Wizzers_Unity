@@ -4,113 +4,124 @@
  * Written by Robin Campos <magyk81@gmail.com>, year 2021.
  */
 
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
-public class CameraScript : MonoBehaviour
-{
-    private Ray[] ray;private RaycastHit rayHit;private Vector3[] rayVecs;
-    private int rayMask_pieces, rayMask_tiles;
-    private Camera cam;
-    private Transform tra;
-    private CanvasScript canv;
-    private int localPlayerIdx;
-    private UX_Player.Mode mode = UX_Player.Mode.PLAIN;
-
-    private UX_Collider[] quarterColls;
-    private UX_Collider[,] tileColls;
-    
-    private UX_Collider collidedChunkPrev = null, collidedQuarterPrev;
+public class CameraScript : MonoBehaviour {
+    private RaycastHit mRayHit; private Ray[] mRay; private Vector3[] mRayVecs;
+    private int mRayMaskForPieces, mRayMaskForTiles;
+    private Camera mCam;
+    private Transform mTran;
+    private CanvasScript mCanv;
+    private int mLocalPlayerIdx;
+    private UX_Player.Mode mMode = UX_Player.Mode.PLAIN;
+    private UX_Collider mCollidedChunkPrev = null, mCollidedQuarterPrev;
+    private UX_Collider[] mQuarterColls;
+    private UX_Collider[,] mTileColls;
 
     [SerializeField]
     private float speed;
-    private float x = 0, z = 0, y = 5;
+    private float mPosX = 0, mPosZ = 0, mPosY = 5;
+    private float[] boardSizeHoriz, boardSizeVert;
+    private float[][] bounds;
+    private Vector3[] boardPos;
+    private int boardIdx = 0;
+
+    public float[][] Bounds {
+        set {
+            bounds = new float[value.Length][];
+            boardSizeHoriz = new float[value.Length];
+            boardSizeVert = new float[value.Length];
+
+            for (int i = 0; i < value.Length; i++) {
+                bounds[i] = new float[4];
+                for (int j = 0; j < 4; j++) { bounds[i][j] = value[i][j]; }
+
+                boardSizeHoriz[i] = bounds[i][Util.RIGHT] - bounds[i][Util.LEFT];
+                boardSizeVert[i] = bounds[i][Util.UP] - bounds[i][Util.DOWN];
+            }
+        }
+    }
+
+    public int BoardIdx {
+        get { return boardIdx; }
+        set {
+            boardPos[boardIdx] = new Vector3(mPosX, mPosY, mPosZ);
+            boardIdx = value;
+            mPosX = boardPos[value].x;
+            mPosY = boardPos[value].y;
+            mPosZ = boardPos[value].z;
+            Move();
+            Debug.Log("Moved to board " + value);
+        }
+    }
+
+    public UX_Player.Mode Mode { set { mMode = value; } }
 
     /// <summary>Called once before the match begins.</summary>
     public void Init(int localPlayerIdx, CanvasScript canv, float[][] bounds,
-        UX_Collider[] quarterColls, UX_Collider[,] tileColls)
-    {
-        this.localPlayerIdx = localPlayerIdx;
-        tra = GetComponent<Transform>();
-        this.quarterColls = quarterColls;
-        this.tileColls = tileColls;
+        UX_Collider[] quarterColls, UX_Collider[,] tileColls) {
+        mLocalPlayerIdx = localPlayerIdx;
+        mTran = GetComponent<Transform>();
+        mQuarterColls = quarterColls;
+        mTileColls = tileColls;
 
         // Setup camera.
-        cam = GetComponent<Camera>();
+        mCam = GetComponent<Camera>();
 
         // Setup masks for camera and rays.
         int mask = 1 << (UX_Piece.LAYER + localPlayerIdx);
-        rayMask_pieces = mask;
-        rayMask_tiles = 1 << (UX_Tile.LAYER + localPlayerIdx);
-        for (int i = 0; i < UX_Piece.LAYER; i++)
-        {
-            mask |= (1 << i);
-        }
+        mRayMaskForPieces = mask;
+        mRayMaskForTiles = 1 << (UX_Tile.LAYER + localPlayerIdx);
+        for (int i = 0; i < UX_Piece.LAYER; i++) { mask |= (1 << i); }
         mask |= (1 << (UX_Tile.LAYER + localPlayerIdx));
-        cam.cullingMask = mask;
+        mCam.cullingMask = mask;
         
         // Setup canvas.
-        this.canv = canv;
-        canv.Init(cam.pixelWidth, cam.pixelHeight);
+        mCanv = canv;
+        canv.Init(mCam.pixelWidth, mCam.pixelHeight);
 
         float reticleRad = canv.Reticle.sizeDelta.x / 2;
-        canv.DarkScreen.sizeDelta = new Vector2(
-            cam.pixelWidth, cam.pixelHeight);
+        canv.DarkScreen.sizeDelta = new Vector2(mCam.pixelWidth, mCam.pixelHeight);
 
         // Setup rays.
         // 1 ray for each of the 8 directions from Util, plus a middle ray.
         int rayCount = Util.DOWN_LEFT + 2;
-        ray = new Ray[rayCount];
-        rayVecs = new Vector3[rayCount];
+        mRay = new Ray[rayCount];
+        mRayVecs = new Vector3[rayCount];
 
         // Just the main 4 directions.
         float[] rayVecDirs = new float[4];
-        rayVecDirs[Util.LEFT]
-            = ((float) ((cam.pixelWidth / 2) - reticleRad))
-            / ((float) cam.pixelWidth);
-        rayVecDirs[Util.RIGHT]
-            = ((float) ((cam.pixelWidth / 2) + reticleRad))
-            / ((float) cam.pixelWidth);
-        rayVecDirs[Util.UP]
-            = ((float) ((cam.pixelHeight / 2) + reticleRad))
-            / ((float) cam.pixelHeight);
-        rayVecDirs[Util.DOWN]
-            = ((float) ((cam.pixelHeight / 2) - reticleRad))
-            / ((float) cam.pixelHeight);
-        rayVecs[0] = new Vector3(0.5F, 0.5F, 0);
-        rayVecs[Util.LEFT + 1] = new Vector3(rayVecDirs[Util.LEFT], 0.5F, 0);
-        rayVecs[Util.RIGHT + 1] = new Vector3(rayVecDirs[Util.RIGHT], 0.5F, 0);
-        rayVecs[Util.UP + 1] = new Vector3(0.5F, rayVecDirs[Util.UP], 0);
-        rayVecs[Util.DOWN + 1] = new Vector3(0.5F, rayVecDirs[Util.DOWN], 0);
+        rayVecDirs[Util.LEFT] = ((float) ((mCam.pixelWidth / 2) - reticleRad)) / ((float) mCam.pixelWidth);
+        rayVecDirs[Util.RIGHT] = ((float) ((mCam.pixelWidth / 2) + reticleRad)) / ((float) mCam.pixelWidth);
+        rayVecDirs[Util.UP] = ((float) ((mCam.pixelHeight / 2) + reticleRad)) / ((float) mCam.pixelHeight);
+        rayVecDirs[Util.DOWN] = ((float) ((mCam.pixelHeight / 2) - reticleRad)) / ((float) mCam.pixelHeight);
+        mRayVecs[0] = new Vector3(0.5F, 0.5F, 0);
+        mRayVecs[Util.LEFT + 1] = new Vector3(rayVecDirs[Util.LEFT], 0.5F, 0);
+        mRayVecs[Util.RIGHT + 1] = new Vector3(rayVecDirs[Util.RIGHT], 0.5F, 0);
+        mRayVecs[Util.UP + 1] = new Vector3(0.5F, rayVecDirs[Util.UP], 0);
+        mRayVecs[Util.DOWN + 1] = new Vector3(0.5F, rayVecDirs[Util.DOWN], 0);
         
-        float diagChange = reticleRad * (1F - 0.707F)
-            / ((float) cam.pixelWidth);
+        float diagChange = reticleRad * (1F - 0.707F) / ((float) mCam.pixelWidth);
         rayVecDirs[Util.LEFT] += diagChange;
         rayVecDirs[Util.RIGHT] -= diagChange;
         rayVecDirs[Util.UP] -= diagChange;
         rayVecDirs[Util.DOWN] += diagChange;
 
-        rayVecs[Util.UP_LEFT + 1] = new Vector3(
-            rayVecDirs[Util.LEFT], rayVecDirs[Util.UP], 0);
-        rayVecs[Util.UP_RIGHT + 1] = new Vector3(
-            rayVecDirs[Util.RIGHT], rayVecDirs[Util.UP], 0);
-        rayVecs[Util.DOWN_LEFT + 1] = new Vector3(
-            rayVecDirs[Util.LEFT], rayVecDirs[Util.DOWN], 0);
-        rayVecs[Util.DOWN_RIGHT + 1] = new Vector3(
-            rayVecDirs[Util.RIGHT], rayVecDirs[Util.DOWN], 0);
+        mRayVecs[Util.UP_LEFT + 1] = new Vector3(rayVecDirs[Util.LEFT], rayVecDirs[Util.UP], 0);
+        mRayVecs[Util.UP_RIGHT + 1] = new Vector3(rayVecDirs[Util.RIGHT], rayVecDirs[Util.UP], 0);
+        mRayVecs[Util.DOWN_LEFT + 1] = new Vector3(rayVecDirs[Util.LEFT], rayVecDirs[Util.DOWN], 0);
+        mRayVecs[Util.DOWN_RIGHT + 1] = new Vector3(rayVecDirs[Util.RIGHT], rayVecDirs[Util.DOWN], 0);
 
         // Setup bounds.
         Bounds = bounds;
 
         // Setup positions for switching boards.
         boardPos = new Vector3[bounds.Length];
-        for (int i = 0; i < bounds.Length; i++)
-        {
+        for (int i = 0; i < bounds.Length; i++) {
             boardPos[i] = new Vector3(
-                bounds[i][(int) Util.LEFT] + (boardSize_horiz[i] / 2),
-                y,
-                bounds[i][(int) Util.DOWN] + (boardSize_vert[i] / 2));
+                bounds[i][(int) Util.LEFT] + (boardSizeHoriz[i] / 2),
+                mPosY,
+                bounds[i][(int) Util.DOWN] + (boardSizeVert[i] / 2));
         }
     }
 
@@ -119,144 +130,76 @@ public class CameraScript : MonoBehaviour
     /// -1 to move left, 1 to move right, or 0 not move horizontally </param>
     /// <param z_move="z_move">
     /// -1 to move down, 1 to move up, or 0 not move vertically </param>
-    public void Move(int x_move, int z_move)
-    {
-        if (x_move == 0 && z_move == 0) return;
+    public void Move(int xMove, int zMove) {
+        if (xMove == 0 && zMove == 0) return;
 
-        x += x_move * speed;
-        z += z_move * speed;
+        mPosX += xMove * speed;
+        mPosZ += zMove * speed;
 
         Move();
     }
 
-    private void MoveTo(float newX, float newZ)
-    {
-        x = newX; z = newZ;
+    private void MoveTo(float newX, float newZ) {
+        mPosX = newX; mPosZ = newZ;
         Move();
     }
 
     /// <summary>Relocates the camera if out of bounds.</summary>
-    private void Move()
-    {
-        if (x < bounds[boardIdx][Util.LEFT])
-            x += boardSize_horiz[boardIdx];
-        if (x > bounds[boardIdx][Util.RIGHT])
-            x -= boardSize_horiz[boardIdx];
-        if (z < bounds[boardIdx][Util.DOWN])
-            z += boardSize_vert[boardIdx];
-        if (z > bounds[boardIdx][Util.UP])
-            z -= boardSize_vert[boardIdx];
+    private void Move() {
+        if (mPosX < bounds[boardIdx][Util.LEFT]) mPosX += boardSizeHoriz[boardIdx];
+        if (mPosX > bounds[boardIdx][Util.RIGHT]) mPosX -= boardSizeHoriz[boardIdx];
+        if (mPosZ < bounds[boardIdx][Util.DOWN]) mPosZ += boardSizeVert[boardIdx];
+        if (mPosZ > bounds[boardIdx][Util.UP]) mPosZ -= boardSizeVert[boardIdx];
 
-        tra.localPosition = new Vector3(x, y, z);
+        mTran.localPosition = new Vector3(mPosX, mPosY, mPosZ);
     }
 
-    /// <returns>Piece detected by the reticle using all 9 rays, but
-    /// prioritizing the rays closest to the middle.</returns>
-    public UX_Piece GetDetectedPiece()
-    {
-        for (int i = 0; i < ray.Length; i++)
-        {
-            ray[i] = cam.ViewportPointToRay(rayVecs[i]);
-            if (Physics.Raycast(ray[i], out rayHit, Mathf.Infinity,
-                rayMask_pieces))
-            {
-                Collider hitCollider = rayHit.collider;
-                if (hitCollider != null)
-                {
-                    return hitCollider.gameObject.GetComponent<UX_Collider>()
-                        .Piece;
-                }
-            }
-        }
-        return null;
-    }
-
-    /// <returns>Tile detected by the reticle using just the 1 middle ray.
+    /// <returns>
+    /// Piece detected by the reticle using all 9 rays, but prioritizing the rays closest to the middle.
     /// </returns>
-    public UX_Tile GetDetectedTile()
-    {
-        ray[0] = cam.ViewportPointToRay(rayVecs[0]);
-        if (Physics.Raycast(ray[0], out rayHit, Mathf.Infinity, rayMask_tiles))
-        {
-            Collider hitCollider = rayHit.collider;
-            if (hitCollider != null)
-            {
-                UX_Collider coll
-                    = hitCollider.gameObject.GetComponent<UX_Collider>();
-
-                if (coll.IsType(UX_Collider.Type.TILE)) return coll.Tile;
-                
-                if (coll.IsType(UX_Collider.Type.QUARTER))
-                {
-                    if (collidedQuarterPrev != null
-                        && collidedQuarterPrev != coll)
-                        collidedQuarterPrev.Enable();
-                    coll.Disable();
-                    collidedQuarterPrev = coll;
-                    coll.Chunk.SetTileColliders(
-                        coll.Quarter, tileColls, localPlayerIdx);
-                }
-
-                if (coll.IsType(UX_Collider.Type.CHUNK))
-                {
-                    if (collidedChunkPrev != null && collidedChunkPrev != coll)
-                        collidedChunkPrev.Enable();
-                    collidedChunkPrev = coll;
-                    coll.Chunk.SetQuarterColliders(
-                        quarterColls, localPlayerIdx);
+    public UX_Piece GetDetectedPiece() {
+        for (int i = 0; i < mRay.Length; i++) {
+            mRay[i] = mCam.ViewportPointToRay(mRayVecs[i]);
+            if (Physics.Raycast(mRay[i], out mRayHit, Mathf.Infinity, mRayMaskForPieces)) {
+                Collider hitCollider = mRayHit.collider;
+                if (hitCollider != null) {
+                    return hitCollider.gameObject.GetComponent<UX_Collider>().Piece;
                 }
             }
         }
         return null;
     }
 
-    public void SetMode(UX_Player.Mode mode)
-    {
-        this.mode = mode;
+    /// <returns>
+    /// Tile detected by the reticle using just the 1 middle ray.
+    /// </returns>
+    public UX_Tile GetDetectedTile() {
+        mRay[0] = mCam.ViewportPointToRay(mRayVecs[0]);
+        if (Physics.Raycast(mRay[0], out mRayHit, Mathf.Infinity, mRayMaskForTiles)) {
+            Collider hitCollider = mRayHit.collider;
+            if (hitCollider != null) {
+                UX_Collider coll = hitCollider.gameObject.GetComponent<UX_Collider>();
+
+                if (coll.IsType(UX_Collider.ColliderType.TILE)) return coll.Tile;
+                
+                if (coll.IsType(UX_Collider.ColliderType.QUARTER)) {
+                    if (mCollidedQuarterPrev != null && mCollidedQuarterPrev != coll) mCollidedQuarterPrev.Enable();
+                    coll.Disable();
+                    mCollidedQuarterPrev = coll;
+                    coll.Chunk.SetTileColliders(coll.Quarter, mTileColls, mLocalPlayerIdx);
+                }
+
+                if (coll.IsType(UX_Collider.ColliderType.CHUNK)) {
+                    if (mCollidedChunkPrev != null && mCollidedChunkPrev != coll) mCollidedChunkPrev.Enable();
+                    mCollidedChunkPrev = coll;
+                    coll.Chunk.SetQuarterColliders(mQuarterColls, mLocalPlayerIdx);
+                }
+            }
+        }
+        return null;
     }
 
     // Update is called once per frame
-    void Update()
-    {
-    }
-
-    private float[] boardSize_horiz, boardSize_vert;
-    private float[][] bounds;
-    public float[][] Bounds
-    {
-        set
-        {
-            bounds = new float[value.Length][];
-            boardSize_horiz = new float[value.Length];
-            boardSize_vert = new float[value.Length];
-
-            for (int i = 0; i < value.Length; i++)
-            {
-                bounds[i] = new float[4];
-                for (int j = 0; j < 4; j++) { bounds[i][j] = value[i][j]; }
-
-                boardSize_horiz[i]
-                    = bounds[i][Util.RIGHT] - bounds[i][Util.LEFT];
-                boardSize_vert[i]
-                    = bounds[i][Util.UP] - bounds[i][Util.DOWN];
-            }
-        }
-    }
-
-    private Vector3[] boardPos;
-    private int boardIdx = 0;
-    public int BoardIdx
-    {
-        get { return boardIdx; }
-        set
-        {
-            boardPos[boardIdx] = new Vector3(x, y, z);
-            boardIdx = value;
-            x = boardPos[value].x;
-            y = boardPos[value].y;
-            z = boardPos[value].z;
-            Move();
-            Debug.Log("Moved to board " + value);
-        }
+    private void Update() {
     }
 }

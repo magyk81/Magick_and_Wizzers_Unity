@@ -4,27 +4,19 @@
  * Written by Robin Campos <magyk81@gmail.com>, year 2021.
  */
 
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-
 public class Player
 {
     public readonly int ID;
 
-    private readonly string name;
-    public string Name { get { return name; } }
-    private readonly int idx;
-    private readonly int CLIENT_ID;
-    public int ClientID { get { return CLIENT_ID; } }
-    private bool isBot;
-    public bool IsBot { get { return isBot; } }
+    public readonly string NAME;
+    public readonly int CLIENT_ID;
+    public readonly bool IS_BOT;
     public Player(string name, int clientID, bool isBot)
     {
         ID = IdHandler.Create(GetType());
 
-        this.name = name;
+        NAME = name;
         CLIENT_ID = clientID;
-        this.isBot = isBot;
+        IS_BOT = isBot;
     }
 }
