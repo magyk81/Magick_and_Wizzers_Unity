@@ -47,23 +47,18 @@ public class UX_Piece : MonoBehaviour
     private int boardID; public int BoardID { get { return boardID; } }
     private int playerID; public int PlayerID { get { return playerID; } }    
 
-    /// <summary>Called once before the match begins.</summary>
-    public void Init(SignalFromHost signal, string pieceName, int layerCount) {
+    /// <summary>
+    /// Called once before the match begins.
+    /// </summary>
+    public void Init(SignalAddPiece signal, string pieceName, int layerCount) {
         pieceID = signal.PieceID;
         boardID = signal.BoardID;
         mUxAll = new UX_Piece[9];
 
         mTran = GetComponent<Transform>();
-
-        if (signal.PieceType == (int) Piece.Type.MASTER) {
-            mLifeBar = new GameObject[layerCount];
-            for (int i = 0; i < layerCount; i++) {
-                mLifeBar[i] = Instantiate(lifeBar, mTran);
-                mLifeBar[i].layer = LAYER + i;
-                mLifeBar[i].name = "Life Bar - view " + i;
-            }
-            SetActive(mLifeBar, true);
-        } else if (signal.PieceType == (int) Piece.Type.CREATURE) {
+        bool fromCard = signal.CardID >= 0;
+            
+        if (fromCard) {
             mAttackBar = new GameObject[layerCount];
             for (int i = 0; i < layerCount; i++) {
                 mAttackBar[i] = Instantiate(attackBar, mTran);
@@ -78,6 +73,14 @@ public class UX_Piece : MonoBehaviour
                 mDefenseBar[i].name = "Defense Bar - view " + i;
             }
             SetActive(mDefenseBar, true);
+        } else { // It's a Master.
+            mLifeBar = new GameObject[layerCount];
+            for (int i = 0; i < layerCount; i++) {
+                mLifeBar[i] = Instantiate(lifeBar, mTran);
+                mLifeBar[i].layer = LAYER + i;
+                mLifeBar[i].name = "Life Bar - view " + i;
+            }
+            SetActive(mLifeBar, true);
         }
 
         mArt = new GameObject[layerCount];
@@ -126,8 +129,8 @@ public class UX_Piece : MonoBehaviour
         }
         SetActive(mTarget, false);
 
-        if (signal.PieceType == (int) Piece.Type.MASTER) gameObject.name = "Master - " + pieceName;
-        else gameObject.name = "Piece - " + pieceName;
+        if (fromCard) gameObject.name = "Piece - " + pieceName;
+        else gameObject.name = "Master - " + pieceName;
     }
 
     public void SetReal() {

@@ -82,20 +82,13 @@ public class Board {
         return Coord._(tile.X / chunkSize, tile.Z / chunkSize);
     }
 
-    /// <returns>
-    /// True if the piece was successfully added. False otherwise.
-    /// </returns>
-    public SignalFromHost AddPiece(int playerID, Coord tile, Card card) {
-        Piece piece = new Piece(playerID, ID, tile, card);
-        return AddPiece(piece);
-    }
     private SignalFromHost AddPiece(Piece piece) {
         foreach (Piece p in mPieces) {
             if (p.Pos == piece.Pos) return null;
         }
         mPieces.Add(piece);
         mIdToPiece.Add(piece.ID, piece);
-        return SignalFromHost.AddPiece(piece);
+        return new SignalAddPiece(piece);
     }
 
     public SignalFromHost[] AddWaypoint(SignalAddWaypoint signal, bool add) {
@@ -125,37 +118,30 @@ public class Board {
         }
         
         // Add/remove waypoints.
-        for (int i = 0; i < signal.PieceIDs.Length; i++) {
-            if (pieces[i].PlayerID == signal.ActingPlayerID) {
-                if (add) {
-                    Debug.Log("signal.PieceID: " + signal.PieceID);
-                    Piece waypointTarget = (signal.PieceID == -1) ? null : mIdToPiece[signal.PieceID];
-                    pieces[i].AddWaypoint(waypointTarget, signal.OrderPlace);
-                } else if (!waypointsCommon) pieces[i].RemoveWaypoint(signal.OrderPlace);
+        // for (int i = 0; i < signal.PieceIDs.Length; i++) {
+        //     if (pieces[i].PlayerID == signal.ActingPlayerID) {
+        //         if (add) {
+        //             Debug.Log("signal.PieceID: " + signal.PieceID);
+        //             Piece waypointTarget = (signal.PieceID == -1) ? null : mIdToPiece[signal.PieceID];
+        //             pieces[i].AddWaypoint(waypointTarget, signal.OrderPlace);
+        //         } else if (!waypointsCommon) pieces[i].RemoveWaypoint(signal.OrderPlace);
                 
-                waypointUpdates.Add(SignalFromHost.UpdateWaypoints(pieces[i]));
-            } else {
-                Debug.Log("Error: Attempted to add waypoint to the piece " + pieces[i].Name
-                    + " but it does not belong to player #" + signal.ActingPlayerID);
-            }
-        }
+        //         waypointUpdates.Add(new SignalUpdateWaypoints(pieces[i]));
+        //     } else {
+        //         Debug.Log("Error: Attempted to add waypoint to the piece " + pieces[i].Name
+        //             + " but it does not belong to player #" + signal.ActingPlayerID);
+        //     }
+        // }
         return waypointUpdates.ToArray();
     }
 
-    public SignalFromHost[] CastSpell(SignalCastSpell signal, Board boardCastedOn) {
-        Piece caster = mIdToPiece[signal.PieceID];
+    public SignalFromHost[] CastSpell(SignalCastSpell signal) {
+        Piece caster = mIdToPiece[signal.CasterID];
         if (signal.ActingPlayerID == caster.PlayerID) {
-            Card card = Card.friend_cards[signal.CardID];
-
-
-            SignalFromHost[] signals = caster.CastSpell(card, boardCastedOn,
-                signal.Tile);
+            Card playCard = Card.friend_cards[signal.PlayCardID];
+            SignalFromHost[] signals = caster.CastSpell(playCard, this, signal.Tile);
             for (int i = 0; i < signals.Length; i++) {
-                if (signals[i] == null) {
-                    Piece piece = new Piece(caster.ID, ID, signal.Tile, card);
-                    AddPiece(piece);
-                    signals[i] = SignalFromHost.AddPiece(piece);
-                }
+                if (signals[i] == null) { signals[i] = AddPiece(new Piece(caster.ID, ID, signal.Tile, playCard)); }
             }
             return signals;
         }

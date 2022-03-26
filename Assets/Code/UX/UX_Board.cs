@@ -120,7 +120,7 @@ public class UX_Board : MonoBehaviour {
 
     public int PlayerWithPiece(int pieceID) { return mPieces[pieceID].PlayerID; }
 
-    public UX_Piece AddPiece(SignalFromHost signal, string pieceName, int layerCount) {
+    public UX_Piece AddPiece(SignalAddPiece signal, string pieceName, int layerCount) {
         UX_Piece uxPiece = Instantiate(basePiece.gameObject, mPieceParent).GetComponent<UX_Piece>();
         uxPiece.gameObject.name = pieceName;
         mPieces.Add(signal.PieceID, uxPiece);
@@ -129,9 +129,9 @@ public class UX_Board : MonoBehaviour {
         return uxPiece;
     }
 
-    public void AddCard(SignalFromHost signal) { mPieces[signal.PieceID].AddCard(signal.CardID); }
+    public void AddCard(SignalAddCard signal) { mPieces[signal.HolderPieceID].AddCard(signal.CardID); }
 
-    public void RemoveCard(SignalFromHost signal) { mPieces[signal.PieceID].RemoveCard(signal.CardID); }
+    public void RemoveCard(SignalRemoveCard signal) { mPieces[signal.HolderPieceID].RemoveCard(signal.CardID); }
 
     /// <summary>Updates the piece's position on the board between the tiles
     /// indicated by the piece's PosPrecise info.</summary>

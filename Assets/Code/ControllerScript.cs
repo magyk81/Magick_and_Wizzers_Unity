@@ -97,9 +97,7 @@ public class ControllerScript : MonoBehaviour {
                         localPlayerIDs.Add(info[1]);
 
                         char[] playerName = new char[info[4]];
-                        for (int i = 0, j = 5; j < info[4]; i++, j++) {
-                            playerName[i] = (char) info[j];
-                        }
+                        for (int i = 0, j = 5; j < info[4]; i++, j++) { playerName[i] = (char) info[j]; }
                         localPlayerNames.Add(new string(playerName));
                     }
                 }
@@ -107,10 +105,8 @@ public class ControllerScript : MonoBehaviour {
                 else if (info[0] == (int) SignalFromHost.Request.SET_CHUNK_SIZE) chunkSize = info[1];
             }
 
-            mMatch = new Match(playerData.ToArray(), boardData.ToArray(),
-                chunkSize);
-            mUxMatch.Init(localPlayerIDs.ToArray(), localPlayerNames.ToArray(),
-                boardData.ToArray(), chunkSize);
+            mMatch = new Match(playerData.ToArray(), boardData.ToArray(), chunkSize);
+            mUxMatch.Init(localPlayerIDs.ToArray(), localPlayerNames.ToArray(), boardData.ToArray(), chunkSize);
             mHost.SendSignals(mMatch.Init());
         }
         sInfoForInit.Clear();
@@ -125,17 +121,18 @@ public class ControllerScript : MonoBehaviour {
         // If this machine is the host.
         if (mHost != null)
         {
-            // Host sends signals to update the clients.
-            mHost.SendSignals(mMatch.SignalsToSend);
-
-            // Host uses signals received from the clients to update the match.
+            /* Host receives signals from the clients and uses them to update the match.
+             * Also generates signals to send to the clients regarding how the received signals affected the match. */
             mMatch.ApplyMessagesFromClient(mHost.MessagesReceived);
 
             // Match runs 1 tick.
             mMatch.MainLoop();
+
+            // Host sends signals about the match to the clients.
+            mHost.SendSignals(mMatch.SignalsToSend);
         }
 
-        // Client uses signals received from host to update UX.
+        // Client receives signals from the host and uses them to update UX.
         mUxMatch.ApplyMessagesFromHost(mClient.MessagesReceived);
     }
 

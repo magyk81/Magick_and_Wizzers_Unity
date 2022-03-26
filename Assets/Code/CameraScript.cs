@@ -24,7 +24,7 @@ public class CameraScript : MonoBehaviour {
     private float[] boardSizeHoriz, boardSizeVert;
     private float[][] bounds;
     private Vector3[] boardPos;
-    private int boardIdx = 0;
+    private int boardID = 0;
 
     public float[][] Bounds {
         set {
@@ -42,11 +42,11 @@ public class CameraScript : MonoBehaviour {
         }
     }
 
-    public int BoardIdx {
-        get { return boardIdx; }
+    public int BoardID {
+        get { return boardID; }
         set {
-            boardPos[boardIdx] = new Vector3(mPosX, mPosY, mPosZ);
-            boardIdx = value;
+            boardPos[boardID] = new Vector3(mPosX, mPosY, mPosZ);
+            boardID = value;
             mPosX = boardPos[value].x;
             mPosY = boardPos[value].y;
             mPosZ = boardPos[value].z;
@@ -146,10 +146,10 @@ public class CameraScript : MonoBehaviour {
 
     /// <summary>Relocates the camera if out of bounds.</summary>
     private void Move() {
-        if (mPosX < bounds[boardIdx][Util.LEFT]) mPosX += boardSizeHoriz[boardIdx];
-        if (mPosX > bounds[boardIdx][Util.RIGHT]) mPosX -= boardSizeHoriz[boardIdx];
-        if (mPosZ < bounds[boardIdx][Util.DOWN]) mPosZ += boardSizeVert[boardIdx];
-        if (mPosZ > bounds[boardIdx][Util.UP]) mPosZ -= boardSizeVert[boardIdx];
+        if (mPosX < bounds[boardID][Util.LEFT]) mPosX += boardSizeHoriz[boardID];
+        if (mPosX > bounds[boardID][Util.RIGHT]) mPosX -= boardSizeHoriz[boardID];
+        if (mPosZ < bounds[boardID][Util.DOWN]) mPosZ += boardSizeVert[boardID];
+        if (mPosZ > bounds[boardID][Util.UP]) mPosZ -= boardSizeVert[boardID];
 
         mTran.localPosition = new Vector3(mPosX, mPosY, mPosZ);
     }

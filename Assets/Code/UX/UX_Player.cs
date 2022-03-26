@@ -5,6 +5,7 @@
  */
 
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class UX_Player : MonoBehaviour
@@ -26,7 +27,6 @@ public class UX_Player : MonoBehaviour
     private CameraScript mCam;
     private CanvasScript mCanv;
     private UX_Hand mHand;
-    private int mPlayCardID, mCasterPieceID;
     private Transform[] mTileHover;
     private UX_Waypoint[][] mWaypoints;
     private UX_Waypoint[] mPotentialWaypoint;
@@ -220,8 +220,8 @@ public class UX_Player : MonoBehaviour
         if (gamepadInput[(int) Gamepad.Button.DOWN] == 1) {
             if (mMode == Mode.BOARD_SWITCH) {
                 // Switch board.
-                if (mCam.BoardIdx != 1) mCam.BoardIdx = 1;
-                else mCam.BoardIdx = 0;
+                if (mCam.BoardID != 1) mCam.BoardID = 1;
+                else mCam.BoardID = 0;
             } else if (mMode == Mode.WAYPOINT_PIECE || mMode == Mode.WAYPOINT_TILE) {
                 mHoveredWaypoint--;
                 // UpdateWaypointDisplay();
@@ -262,13 +262,16 @@ public class UX_Player : MonoBehaviour
                     int orderPlace = mHoveredWaypoint;
                     if (mHoveredWaypoint == -1 || mHoveredWaypoint >= Piece.MAX_WAYPOINTS)
                         orderPlace = mHoveredWaypointMax;
-                    if (mSelectedPieces[0].WaypointTiles[orderPlace] != null
-                        && mSelectedPieces[0].WaypointTiles[orderPlace].Pos == mHoveredTile.Pos) {
-                        signal = SignalFromClient.RemoveWaypoint(
-                            mHoveredTile.BoardID, orderPlace, mSelectedPieces.ToArray());
-                    } else {
-                        signal = SignalFromClient.AddWaypoint(mHoveredTile, orderPlace, mSelectedPieces.ToArray());
-                    }
+                    // int[] selectedPieceIDs = mSelectedPieces.Select(uxPiece => uxPiece.PieceID).ToArray();
+                    // if (mSelectedPieces[0].WaypointTiles[orderPlace] != null
+                    //     && mSelectedPieces[0].WaypointTiles[orderPlace].Pos == mHoveredTile.Pos) {
+
+                    //     signal = new SignalRemoveWaypoint(
+                    //         mPlayerID, mHoveredTile.BoardID, orderPlace, selectedPieceIDs);
+                    // } else {
+                    //     signal = SignalFromClient.AddWaypoint(
+                    //         mPlayerID, mHoveredTile, orderPlace, mSelectedPieces.ToArray());
+                    // }
                     // UpdateWaypointDisplay();
                 }
             } else if (mMode == Mode.WAYPOINT_PIECE) {
@@ -276,32 +279,25 @@ public class UX_Player : MonoBehaviour
                     int orderPlace = mHoveredWaypoint;
                     if (mHoveredWaypoint == -1 || mHoveredWaypoint >= Piece.MAX_WAYPOINTS)
                         orderPlace = mHoveredWaypointMax;
-                    if (mSelectedPieces[0].WaypointPieces[orderPlace] != null
-                        && mSelectedPieces[0].WaypointPieces[orderPlace].PieceID == mHoveredPiece.PieceID) {
-                        signal = SignalFromClient.RemoveWaypoint(
-                            mHoveredPiece.BoardID, orderPlace,
-                            mSelectedPieces.ToArray());
-                    } else {
-                        int targetID = mHoveredPiece != null ? mHoveredPiece.PieceID : -1;
-                        signal = SignalFromClient.AddWaypoint(
-                            mHoveredPiece.BoardID, targetID, orderPlace,mSelectedPieces.ToArray());
-                    }
+                    // if (mSelectedPieces[0].WaypointPieces[orderPlace] != null
+                    //     && mSelectedPieces[0].WaypointPieces[orderPlace].PieceID == mHoveredPiece.PieceID) {
+                    //     signal = SignalFromClient.RemoveWaypoint(
+                    //         mHoveredPiece.BoardID, orderPlace,
+                    //         mSelectedPieces.ToArray());
+                    // } else {
+                    //     int targetID = mHoveredPiece != null ? mHoveredPiece.PieceID : -1;
+                    //     signal = SignalFromClient.AddWaypoint(
+                    //         mHoveredPiece.BoardID, targetID, orderPlace,mSelectedPieces.ToArray());
+                    // }
                     // UpdateWaypointDisplay();
                 }
             } else if (mMode == Mode.TARGET_TILE) { // Play the selected card.
-                signal = SignalFromClient.CastSpell(mPlayCardID, mCasterPieceID, mHoveredTile);
-                mPlayCardID = -1;
+                // signal = SignalFromClient.CastSpell(mPlayCardID, mCasterPieceID, mHoveredTile);
+                signal = new SignalCastSpell(mPlayerID, mHand.PlayCardID, mHand.CasterID, mCam.BoardID, mHoveredTile);
                 mHand.Hide();
                 SetMode(Mode.PLAIN);
-            } else if (mMode == Mode.HAND) { // Select the hovered card.
-                int[] vals = mHand.Select();
-                if (vals != null) {
-                    mPlayCardID = vals[0];
-                    mCasterPieceID = vals[1];
-                    mHand.Hide(false);
-                    SetMode(Mode.TARGET_TILE);
-                }
-            }
+            // Select the hovered card.
+            } else if (mMode == Mode.HAND) { if (mHand.Select()) SetMode(Mode.TARGET_TILE); }
         }
 
         // <B button | L>
@@ -331,7 +327,6 @@ public class UX_Player : MonoBehaviour
         if (gamepadInput[(int) Gamepad.Button.R_TRIG] == 1) holdingTriggerR = true;
         else if (gamepadInput[(int) Gamepad.Button.R_TRIG] == -1) holdingTriggerR = false;
         
-        if (signal != null) signal.PlayerID = mPlayerID;
         return signal;
     }
 

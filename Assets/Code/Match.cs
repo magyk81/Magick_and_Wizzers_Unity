@@ -11,7 +11,7 @@ public class Match {
     private readonly Player[] mPlayers;
     private readonly Board[] mBoards;
 
-    // To send to clients for UX.
+    // Match info to send to clients for UX.
     private readonly List<SignalFromHost> mSignalsToSend = new List<SignalFromHost>();
 
     private static readonly int STARTING_HAND_COUNT = 3;
@@ -20,25 +20,24 @@ public class Match {
         if (messages == null) return;
         for (int i = 0; i < messages.Length; i++) {
             int[] message = messages[i];
-            SignalFromHost[] outcomeArr;
-            SignalFromClient signal = SignalFromClient.FromMessage(message);
-            switch (signal.ClientRequest) {
+            SignalFromHost[] outcomes;
+            SignalFromClient.Request request = (SignalFromClient.Request) message[0];
+            switch (request) {
                 case SignalFromClient.Request.CAST_SPELL:
                     Debug.Log("Cast Spell");
-                    SignalCastSpell signalCastSpell = signal as SignalCastSpell;
-                    outcomeArr = mBoards[signalCastSpell.BoardID].CastSpell(
-                        signalCastSpell, mBoards[signalCastSpell.BoardID]);
-                    if (outcomeArr != null) mSignalsToSend.AddRange(outcomeArr);
+                    SignalCastSpell signalCastSpell = new SignalCastSpell(message);
+                    outcomes = mBoards[signalCastSpell.BoardID].CastSpell(signalCastSpell);
+                    if (outcomes != null) mSignalsToSend.AddRange(outcomes);
                     break;
                 case SignalFromClient.Request.ADD_WAYPOINT:
                     Debug.Log("Add Waypoint");
-                    SignalAddWaypoint signalAddWaypoint = signal as SignalAddWaypoint;
-                    outcomeArr = mBoards[signalAddWaypoint.BoardID].AddWaypoint(signalAddWaypoint, true);
-                    if (outcomeArr != null) mSignalsToSend.AddRange(outcomeArr);
+                    SignalAddWaypoint signalAddWaypoint = new SignalAddWaypoint(message);
+                    outcomes = mBoards[signalAddWaypoint.BoardID].AddWaypoint(signalAddWaypoint, true);
+                    if (outcomes != null) mSignalsToSend.AddRange(outcomes);
                     break;
                 case SignalFromClient.Request.REMOVE_WAYPOINT:
                     Debug.Log("Remove Waypoint");
-                    SignalRemoveWaypoint signalRemoveWaypoint = signal as SignalRemoveWaypoint;
+                    SignalRemoveWaypoint signalRemoveWaypoint = new SignalRemoveWaypoint(message);
                     // outcomeArr = mBoards[signalRemoveWaypoint.BoardID].SetWaypoint(signalRemoveWaypoint, false);
                     // if (outcomeArr != null) mSignalsToSend.AddRange(outcomeArr);
                     break;

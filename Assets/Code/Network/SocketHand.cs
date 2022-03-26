@@ -109,10 +109,7 @@ public abstract class SocketHand {
     protected int SendMessages(Socket socket) {
         int count;
         lock (mThreadLocks[1]) {
-            foreach (Signal signal in mMessagesToSend) {
-                // Debug.Log("Signal set to send: " + signal);
-                socket.Send(signal);
-            }
+            foreach (Signal signal in mMessagesToSend) { socket.Send(signal); }
             count = mMessagesToSend.Count;
         }
         

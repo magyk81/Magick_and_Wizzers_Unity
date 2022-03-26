@@ -64,10 +64,8 @@ public class Host : SocketHand {
                 sm = SendMessages(mClientSockets[i]);
 
                 int rm = ReceiveMessages(mClientSockets[i]);
-                if (rm == 0) {
-                    /*Debug.Log(
-                        "Host received message from client #" + i + ".");*/
-                } else if (rm == -1) Terminate();
+                // If rm == 0, that means Host received message from this Client.
+                if (rm == -1) Terminate();
             }
             if (sm == 0) ClearMessagesToSend();
         }

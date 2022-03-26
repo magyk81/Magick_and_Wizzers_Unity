@@ -15,13 +15,30 @@ public class UX_Hand : MonoBehaviour
     [SerializeField]
     private RectTransform baseCard, cursor;
     private readonly UX_Card[] mCards = new UX_Card[MAX_HAND_CARDS];
-    private RectTransform mPlayCard;
+    // IDs of the last card that was selected and its caster.
+    private int mPlayCardID = -1, mCasterID = -1;
+    private RectTransform mPlayCardTran;
     private int mCursorIdx = 0, mCount = 0;
-    private UX_Piece mPiece;    
+    private UX_Piece mPiece;
     private float mCardWidth, mCardHeight;
     private RectTransform mTran, mCardParent;
     private Coord mCamDims;
     private bool mIsShown = false, mSetupDone = false;
+
+    public int PlayCardID {
+        get {
+            int temp = mPlayCardID;
+            mPlayCardID = -1;
+            return temp;
+        }
+    }
+    public int CasterID {
+        get {
+            int temp = mCasterID;
+            mCasterID = -1;
+            return temp;
+        }
+    }
 
     public void Show(UX_Piece piece) {
         if (mSetupDone && piece != null) {
@@ -62,7 +79,7 @@ public class UX_Hand : MonoBehaviour
 
             mCardParent.gameObject.SetActive(false);
             cursor.gameObject.SetActive(false);
-            if (hideAll) mPlayCard.gameObject.SetActive(false);
+            if (hideAll) mPlayCardTran.gameObject.SetActive(false);
             mIsShown = false;
         }
     }
@@ -108,16 +125,26 @@ public class UX_Hand : MonoBehaviour
         }
     }
 
-    public int[] Select() {
+    /// <returns>
+    /// Whether a card was selected.
+    /// </returns>
+    public bool Select() {
         if (mCursorIdx < mCount && mCursorIdx >= 0) {
             if (mPiece.Hand.Length >= 0) {
-                mPlayCard.gameObject.GetComponent<RawImage>().texture = mCards[mCursorIdx].Art;
-                mPlayCard.gameObject.SetActive(true);
-                return new int[] { mPiece.Hand[mCursorIdx].ID, mPiece.PieceID };
+                mPlayCardTran.gameObject.GetComponent<RawImage>().texture = mCards[mCursorIdx].Art;
+                mPlayCardTran.gameObject.SetActive(true);
+                Hide(false);
+                mPlayCardID = mPiece.Hand[mCursorIdx].ID;
+                mCasterID = mPiece.PieceID;
+                // return new int[] { mPiece.Hand[mCursorIdx].ID, mPiece.PieceID };
+                return true;
             }
-            else Debug.Log("Cannot select card because this hand is empty.");
+            // Hand is empty.
+            return false;
         }
-        return null;
+        // Cursor is out of bounds (why?)
+        Debug.LogError("CursorIdx: " + mCursorIdx + " is out of bounds (Count: " + mCount + ")");
+        return false;
     }
 
     private Coord GetCardPos(int idx) {
@@ -140,10 +167,10 @@ public class UX_Hand : MonoBehaviour
         mCardHeight = mCardWidth * CARD_DIM_RATIO;
 
         // Setup play-card visualization.
-        mPlayCard = Instantiate(baseCard, mTran).GetComponent<RectTransform>();
-        mPlayCard.sizeDelta = new Vector2(mCardWidth + CURSOR_THICKNESS, mCardHeight + CURSOR_THICKNESS);
-        mPlayCard.anchoredPosition = Coord._(0, (int) (mCamDims.Z - mCardHeight) / 2).ToVec2();
-        mPlayCard.gameObject.SetActive(false);
+        mPlayCardTran = Instantiate(baseCard, mTran).GetComponent<RectTransform>();
+        mPlayCardTran.sizeDelta = new Vector2(mCardWidth + CURSOR_THICKNESS, mCardHeight + CURSOR_THICKNESS);
+        mPlayCardTran.anchoredPosition = Coord._(0, (int) (mCamDims.Z - mCardHeight) / 2).ToVec2();
+        mPlayCardTran.gameObject.SetActive(false);
 
         // Setup parent for cards.
         GameObject cardParentObj = new GameObject();

@@ -29,7 +29,7 @@ public class Piece {
     public Piece(int playerID, int boardID, Coord tile, Card card) {
         ID = IdHandler.Create(GetType());
 
-        mName = card.Name;
+        if (card != null) mName = card.Name;
         mPlayerID = playerID;
         mBoardID = boardID;
         mPos = tile.Copy();
@@ -114,8 +114,8 @@ public class Piece {
         // Skipped a lot of steps here.
         mHand.Remove(card);
         return new SignalFromHost[] {
-            SignalFromHost.RemoveCard(ID, card.ID),
-            null // Indicates that piece should be added.
+            new SignalRemoveCard(ID, card.ID),
+            new SignalAddPiece(card.ID, board.ID, tile.X, tile.Z)
         };
     }
 
@@ -142,6 +142,6 @@ public class Piece {
     
     private SignalFromHost AddToHand(Card card) {
         mHand.Add(card);
-        return SignalFromHost.AddCard(ID, card.ID);
+        return new SignalAddCard(ID, card.ID);
     }
 }

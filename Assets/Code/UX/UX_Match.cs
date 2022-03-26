@@ -19,6 +19,7 @@ public class UX_Match : MonoBehaviour
     private UX_Board[][] mBoards;
     private Dictionary<int, int> mBoardWithPiece = new Dictionary<int, int>();
     private string[] mPlayerNames;
+    // User input info to send to host.
     private List<SignalFromClient> mSignalsToSend = new List<SignalFromClient>();
 
     public UX_Board[][] Boards { get { return mBoards; } }
@@ -35,37 +36,42 @@ public class UX_Match : MonoBehaviour
         if (messages == null) return;
         for (int i = 0; i < messages.Length; i++) {
             int[] message = messages[i];
-            SignalFromHost signal = SignalFromHost.FromMessage(message);
-            switch (signal.HostRequest) {
+            SignalFromHost.Request request = (SignalFromHost.Request) message[0];
+            switch (request) {
                 case SignalFromHost.Request.ADD_PIECE:
                     Debug.Log("Add Piece");
-                    signal = SignalFromHost.FromMessage(message);
-                    string pieceName = signal.PieceType == (int) Piece.Type.MASTER
-                        ? mPlayerNames[signal.PlayerID] : Card.friend_cards[signal.CardID].Name;
-                    UX_Board[] b = mBoards[signal.BoardID];
-                    UX_Piece real = b[0].AddPiece(signal, pieceName, mPlayers.Length);
+                    SignalAddPiece signalAddPiece = new SignalAddPiece(message);
+                    string pieceName = signalAddPiece.CardID >= 0
+                        ? Card.friend_cards[signalAddPiece.CardID].Name : mPlayerNames[signalAddPiece.PlayerOwnID];
+                    UX_Board[] boards = mBoards[signalAddPiece.BoardID];
+                    UX_Piece real = boards[0].AddPiece(signalAddPiece, pieceName, mPlayers.Length);
                     real.SetReal();
-                    for (int j = 1; j < b.Length; j++) {
-                        UX_Piece clone = b[j].AddPiece(signal, pieceName, mPlayers.Length);
+                    for (int j = 1; j < boards.Length; j++) {
+                        UX_Piece clone = boards[j].AddPiece(signalAddPiece, pieceName, mPlayers.Length);
                         real.AddClone(clone, j);
                     }
-                    mBoardWithPiece.Add(signal.PieceID, signal.BoardID);
+                    mBoardWithPiece.Add(signalAddPiece.PieceID, signalAddPiece.BoardID);
                     break;
                 case SignalFromHost.Request.ADD_CARD:
                     Debug.Log("Add Card");
-                    signal = SignalFromHost.FromMessage(message);
-                    foreach (UX_Board board in mBoards[mBoardWithPiece[signal.PieceID]]) { board.AddCard(signal); }
+                    SignalAddCard signalAddCard = new SignalAddCard(message);
+                    foreach (UX_Board board in mBoards[mBoardWithPiece[signalAddCard.HolderPieceID]]) {
+                        board.AddCard(signalAddCard);
+                    }
                     break;
                 case SignalFromHost.Request.REMOVE_CARD:
                     Debug.Log("Remove Card");
-                    signal = SignalFromHost.FromMessage(message);
-                    foreach (UX_Board board in mBoards[mBoardWithPiece[signal.PieceID]]) { board.RemoveCard(signal); }
+                    SignalRemoveCard signalRemoveCard = new SignalRemoveCard(message);
+                    foreach (UX_Board board in mBoards[mBoardWithPiece[signalRemoveCard.HolderPieceID]]) {
+                        board.RemoveCard(signalRemoveCard); }
                     break;
                 case SignalFromHost.Request.UPDATE_WAYPOINTS:
                     Debug.Log("Update Waypoints");
-                    UX_Board[] _boards = mBoards[mBoardWithPiece[signal.PieceID]];
-                    foreach (UX_Board board in _boards) { board.UpdateWaypoints(signal.PieceID, signal.Tiles); }
-                    Players[_boards[0].PlayerWithPiece(signal.PieceID)].ResetPotentialWaypoint();
+                    SignalUpdateWaypoints signalUpdateWaypoints = new SignalUpdateWaypoints(message);
+                    UX_Board[] _boards = mBoards[mBoardWithPiece[signalUpdateWaypoints.PieceID]];
+                    foreach (UX_Board board in _boards) {
+                        board.UpdateWaypoints(signalUpdateWaypoints.PieceID, signalUpdateWaypoints.WaypointData); }
+                    Players[_boards[0].PlayerWithPiece(signalUpdateWaypoints.PieceID)].ResetPotentialWaypoint();
                     break;
             }
         }

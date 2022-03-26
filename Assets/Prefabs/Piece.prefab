@@ -43,19 +43,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 534b9c9ba99a32a4db124bbe0931919f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  art_base: {fileID: 4383776630819813159, guid: 914126cb6f258e245b3b6952b6a8e8a1,
+  art: {fileID: 4383776630819813159, guid: 914126cb6f258e245b3b6952b6a8e8a1, type: 3}
+  frame: {fileID: 2701094569074659569, guid: f4fc0e0e2811e9346986934f282f31d3, type: 3}
+  attackBar: {fileID: 6872317259288723630, guid: b9f45fb05f2ed8e4aaf2a0f2fb1dfeb4,
     type: 3}
-  frame_base: {fileID: 2701094569074659569, guid: f4fc0e0e2811e9346986934f282f31d3,
+  defenseBar: {fileID: 6714814811274516638, guid: 88f3228c91fa261448be1ef939c25093,
     type: 3}
-  attackBar_base: {fileID: 6872317259288723630, guid: b9f45fb05f2ed8e4aaf2a0f2fb1dfeb4,
-    type: 3}
-  defenseBar_base: {fileID: 6714814811274516638, guid: 88f3228c91fa261448be1ef939c25093,
-    type: 3}
-  lifeBar_base: {fileID: 2378986910339619908, guid: f37c3ffe17191cd4e9e1b2a959158289,
-    type: 3}
-  hover_base: {fileID: 7077339156919134368, guid: f1c5f7bb35363f847aefe0179af9b403,
-    type: 3}
-  select_base: {fileID: 3213903544240107643, guid: 1e88ff8d062ee49478c844fc41174a4a,
-    type: 3}
-  target_base: {fileID: 957344586029925408, guid: 37822c39368f6444bbef57b85bb688c6,
-    type: 3}
+  lifeBar: {fileID: 2378986910339619908, guid: f37c3ffe17191cd4e9e1b2a959158289, type: 3}
+  hover: {fileID: 7077339156919134368, guid: f1c5f7bb35363f847aefe0179af9b403, type: 3}
+  select: {fileID: 3213903544240107643, guid: 1e88ff8d062ee49478c844fc41174a4a, type: 3}
+  target: {fileID: 957344586029925408, guid: 37822c39368f6444bbef57b85bb688c6, type: 3}
