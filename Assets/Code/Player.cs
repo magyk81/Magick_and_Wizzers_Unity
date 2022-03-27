@@ -4,19 +4,17 @@
  * Written by Robin Campos <magyk81@gmail.com>, year 2021.
  */
 
-public class Player
-{
+public class Player {
     public readonly int ID;
 
-    public readonly string NAME;
-    public readonly int CLIENT_ID;
-    public readonly bool IS_BOT;
-    public Player(string name, int clientID, bool isBot)
-    {
+    public readonly string Name;
+    public readonly int ClientID, LocalID;
+    public readonly bool IsBot;
+    public Player(string name, int clientID, bool isBot) {
         ID = IdHandler.Create(GetType());
 
-        NAME = name;
-        CLIENT_ID = clientID;
-        IS_BOT = isBot;
+        Name = name;
+        ClientID = clientID;
+        IsBot = isBot;
     }
 }

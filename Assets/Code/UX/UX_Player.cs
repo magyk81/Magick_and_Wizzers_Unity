@@ -37,7 +37,7 @@ public class UX_Player : MonoBehaviour
     private List<UX_Piece> mSelectedPieces = new List<UX_Piece>();
 
     private Mode mMode = Mode.PAUSE;
-    private int mPlayerID, mLocalPlayerIdx;
+    protected int mPlayerID, mLocalPlayerIdx;
 
     /// <returns>
     /// <c>True</c> if the mode has changed.
@@ -54,7 +54,7 @@ public class UX_Player : MonoBehaviour
     /// <summary>
     /// Called once before the match begins.
     /// </summary>
-    public void Init(int playerID, int localPlayerIdx, float[][] boardBounds, int quadSize) {
+    public virtual void Init(int playerID, int localPlayerIdx, float[][] boardBounds, int quadSize) {
         mPlayerID = playerID;
         mLocalPlayerIdx = localPlayerIdx;
 
@@ -147,7 +147,7 @@ public class UX_Player : MonoBehaviour
     }
 
     // Called once every frame.
-    private void Update() {
+    protected virtual void Update() {
         if (mMode == Mode.PLAIN || mMode == Mode.BOARD_SWITCH) {
             SetMode(GetTriggerCombo());
         } else if (mMode == Mode.WAYPOINT_TILE || mMode == Mode.WAYPOINT_PIECE) {
@@ -159,7 +159,7 @@ public class UX_Player : MonoBehaviour
         }
     }
 
-    public void QueryCamera() {
+    public virtual void QueryCamera() {
         if (mMode == Mode.PLAIN || mMode == Mode.WAYPOINT_PIECE || mMode == Mode.TARGET_PIECE) {
             UX_Piece detectedPiece = mCam.GetDetectedPiece();
             if (detectedPiece != null) {
@@ -203,7 +203,7 @@ public class UX_Player : MonoBehaviour
     }
 
     private bool holdingTriggerL = false, holdingTriggerR = false;
-    public SignalFromClient QueryGamepad()
+    public virtual SignalFromClient QueryGamepad()
     {
         SignalFromClient signal = null;
         int[] gamepadInput = mGamepad.PadInput;

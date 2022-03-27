@@ -5,15 +5,12 @@
  */
 
 public class Chunk {
-    private readonly int mSize;
+    public static int SIZE = 10;
     private readonly Coord mPos, mMinTile, mMaxTile;
 
-    public Chunk(Coord pos, int size) {
+    public Chunk(Coord pos) {
         mPos = pos;
-        mSize = size;
-        mMinTile = pos * size;
-        mMaxTile = pos * (size + 1);
+        mMinTile = pos * SIZE;
+        mMaxTile = pos * (SIZE + 1);
     }
-
-    public int Size { get => mSize; }
 }

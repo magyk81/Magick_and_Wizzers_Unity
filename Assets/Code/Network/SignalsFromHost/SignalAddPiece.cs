@@ -29,7 +29,7 @@ public class SignalAddPiece : SignalFromHost {
         int[] intMessage = new int[7];
         intMessage[0] = (int) Request.ADD_PIECE;
         intMessage[1] = piece.ID;
-        intMessage[2] = piece.Card.ID;
+        intMessage[2] = (piece.Card != null) ? piece.Card.ID : -1;
         intMessage[3] = piece.BoardID;
         intMessage[4] = piece.PlayerID;
         intMessage[5] = piece.Pos.X;

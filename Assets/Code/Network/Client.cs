@@ -4,11 +4,10 @@ using System.Threading;
 using UnityEngine;
 
 public class Client : SocketHand {
-    private int mId = -1;
+    public readonly int ID;
 
-    public Client(string ipAddress, int port, int id) : base(ipAddress, port) { mId = id; }
+    public Client(string ipAddress, int port, int id) : base(ipAddress, port) { ID = id; }
 
-    public int ID { get => mId; }
     public override void Terminate() {
         if (!mTerminating) {
             mTerminating = true;

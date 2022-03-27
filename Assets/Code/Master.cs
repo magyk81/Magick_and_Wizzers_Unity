@@ -12,7 +12,7 @@ public class Master : Piece {
     public Master(Player player, int boardID, Coord tile, Texture art)
         : base(player.ID, boardID, tile, null) {
 
-        mName = player.NAME;
+        mName = player.Name;
         mPieceType = Type.MASTER;
         mArt = art;
 

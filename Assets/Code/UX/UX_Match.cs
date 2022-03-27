@@ -6,22 +6,27 @@
 
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class UX_Match : MonoBehaviour
 {
+    private int mClientID = -1;
+
     [SerializeField]
     private UX_Player basePlayer;
+    [SerializeField]
+    private UX_Bot basePlayerBot;
     [SerializeField]
     private UX_Board baseBoard;
 
     private UX_Player[] mPlayers;
     private UX_Board[][] mBoards;
     private Dictionary<int, int> mBoardWithPiece = new Dictionary<int, int>();
-    private string[] mPlayerNames;
     // User input info to send to host.
     private List<SignalFromClient> mSignalsToSend = new List<SignalFromClient>();
 
+    public int ClientID { set { if (mClientID < 0) mClientID = value; } }
     public UX_Board[][] Boards { get { return mBoards; } }
     public UX_Player[] Players { get { return mPlayers; } }
     public SignalFromClient[] SignalsToSend {
@@ -37,12 +42,17 @@ public class UX_Match : MonoBehaviour
         for (int i = 0; i < messages.Length; i++) {
             int[] message = messages[i];
             SignalFromHost.Request request = (SignalFromHost.Request) message[0];
+            PrintReceivedMessage(request);
             switch (request) {
+                case SignalFromHost.Request.INIT:
+                    Init(new SignalInit(message));
+                    mSignalsToSend.Add(new SignalInitFinished());
+                    break;
                 case SignalFromHost.Request.ADD_PIECE:
-                    Debug.Log("Add Piece");
                     SignalAddPiece signalAddPiece = new SignalAddPiece(message);
-                    string pieceName = signalAddPiece.CardID >= 0
-                        ? Card.friend_cards[signalAddPiece.CardID].Name : mPlayerNames[signalAddPiece.PlayerOwnID];
+                    string pieceName = (signalAddPiece.CardID >= 0)
+                        ? Card.friend_cards[signalAddPiece.CardID].Name
+                        : mPlayers[signalAddPiece.PlayerOwnID].gameObject.name;
                     UX_Board[] boards = mBoards[signalAddPiece.BoardID];
                     UX_Piece real = boards[0].AddPiece(signalAddPiece, pieceName, mPlayers.Length);
                     real.SetReal();
@@ -53,24 +63,23 @@ public class UX_Match : MonoBehaviour
                     mBoardWithPiece.Add(signalAddPiece.PieceID, signalAddPiece.BoardID);
                     break;
                 case SignalFromHost.Request.ADD_CARD:
-                    Debug.Log("Add Card");
                     SignalAddCard signalAddCard = new SignalAddCard(message);
                     foreach (UX_Board board in mBoards[mBoardWithPiece[signalAddCard.HolderPieceID]]) {
                         board.AddCard(signalAddCard);
                     }
                     break;
                 case SignalFromHost.Request.REMOVE_CARD:
-                    Debug.Log("Remove Card");
                     SignalRemoveCard signalRemoveCard = new SignalRemoveCard(message);
                     foreach (UX_Board board in mBoards[mBoardWithPiece[signalRemoveCard.HolderPieceID]]) {
-                        board.RemoveCard(signalRemoveCard); }
+                        board.RemoveCard(signalRemoveCard);
+                    }
                     break;
                 case SignalFromHost.Request.UPDATE_WAYPOINTS:
-                    Debug.Log("Update Waypoints");
                     SignalUpdateWaypoints signalUpdateWaypoints = new SignalUpdateWaypoints(message);
                     UX_Board[] _boards = mBoards[mBoardWithPiece[signalUpdateWaypoints.PieceID]];
                     foreach (UX_Board board in _boards) {
-                        board.UpdateWaypoints(signalUpdateWaypoints.PieceID, signalUpdateWaypoints.WaypointData); }
+                        board.UpdateWaypoints(signalUpdateWaypoints.PieceID, signalUpdateWaypoints.WaypointData);
+                    }
                     Players[_boards[0].PlayerWithPiece(signalUpdateWaypoints.PieceID)].ResetPotentialWaypoint();
                     break;
             }
@@ -78,58 +87,62 @@ public class UX_Match : MonoBehaviour
     }
 
     /// <summary>
-    /// Called once before the match begins.
+    /// Called once at the beginning of the match when the INIT signal is received.
     /// </summary>
-    public void Init(int[] localPlayerIDs, string[] playerNames, int[][] boardData, int chunkSize) {
+    private void Init(SignalInit signal) {
+        /* Which players are local to this machine.
+         * Note: Bots are always on the host machine. If this is the host machine, then they count as local,
+         * but they use UX_Bot instead of UX_Player. */
+        Dictionary<int, int> localToID = new Dictionary<int, int>();
+        int localPlayerCount = 0;
+        for (int i = 0; i < signal.PlayerCount; i++) {
+            // It's local to this machine.
+            if (signal.PlayerClientIDs[i] == mClientID) {
+                localToID.Add(localPlayerCount++, i);
+            }
+        }
+
         // Prep uxBoard bounds.
-        float[][] boardBounds = new float[boardData.Length][];
+        float[][] boardBounds = new float[signal.BoardCount][];
 
         // Generate uxBoards.
         Transform boardGroup = new GameObject().GetComponent<Transform>();
         boardGroup.gameObject.name = "Boards";
-        mBoards = new UX_Board[boardData.Length][];
+        mBoards = new UX_Board[signal.BoardCount][];
         for (int i = 0; i < mBoards.Length; i++) {
-            // Get name from boardData's char array.
-            char[] boardDataChars = new char[boardData[i][3]];
-            for (int j = 0; j < boardData[i][3]; j++) { boardDataChars[j] = (char) boardData[i][j + 4]; }
-
             // 1 real uxBoard + 8 clone uxBoards
             mBoards[i] = new UX_Board[9];
             Transform boardParent = new GameObject().GetComponent<Transform>();
             boardParent.parent = boardGroup;
-            boardParent.gameObject.name = new string(boardDataChars);
+            // Get name from boardData's char array.
+            boardParent.gameObject.name = signal.BoardNames[i];
             boardParent.gameObject.SetActive(true);
-
-            int boardTotalSize = boardData[i][2] * chunkSize;
 
             for (int j = 0; j < mBoards[i].Length; j++) {
                 mBoards[i][j] = Instantiate(baseBoard.gameObject,boardParent).GetComponent<UX_Board>();
-                if (j == 0) {
-                    mBoards[i][j].gameObject.name = "Board - Real";
-                    mBoards[i][j].Init(boardData[i][2], boardTotalSize,localPlayerIDs.Length, i);
-                    boardBounds[i] = mBoards[i][j].GetBounds();
-                } else {
-                    mBoards[i][j].gameObject.name = "Board - Clone " + Util.DirToString(j - 1);
-                    mBoards[i][j].Init(
-                        boardData[i][2], boardTotalSize, localPlayerIDs.Length, i, j - 1, mBoards[i][0]);
-                }
+                mBoards[i][j].gameObject.name = "Clone" + Util.DirToString(j - 1);
+                mBoards[i][j].Init(signal.BoardSizes[i], localPlayerCount, i, j, (j == 0) ? null : mBoards[i][0]);
+                boardBounds[i] = mBoards[i][j].GetBounds();
             }
         }
 
         // Generate uxPlayers.
-        mPlayers = new UX_Player[localPlayerIDs.Length];
+        mPlayers = new UX_Player[localPlayerCount];
         Transform playerGroup = new GameObject().GetComponent<Transform>();
         playerGroup.gameObject.name = "Players";
-        for (int i = 0; i < localPlayerIDs.Length; i++) {
-            mPlayers[i] = Instantiate(basePlayer.gameObject, playerGroup).GetComponent<UX_Player>();
-            mPlayers[i].gameObject.name = playerNames[localPlayerIDs[i]];
+        for (int i = 0; i < localPlayerCount; i++) {
+            int playerID = localToID[i];
+            if (signal.PlayerIsBot[playerID])
+                mPlayers[i] = Instantiate(basePlayerBot.gameObject, playerGroup).GetComponent<UX_Bot>();
+            else mPlayers[i] = Instantiate(basePlayer.gameObject, playerGroup).GetComponent<UX_Player>();
+            mPlayers[i].gameObject.name = signal.PlayerNames[playerID];
             mPlayers[i].gameObject.SetActive(true);
-            mPlayers[i].Init(localPlayerIDs[i], i, boardBounds, chunkSize / 2);
+            mPlayers[i].Init(playerID, i, boardBounds, Chunk.SIZE / 2);
         }
+    }
 
-        // Store all player names.
-        mPlayerNames = new string[playerNames.Length];
-        playerNames.CopyTo(mPlayerNames, 0);
+    private static void PrintReceivedMessage(SignalFromHost.Request request) {
+        Debug.Log("Client received: \"" + Util.ToTitleCase(request.ToString()) + "\"");
     }
 
     private void Update() {

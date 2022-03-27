@@ -25,14 +25,14 @@ public class UX_Board : MonoBehaviour {
     /// <summary>
     /// Called once before the match begins.
     /// </summary>
-    public void Init(int size, int totalSize, int layerCount, int boardID, int cloneIdx = -1,
-        UX_Board realBoard = null) {
+    public void Init(int size, int layerCount, int boardID, int cloneIdx, UX_Board realBoard) {
 
         mBoardID = boardID;
 
         int i0 = 0, j0 = 0, iEnd = size, jEnd = size;
         int cloneOffsetX = 0, cloneOffsetZ = 0,
             apartOffset = boardID * distBetweenBoards;
+        int totalSize = size * Chunk.SIZE;
         if (cloneIdx >= 0) {
             if (cloneLength <= 0 || cloneLength > size) cloneLength = size;
             if (cloneIdx == Util.UP || cloneIdx == Util.UP_LEFT || cloneIdx == Util.UP_RIGHT) {
@@ -92,7 +92,7 @@ public class UX_Board : MonoBehaviour {
                         chunkTiles[tilePos.X - (i * chunkSize), tilePos.Z - (j * chunkSize)] =
                             mTiles[tilePos.X, tilePos.Z];
                         
-                        if (cloneIdx != -1)
+                        if (cloneIdx > 0)
                             realBoard.mTiles[tilePos.X, tilePos.Z].SetClone(mTiles[tilePos.X, tilePos.Z], cloneIdx);
                     }
                 }

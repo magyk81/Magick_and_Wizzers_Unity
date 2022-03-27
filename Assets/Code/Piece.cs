@@ -142,6 +142,6 @@ public class Piece {
     
     private SignalFromHost AddToHand(Card card) {
         mHand.Add(card);
-        return new SignalAddCard(ID, card.ID);
+        return new SignalAddCard(this, card);
     }
 }

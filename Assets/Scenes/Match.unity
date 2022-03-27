@@ -247,6 +247,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   basePlayer: {fileID: 7743981988738146678, guid: 8ef158308f394ce448cd1e26f8692c4f,
     type: 3}
+  basePlayerBot: {fileID: 6837143279832479054, guid: ab476d432f9aa024bafd265bfc305205,
+    type: 3}
   baseBoard: {fileID: 6345560144068134734, guid: a794ac3af805cb24fac343af49cae0c7,
     type: 3}
 --- !u!1 &1689628969

@@ -4,11 +4,14 @@
  * Written by Robin Campos <magyk81@gmail.com>, year 2021.
  */
 
+using System.Globalization;
 using UnityEngine;
 
 public class Util {
     public static readonly int UP = 0, RIGHT = 1, DOWN = 2, LEFT = 3,
         UP_RIGHT = 4, UP_LEFT = 5, DOWN_RIGHT = 6, DOWN_LEFT = 7;
+    
+    private static readonly TextInfo TEXT_INFO = new CultureInfo("en-US", false).TextInfo;
     
     public static string DirToString(int dir) {
         if (dir == 0) return "UP";
@@ -84,5 +87,9 @@ public class Util {
         dists[Util.DOWN] *= -1;
         dists[Util.LEFT] *= -1;
         return dists;
+    }
+
+    public static string ToTitleCase(string str) {
+        return TEXT_INFO.ToTitleCase(str.Replace('_', ' ').ToLower());
     }
 }

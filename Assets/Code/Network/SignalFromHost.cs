@@ -4,11 +4,9 @@
  * Written by Robin Campos <magyk81@gmail.com>, year 2021.
  */
 
-using System;
-
 public abstract class SignalFromHost : Signal {
     // Each enum value corresponds to one of the signal classes that extends this class.
-    public enum Request { SET_CHUNK_SIZE, ADD_PLAYER, ADD_BOARD, ADD_PIECE, REMOVE_PIECE, MOVE_PIECE, ADD_CARD,
+    public enum Request { INIT, ADD_PIECE, REMOVE_PIECE, MOVE_PIECE, ADD_CARD,
         REMOVE_CARD, UPDATE_WAYPOINTS }
     
     protected static int OVERHEAD_LEN = 1;

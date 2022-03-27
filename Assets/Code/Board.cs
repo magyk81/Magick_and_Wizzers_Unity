@@ -18,15 +18,15 @@ public class Board {
     private readonly List<Piece> mPieces = new List<Piece>();
     private readonly Dictionary<int, Piece> mIdToPiece = new Dictionary<int, Piece>();
 
-    public Board(string name, int size, int chunkSize) {
+    public Board(string name, int size) {
         ID = IdHandler.Create(GetType());
         mName = name;
         mSize = size;
-        mTotalSize = size * chunkSize;
+        mTotalSize = size * Chunk.SIZE;
         mChunks = new Chunk[size, size];
         for (int i = 0; i < size; i++) {
             for (int j = 0; j < size; j++) {
-                mChunks[i, j] = new Chunk(Coord._(i, j), chunkSize);
+                mChunks[i, j] = new Chunk(Coord._(i, j));
             }
         }
     }
@@ -56,7 +56,7 @@ public class Board {
             players.Length * (startingHandCount + 1)];
         for (int i = 0; i < players.Length; i++) {
             Texture masterTex = Resources.Load<Texture>(
-                "Textures/Debug_Card_Art/Master_" + players[i].NAME);
+                "Textures/Debug_Card_Art/Master_" + players[i].Name);
 
             int signalIdx = i * (startingHandCount + 1);
 
@@ -78,8 +78,7 @@ public class Board {
     /// The chunk that the tile belongs to.
     /// </returns>
     public Coord TileToChunk(Coord tile) {
-        int chunkSize = mChunks[0, 0].Size;
-        return Coord._(tile.X / chunkSize, tile.Z / chunkSize);
+        return Coord._(tile.X / Chunk.SIZE, tile.Z / Chunk.SIZE);
     }
 
     private SignalFromHost AddPiece(Piece piece) {

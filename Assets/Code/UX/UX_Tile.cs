@@ -23,7 +23,7 @@ public class UX_Tile {
         // Set physical position.
         float x = pos.X + 0.5F + apartOffset, z = pos.Z + 0.5F;
 
-        if (cloneIdx >= 0) {
+        if (cloneIdx > 0) {
             if (cloneIdx == Util.UP || cloneIdx == Util.UP_RIGHT || cloneIdx == Util.UP_LEFT)
                 z += boardTotalSize;
             if (cloneIdx == Util.DOWN || cloneIdx == Util.DOWN_RIGHT || cloneIdx == Util.DOWN_LEFT)
@@ -51,7 +51,7 @@ public class UX_Tile {
     public void SetClone(UX_Tile tileClone, int cloneIdx) {
         tileClone.real = this;
 
-        uxPosAll[cloneIdx + 1] = new Vector3(tileClone.mUxPos.x, LIFT_DIST, tileClone.mUxPos.z);
+        uxPosAll[cloneIdx] = new Vector3(tileClone.mUxPos.x, LIFT_DIST, tileClone.mUxPos.z);
     }
 
     public static implicit operator Coord(UX_Tile t) => t.mPos.Copy();
