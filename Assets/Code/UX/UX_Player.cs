@@ -12,6 +12,8 @@ public class UX_Player : MonoBehaviour
 {
     public enum Mode { PLAIN, WAYPOINT_PIECE, WAYPOINT_TILE, TARGET_PIECE, TARGET_CHUNK, TARGET_TILE, BOARD_SWITCH,
         HAND, DETAIL, SURRENDER, PAUSE }
+    
+    protected int mPlayerID, mLocalPlayerIdx;
 
     [SerializeField]
     CameraScript baseCam;
@@ -32,12 +34,38 @@ public class UX_Player : MonoBehaviour
     private UX_Waypoint[] mPotentialWaypoint;
     private Gamepad mGamepad;
     private int mHoveredWaypoint, mHoveredWaypointMax;
+    private bool holdingTriggerL = false, holdingTriggerR = false;
     private UX_Piece mHoveredPiece;
     private UX_Tile mHoveredTile;
     private List<UX_Piece> mSelectedPieces = new List<UX_Piece>();
 
     private Mode mMode = Mode.PAUSE;
-    protected int mPlayerID, mLocalPlayerIdx;
+
+    public int BoardID { get => mCam.BoardID; }
+    public UX_Piece HoveredPiece {
+        set {
+            if (mHoveredPiece != null && (value == null || value.PieceID != mHoveredPiece.PieceID))
+                mHoveredPiece.Unhover(mLocalPlayerIdx);
+            
+            mHoveredPiece = value;
+            if (value != null) mHoveredPiece.Hover(mLocalPlayerIdx);
+        }
+    }
+    public UX_Tile HoveredTile {
+        set {
+            if (value != null && (mHoveredTile == null || mHoveredTile.Pos != value.Pos)) {
+                // Hovered tile should never be set to null. It does start as null though.
+                mHoveredTile = value;
+
+                // Show that tile is hovered.
+                Vector3[] tileHoverPos = mHoveredTile.UX_PosAll;
+                for (int i = 0; i < mTileHover.Length; i++) {
+                    mTileHover[i].gameObject.SetActive(true);
+                    mTileHover[i].localPosition = tileHoverPos[i];
+                }
+            }
+        }
+    }
 
     /// <returns>
     /// <c>True</c> if the mode has changed.
@@ -96,7 +124,7 @@ public class UX_Player : MonoBehaviour
         // Generate visualizations.
         mTileHover = new Transform[9];
         for (int i = 0; i < 9; i++) {
-            mTileHover[i] = Instantiate(baseTileHover.gameObject,tileVisParent).GetComponent<Transform>();
+            mTileHover[i] = Instantiate(baseTileHover.gameObject, tileVisParent).GetComponent<Transform>();
             mTileHover[i].gameObject.layer = UX_Tile.LAYER + localPlayerIdx;
             mTileHover[i].gameObject.name = "Tile Hover";
             mTileHover[i].gameObject.SetActive(false);
@@ -159,52 +187,9 @@ public class UX_Player : MonoBehaviour
         }
     }
 
-    public virtual void QueryCamera() {
-        if (mMode == Mode.PLAIN || mMode == Mode.WAYPOINT_PIECE || mMode == Mode.TARGET_PIECE) {
-            UX_Piece detectedPiece = mCam.GetDetectedPiece();
-            if (detectedPiece != null) {
-                if (mHoveredPiece == null || mHoveredPiece.PieceID != detectedPiece.PieceID) {
-                    if (mHoveredPiece != null) mHoveredPiece.Unhover(mLocalPlayerIdx);
-                    mHoveredPiece = detectedPiece;
+    public float[][] QueryRays() { return mCam.RayHitPoints; }
 
-                    // Show that piece is hovered.
-                    mHoveredPiece.Hover(mLocalPlayerIdx);
-
-                    // UpdateWaypointDisplay();
-                }
-            } else if (mHoveredPiece != null) {
-                // Show that piece is unhovered.
-                mHoveredPiece.Unhover(mLocalPlayerIdx);
-                mHoveredPiece = null;
-
-                // UpdateWaypointDisplay();
-            }
-        }
-
-        if (mMode == Mode.TARGET_TILE || mMode == Mode.WAYPOINT_TILE) {
-            UX_Tile detectedTile = mCam.GetDetectedTile();
-            if (detectedTile != null) {
-                if (mHoveredTile == null || mHoveredTile.Pos != detectedTile.Pos) {
-                    mHoveredTile = detectedTile;
-
-                    // Show that tile is hovered.
-                    Vector3[] tileHoverPos = mHoveredTile.UX_PosAll;
-                    for (int i = 0; i < mTileHover.Length; i++) {
-                        mTileHover[i].gameObject.SetActive(true);
-                        mTileHover[i].localPosition = tileHoverPos[i];
-                    }
-
-                    // UpdateWaypointDisplay();
-                }
-            }
-        }
-
-        // UpdateWaypointDisplay();
-    }
-
-    private bool holdingTriggerL = false, holdingTriggerR = false;
-    public virtual SignalFromClient QueryGamepad()
-    {
+    public SignalFromClient QueryGamepad() {
         SignalFromClient signal = null;
         int[] gamepadInput = mGamepad.PadInput;
 

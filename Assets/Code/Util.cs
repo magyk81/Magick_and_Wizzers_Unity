@@ -9,7 +9,7 @@ using UnityEngine;
 
 public class Util {
     public static readonly int UP = 0, RIGHT = 1, DOWN = 2, LEFT = 3,
-        UP_RIGHT = 4, UP_LEFT = 5, DOWN_RIGHT = 6, DOWN_LEFT = 7;
+        UP_RIGHT = 4, UP_LEFT = 5, DOWN_RIGHT = 6, DOWN_LEFT = 7, COUNT = 8;
     
     private static readonly TextInfo TEXT_INFO = new CultureInfo("en-US", false).TextInfo;
     

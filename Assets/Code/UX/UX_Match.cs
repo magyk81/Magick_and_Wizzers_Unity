@@ -122,7 +122,7 @@ public class UX_Match : MonoBehaviour
                 mBoards[i][j] = Instantiate(baseBoard.gameObject,boardParent).GetComponent<UX_Board>();
                 mBoards[i][j].gameObject.name = "Clone" + Util.DirToString(j - 1);
                 mBoards[i][j].Init(signal.BoardSizes[i], localPlayerCount, i, j, (j == 0) ? null : mBoards[i][0]);
-                boardBounds[i] = mBoards[i][j].GetBounds();
+                boardBounds[i] = mBoards[i][j].Bounds;
             }
         }
 
@@ -148,9 +148,14 @@ public class UX_Match : MonoBehaviour
     private void Update() {
         if (mPlayers != null) {
             foreach (UX_Player player in mPlayers) {
-                player.QueryCamera();
-                SignalFromClient signal = player.QueryGamepad();
-                if (signal != null) mSignalsToSend.Add(signal);
+                if (!(player is UX_Bot)) {
+                    float[][] rayPoints = player.QueryRays();
+                    player.HoveredTile = mBoards[player.BoardID][0].GetHoveredTile(rayPoints[Util.COUNT + 1]);
+                    player.HoveredPiece = mBoards[player.BoardID][0].GetHoveredPiece(
+                        rayPoints.Take(Util.COUNT + 1).ToArray());
+                    SignalFromClient signal = player.QueryGamepad();
+                    if (signal != null) mSignalsToSend.Add(signal);
+                }
             }
         }
     }

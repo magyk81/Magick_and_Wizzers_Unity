@@ -22,17 +22,21 @@ public class SignalAddWaypoint : SignalFromClient {
     /// <remarks>
     /// Used by client to get ready to send.
     /// </remarks>
-    public SignalAddWaypoint(int actingPlayerID, int boardID, int orderPlace, int[] pieceIDs) : this(
-        ClientInfoToIntMessage(actingPlayerID, boardID, orderPlace, pieceIDs)) { }
+    public SignalAddWaypoint(int actingPlayerID, Coord targetTile, int boardID, int orderPlace, int[] pieceIDs) : this(
+        ClientInfoToIntMessage(actingPlayerID, targetTile, boardID, orderPlace, pieceIDs)) { }
 
-    private static int[] ClientInfoToIntMessage(int actingPlayerID, int boardID, int orderPlace, int[] pieceIDs) {
-        int nonArrCount = 4;
+    private static int[] ClientInfoToIntMessage(
+        int actingPlayerID, Coord targetTile, int boardID, int orderPlace, int[] pieceIDs) {
+
+        int nonArrCount = 6;
         int[] intMessage = new int[nonArrCount + pieceIDs.Length];
 
-        intMessage[0] = (int) Request.REMOVE_WAYPOINT;
+        intMessage[0] = (int) Request.ADD_WAYPOINT;
         intMessage[1] = actingPlayerID;
-        intMessage[2] = boardID;
-        intMessage[3] = orderPlace;
+        intMessage[2] = targetTile.X;
+        intMessage[3] = targetTile.Z;
+        intMessage[4] = boardID;
+        intMessage[5] = orderPlace;
         pieceIDs.CopyTo(intMessage, nonArrCount);
 
         return intMessage;

@@ -7,6 +7,8 @@
 using UnityEngine;
 
 public class UX_Tile {
+    public readonly static float LIFT_DIST = 0.05F;
+
     private readonly Coord mPos;
     private readonly Vector3 mUxPos;
     private Vector3[] uxPosAll = null;
@@ -14,7 +16,6 @@ public class UX_Tile {
     private readonly int mBoardID;
 
     public readonly static int LAYER = 10;
-    private readonly static float LIFT_DIST = 0.05F;
 
     public UX_Tile(Coord pos, int boardTotalSize, int apartOffset, int cloneIdx, int boardID) {
         mPos = pos.Copy();
@@ -53,6 +54,8 @@ public class UX_Tile {
 
         uxPosAll[cloneIdx] = new Vector3(tileClone.mUxPos.x, LIFT_DIST, tileClone.mUxPos.z);
     }
+
+    public override string ToString() { return Pos.ToString(); }
 
     public static implicit operator Coord(UX_Tile t) => t.mPos.Copy();
 }

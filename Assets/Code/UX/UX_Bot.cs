@@ -7,8 +7,6 @@ public class UX_Bot : UX_Player {
         mPlayerID = playerID;
         mLocalPlayerIdx = localPlayerIdx;
     }
-    public override void QueryCamera() { }
-    public override SignalFromClient QueryGamepad() { return null; }
 
     protected override void Update() {
         // Nothing

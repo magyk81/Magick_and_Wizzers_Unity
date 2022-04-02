@@ -138,11 +138,15 @@ public class Board {
         Piece caster = mIdToPiece[signal.CasterID];
         if (signal.ActingPlayerID == caster.PlayerID) {
             Card playCard = Card.friend_cards[signal.PlayCardID];
-            SignalFromHost[] signals = caster.CastSpell(playCard, this, signal.Tile);
-            for (int i = 0; i < signals.Length; i++) {
-                if (signals[i] == null) { signals[i] = AddPiece(new Piece(caster.ID, ID, signal.Tile, playCard)); }
+
+            SignalRemoveCard signalRemoveCard = caster.CastSpell(playCard);
+            if (signalRemoveCard != null) {
+                // If the spell resolved, return SignalRemoveCard and SignalAddPiece.
+                return new SignalFromHost[] {
+                    signalRemoveCard,
+                    AddPiece(new Piece(caster.ID, ID, signal.Tile, playCard))
+                };
             }
-            return signals;
         }
         return null;
     }

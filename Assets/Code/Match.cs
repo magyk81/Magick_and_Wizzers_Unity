@@ -20,7 +20,7 @@ public class Match {
         if (messages == null) return;
         for (int i = 0; i < messages.Length; i++) {
             int[] message = messages[i];
-            SignalFromHost[] outcomes;
+            SignalFromHost[] outcomes = null;
             SignalFromClient.Request request = (SignalFromClient.Request) message[0];
             PrintReceivedMessage(request);
             switch (request) {
@@ -30,12 +30,10 @@ public class Match {
                 case SignalFromClient.Request.CAST_SPELL:
                     SignalCastSpell signalCastSpell = new SignalCastSpell(message);
                     outcomes = mBoards[signalCastSpell.BoardID].CastSpell(signalCastSpell);
-                    if (outcomes != null) mSignalsToSend.AddRange(outcomes);
                     break;
                 case SignalFromClient.Request.ADD_WAYPOINT:
                     SignalAddWaypoint signalAddWaypoint = new SignalAddWaypoint(message);
                     outcomes = mBoards[signalAddWaypoint.BoardID].AddWaypoint(signalAddWaypoint, true);
-                    if (outcomes != null) mSignalsToSend.AddRange(outcomes);
                     break;
                 case SignalFromClient.Request.REMOVE_WAYPOINT:
                     SignalRemoveWaypoint signalRemoveWaypoint = new SignalRemoveWaypoint(message);
@@ -43,6 +41,7 @@ public class Match {
                     // if (outcomeArr != null) mSignalsToSend.AddRange(outcomeArr);
                     break;
             }
+            if (outcomes != null) mSignalsToSend.AddRange(outcomes);
         }
     }
 

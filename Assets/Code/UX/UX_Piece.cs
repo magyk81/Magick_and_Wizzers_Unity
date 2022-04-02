@@ -9,7 +9,7 @@ using UnityEngine;
 
 public class UX_Piece : MonoBehaviour
 {
-    private readonly static float LIFT_DIST = 0.1F;
+    public readonly static float LIFT_DIST = 0.1F;
     public readonly static int LAYER = 6;
 
     private enum Part {ART, FRAME, ATTACK, DEFENSE, LIFE, HOVER, SELECT, TARGET, COUNT };
@@ -26,6 +26,11 @@ public class UX_Piece : MonoBehaviour
     private UX_Piece mReal = null;
     private UX_Piece[] mUxAll = null;
     private List<int> mHand = new List<int>();
+    private Coord mPosPrev, mPosNext;
+    private float mPosLerp;
+    private int mSize = 1;
+    private float[] mBounds = new float[4];
+    private int mPieceID, mBoardID, mPlayerID;
 
     public UX_Piece[] UX_All {
         get {
@@ -33,8 +38,8 @@ public class UX_Piece : MonoBehaviour
             return mUxAll;
         }
     }
-    public UX_Tile[] WaypointTiles { get { return mWaypointTiles; } }
-    public UX_Piece[] WaypointPieces { get { return mWaypointPieces; } }
+    public UX_Tile[] WaypointTiles { get => mWaypointTiles; }
+    public UX_Piece[] WaypointPieces { get => mWaypointPieces; }
     public Card[] Hand {
         get {
             Card[] hand = new Card[mHand.Count];
@@ -43,16 +48,16 @@ public class UX_Piece : MonoBehaviour
         }
     }
 
-    private int pieceID; public int PieceID { get { return pieceID; } }
-    private int boardID; public int BoardID { get { return boardID; } }
-    private int playerID; public int PlayerID { get { return playerID; } }    
+    public int PieceID { get => mPieceID; }
+    public int BoardID { get => mBoardID; }
+    public int PlayerID { get => mPlayerID; }
 
     /// <summary>
     /// Called once before the match begins.
     /// </summary>
     public void Init(SignalAddPiece signal, string pieceName, int layerCount) {
-        pieceID = signal.PieceID;
-        boardID = signal.BoardID;
+        mPieceID = signal.PieceID;
+        mBoardID = signal.BoardID;
         mUxAll = new UX_Piece[9];
 
         mTran = GetComponent<Transform>();
@@ -148,6 +153,10 @@ public class UX_Piece : MonoBehaviour
             Vector3 pos = Vector3.Lerp(a.UX_Pos, b.UX_Pos, lerp);
             mTran.localPosition = new Vector3(pos.x, LIFT_DIST, pos.z);
             gameObject.SetActive(true);
+
+            mPosPrev = a.Pos; mPosNext = b.Pos; mPosLerp = lerp;
+            mBounds[0] = mPosPrev.X + ((lerp - 1) * mSize); mBounds[1] = mPosPrev.X + (lerp * mSize);
+            mBounds[2] = mPosPrev.Z + ((lerp - 1) * mSize); mBounds[3] = mPosPrev.Z + (lerp * mSize);
         }
     }
 
@@ -200,8 +209,11 @@ public class UX_Piece : MonoBehaviour
     }
 
     public void AddCard(int cardID) { mHand.Add(cardID); }
-
     public void RemoveCard(int cardID) { mHand.Remove(cardID); }
+
+    public bool Contains(float x, float z) {
+        return mBounds[0] < x && mBounds[1] > x && mBounds[2] < z && mBounds[3] > z;
+    }
 
     private void SetActive(GameObject[] obj, bool active) {
         if (obj != null) { for (int i = 0; i < obj.Length; i++) { obj[i].SetActive(active); } }

@@ -110,13 +110,16 @@ public class Piece {
 
     public void RemoveFromHand(Card card) { mHand.Remove(card); }
 
-    public SignalFromHost[] CastSpell(Card card, Board board, Coord tile) {
+    /// <returns>
+    /// SignalRemoveCardd object if the card get successfully removed from the holder piece's hand.
+    /// </returns>
+    public SignalRemoveCard CastSpell(Card card) {
         // Skipped a lot of steps here.
-        mHand.Remove(card);
-        return new SignalFromHost[] {
-            new SignalRemoveCard(ID, card.ID),
-            new SignalAddPiece(card.ID, board.ID, tile.X, tile.Z)
-        };
+
+        /* Remove function returns true if removal was successful, false otherwise. Signals the board to resolve
+         * the spell if a SignalRemoveCard gets returned. */
+        if (mHand.Remove(card)) { return new SignalRemoveCard(this, card); }
+        return null;
     }
 
     /// <summary>
