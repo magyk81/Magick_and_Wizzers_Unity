@@ -15,8 +15,4 @@ public class CardSummon : Card {
         mAttackPoints = attackPoints;
         mDefensePoints = defensePoints;
     }
-
-    public override UX_Player.Mode GetPlayMode() {
-        return UX_Player.Mode.TARGET_TILE;
-    }
 }

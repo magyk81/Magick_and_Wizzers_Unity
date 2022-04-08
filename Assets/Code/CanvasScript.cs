@@ -14,32 +14,6 @@ public class CanvasScript : MonoBehaviour {
     public RectTransform Reticle { get { return reticle; } }
     public RectTransform DarkScreen { get { return darkScreen; } }
 
-    public UX_Player.Mode Mode {
-        set {
-            if (value == UX_Player.Mode.PLAIN
-                || value == UX_Player.Mode.WAYPOINT_PIECE
-                || value == UX_Player.Mode.TARGET_PIECE) {
-                reticle.gameObject.SetActive(true);
-                crosshair.gameObject.SetActive(false);
-            } else if (value == UX_Player.Mode.WAYPOINT_TILE
-                || value == UX_Player.Mode.TARGET_CHUNK
-                || value == UX_Player.Mode.TARGET_TILE) {
-                reticle.gameObject.SetActive(false);
-                crosshair.gameObject.SetActive(true);
-            } else {
-                reticle.gameObject.SetActive(false);
-                crosshair.gameObject.SetActive(false);
-            }
-
-            if (value == UX_Player.Mode.HAND
-                || value == UX_Player.Mode.DETAIL
-                || value == UX_Player.Mode.PAUSE
-                || value == UX_Player.Mode.SURRENDER) {
-                darkScreen.gameObject.SetActive(true);
-            } else darkScreen.gameObject.SetActive(false);
-        }
-    }
-
     /// <summary>
     /// Called once before the match begins.
     /// </summary>
@@ -57,6 +31,25 @@ public class CanvasScript : MonoBehaviour {
             darkScreen.gameObject, GetComponent<Transform>())
             .GetComponent<RectTransform>();
 
-        darkScreen.gameObject.SetActive(false);
+        SetCrosshair(0);
+        SetDarkScreen(false);
     }
+
+    public void SetCrosshair(int option) {
+        switch (option) {
+            case 0:
+                reticle.gameObject.SetActive(true);
+                crosshair.gameObject.SetActive(false);
+                break;
+            case 1:
+                reticle.gameObject.SetActive(false);
+                crosshair.gameObject.SetActive(true);
+                break;
+            default:
+                reticle.gameObject.SetActive(false);
+                crosshair.gameObject.SetActive(false);
+                break;
+        }
+    }
+    public void SetDarkScreen(bool option) { darkScreen.gameObject.SetActive(option); }
 }

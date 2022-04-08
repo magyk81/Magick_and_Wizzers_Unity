@@ -73,15 +73,9 @@ public class UX_Hand : MonoBehaviour
         }
     }
 
-    public void Hide(bool hideAll = true) {
-        if (mSetupDone) {
-            //foreach (UX_Card card in cards) { card.Finish(); }
-
-            mCardParent.gameObject.SetActive(false);
-            cursor.gameObject.SetActive(false);
-            if (hideAll) mPlayCardTran.gameObject.SetActive(false);
-            mIsShown = false;
-        }
+    public void HideAll() {
+        Hide();
+        mPlayCardTran.gameObject.SetActive(false);
     }
 
     public void MoveCursor(int x_move, int y_move) {
@@ -126,25 +120,35 @@ public class UX_Hand : MonoBehaviour
     }
 
     /// <returns>
-    /// Whether a card was selected.
+    /// Play mode of the card selected, -1 if no card could be selected.
     /// </returns>
-    public bool Select() {
+    public int Select() {
         if (mCursorIdx < mCount && mCursorIdx >= 0) {
             if (mPiece.Hand.Length >= 0) {
                 mPlayCardTran.gameObject.GetComponent<RawImage>().texture = mCards[mCursorIdx].Art;
                 mPlayCardTran.gameObject.SetActive(true);
-                Hide(false);
+                Hide();
                 mPlayCardID = mPiece.Hand[mCursorIdx].ID;
                 mCasterID = mPiece.PieceID;
                 // return new int[] { mPiece.Hand[mCursorIdx].ID, mPiece.PieceID };
-                return true;
+                return Card.friend_cards[mPiece.Hand[mCursorIdx].ID].PlayMode;
             }
             // Hand is empty.
-            return false;
+            return -1;
         }
         // Cursor is out of bounds (why?)
         Debug.LogError("CursorIdx: " + mCursorIdx + " is out of bounds (Count: " + mCount + ")");
-        return false;
+        return -1;
+    }
+
+    private void Hide() {
+        if (mSetupDone) {
+            //foreach (UX_Card card in cards) { card.Finish(); }
+
+            mCardParent.gameObject.SetActive(false);
+            cursor.gameObject.SetActive(false);
+            mIsShown = false;
+        }
     }
 
     private Coord GetCardPos(int idx) {

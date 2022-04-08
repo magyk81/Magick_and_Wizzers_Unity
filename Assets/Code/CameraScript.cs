@@ -17,7 +17,6 @@ public class CameraScript : MonoBehaviour {
     private Transform mTran;
     private CanvasScript mCanv;
     private int mLocalPlayerIdx;
-    private UX_Player.Mode mMode = UX_Player.Mode.PLAIN;
 
     [SerializeField]
     private float speed;
@@ -64,11 +63,10 @@ public class CameraScript : MonoBehaviour {
         }
     }
 
-    public UX_Player.Mode Mode { set { mMode = value; } }
-
-    /// <summary>Called once before the match begins.</summary>
-    public void Init(int localPlayerIdx, CanvasScript canv, float[][] bounds,
-        UX_Collider[] quarterColls, UX_Collider[,] tileColls) {
+    /// <summary>
+    /// Called once before the match begins.
+    /// </summary>
+    public void Init(int localPlayerIdx, CanvasScript canv, float[][] bounds) {
         mLocalPlayerIdx = localPlayerIdx;
         mTran = GetComponent<Transform>();
 

@@ -119,6 +119,9 @@ public class UX_Board : MonoBehaviour {
         gameObject.SetActive(true);
     }
 
+    /// <returns>
+    /// <c>null</c> if no piece is hovered
+    /// </returns>
     public UX_Piece GetHoveredPiece(float[][] rayPiecePoints) {
         // Check just the middle ray point (first in the array).
         foreach (UX_Piece piece in mPieces.Values) {

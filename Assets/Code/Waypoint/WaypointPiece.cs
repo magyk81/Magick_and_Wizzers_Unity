@@ -1,9 +1,7 @@
 public class WaypointPiece : Waypoint {
     private readonly Piece mPiece;
 
-    public WaypointPiece(Piece piece) {
-        mPiece = piece;
-    }
+    public WaypointPiece(Piece piece) { mPiece = piece; }
 
     public static bool operator ==(WaypointPiece a, WaypointPiece b) { return a.mPiece == b.mPiece; }
     public static bool operator !=(WaypointPiece a, WaypointPiece b) { return a.mPiece != b.mPiece; }

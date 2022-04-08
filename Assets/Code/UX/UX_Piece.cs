@@ -31,6 +31,7 @@ public class UX_Piece : MonoBehaviour
     private int mSize = 1;
     private float[] mBounds = new float[4];
     private int mPieceID, mBoardID, mPlayerID;
+    private bool mIsHovered, mIsSelected;
 
     public UX_Piece[] UX_All {
         get {
@@ -40,6 +41,7 @@ public class UX_Piece : MonoBehaviour
     }
     public UX_Tile[] WaypointTiles { get => mWaypointTiles; }
     public UX_Piece[] WaypointPieces { get => mWaypointPieces; }
+
     public Card[] Hand {
         get {
             Card[] hand = new Card[mHand.Count];
@@ -51,6 +53,8 @@ public class UX_Piece : MonoBehaviour
     public int PieceID { get => mPieceID; }
     public int BoardID { get => mBoardID; }
     public int PlayerID { get => mPlayerID; }
+    public bool IsHovered { get => mIsHovered; }
+    public bool IsSelected { get => mIsSelected; }
 
     /// <summary>
     /// Called once before the match begins.
@@ -104,10 +108,6 @@ public class UX_Piece : MonoBehaviour
         for (int i = 0; i < layerCount; i++) {
             mFrame[i] = Instantiate(frame, mTran);
             mFrame[i].layer = LAYER + i;
-
-            // Set collider script info.
-            mFrame[i].GetComponent<UX_Collider>().Piece = this;
-
             mFrame[i].name = "Frame - view " + i;
         }
         SetActive(mFrame, true);
@@ -165,47 +165,38 @@ public class UX_Piece : MonoBehaviour
         for (int i = 0; i < mWaypointPieces.Length; i++) { mWaypointPieces[i] = pieces[i]; }
     }
 
-    public bool HasSameWaypoints(UX_Piece piece) {
-        for (int i = 0; i < mWaypointTiles.Length; i++) {
-            if (mWaypointTiles[i] == null) { if (piece.mWaypointTiles[i] != null) return false; }
-            else if (piece.mWaypointTiles[i] == null) { if (mWaypointTiles[i] != null) return false; }
-            else if (mWaypointTiles[i].Pos != piece.mWaypointTiles[i].Pos) return false;
-        }
-        for (int i = 0; i < mWaypointPieces.Length; i++) {
-            if (mWaypointPieces[i] == null) { if (piece.mWaypointPieces[i] != null) return false; }
-            else if (piece.mWaypointPieces[i] == null) { if (mWaypointPieces[i] != null) return false; }
-            else if (mWaypointPieces[i].PieceID != piece.mWaypointPieces[i].PieceID) return false;
-        }
-        return true;
-    }
-
     // Called from UX_Player, so apply to every clone.
     public void Hover(int localPlayerID) {
         foreach (UX_Piece piece in UX_All) {
             piece.mHover[localPlayerID].SetActive(true);
-
-            // Not using SetActive(false) because the collider needs to work.
-            piece.mFrame[localPlayerID].GetComponent<MeshRenderer>().enabled = false;
-        }  
+            piece.mFrame[localPlayerID].SetActive(false);
+            piece.mIsHovered = true;
+        }
     }
 
     // Called from UX_Player, so apply to every clone.
     public void Unhover(int localPlayerID) {
         foreach (UX_Piece piece in UX_All) {
             piece.mHover[localPlayerID].SetActive(false);
-            piece.mFrame[localPlayerID].GetComponent<MeshRenderer>().enabled = true;
+            piece.mFrame[localPlayerID].SetActive(true);
+            piece.mIsHovered = false;
         }
-        
     }
 
     // Called from UX_Player, so apply to every clone.
     public void Select(int localPlayerCount) {
-        foreach (UX_Piece piece in UX_All) { piece.mSelect[localPlayerCount].SetActive(true); }
+        foreach (UX_Piece piece in UX_All) {
+            piece.mSelect[localPlayerCount].SetActive(true);
+            piece.mIsSelected = true;
+        }
     }
 
     // Called from UX_Player, so apply to every clone.
     public void Unselect(int localPlayerCount) {
-        foreach (UX_Piece piece in UX_All) { piece.mSelect[localPlayerCount].SetActive(false); }
+        foreach (UX_Piece piece in UX_All) {
+            piece.mSelect[localPlayerCount].SetActive(false);
+            piece.mIsSelected = false;
+        }
     }
 
     public void AddCard(int cardID) { mHand.Add(cardID); }

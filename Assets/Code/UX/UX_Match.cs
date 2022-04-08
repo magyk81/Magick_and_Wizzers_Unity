@@ -80,7 +80,7 @@ public class UX_Match : MonoBehaviour
                     foreach (UX_Board board in _boards) {
                         board.UpdateWaypoints(signalUpdateWaypoints.PieceID, signalUpdateWaypoints.WaypointData);
                     }
-                    Players[_boards[0].PlayerWithPiece(signalUpdateWaypoints.PieceID)].ResetPotentialWaypoint();
+                    Players[_boards[0].PlayerWithPiece(signalUpdateWaypoints.PieceID)].UpdateWaypoints();
                     break;
             }
         }

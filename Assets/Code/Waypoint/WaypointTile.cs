@@ -1,9 +1,7 @@
 public class WaypointTile : Waypoint {
     private readonly Coord mTile;
 
-    public WaypointTile(Coord tile) {
-        mTile = tile;
-    }
+    public WaypointTile(Coord tile) { mTile = tile; }
 
     public static bool operator ==(WaypointTile a, WaypointTile b) { return a.mTile == b.mTile; }
     public static bool operator !=(WaypointTile a, WaypointTile b) { return a.mTile != b.mTile; }

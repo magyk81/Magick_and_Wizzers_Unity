@@ -18,7 +18,7 @@ public abstract class Signal {
 
     /// <summary>
     /// Generates the byte message if the integer message has been set but the byte message has not been set.
-    /// This is used in <code>SocketHand.SendMessages</code> for a call to <code>Socket#Send</code>.
+    /// This is used in <c>SocketHand#SendMessages</c> for a call to <c>Socket#Send</c>.
     /// </summary>
     /// <returns>
     /// The byte message.

@@ -7,7 +7,7 @@
 using UnityEngine;
 
 public class Gamepad {
-    private readonly int STICK_INT = 100;
+    private static readonly int STICK_INT = 100;
 
     private readonly bool mIsKeyboard;
     private readonly int[] mPadInput = new int[(int) Button.COUNT];
@@ -58,15 +58,12 @@ public class Gamepad {
     /// </returns>
     private bool GetInput(KeyCode keyCode, Button button, int mult = 1)
     {
-        // mult != 1 when it's the stick
-        if ((mult != 1 && Input.GetKey(keyCode))
-            || Input.GetKeyDown(keyCode))
-        {
+        // mult != 1 when it's the stick. Sticks cannot be depressed.
+        if ((mult != 1 && Input.GetKey(keyCode)) || Input.GetKeyDown(keyCode)) {
+            // If it's a stick, will be either -STICK_INT or STICK_INT.If button.
             mPadInput[(int) button] = mult;
             return true;
-        }
-        else if (Input.GetKeyUp(keyCode) && mult == 1)
-        {
+        } else if (Input.GetKeyUp(keyCode) && mult == 1) {
             mPadInput[(int) button] = -mult;
             return true;
         }

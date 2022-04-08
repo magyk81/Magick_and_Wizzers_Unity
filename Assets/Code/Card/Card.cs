@@ -27,8 +27,7 @@ public abstract class Card {
     public string Name { get => mName; }
     public Texture Art { get => mArt; }
     public int Level { get => mLevel; }
-
-    public abstract UX_Player.Mode GetPlayMode();
+    public int PlayMode { get => 1; }
 
     public static Card[] friend_cards = {
         new CardSummon("Aidan Hendrickson", null, 1, null, 100, 100),

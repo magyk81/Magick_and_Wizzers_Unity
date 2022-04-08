@@ -5,6 +5,7 @@
  */
 
 public abstract class Waypoint {
+    public enum WaypointType { Tile, Piece }
 
     public static bool operator ==(Waypoint a, Waypoint b) { return a.Equals(b); }
     public static bool operator !=(Waypoint a, Waypoint b) { return !a.Equals(b); }
