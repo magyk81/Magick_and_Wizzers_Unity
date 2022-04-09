@@ -32,7 +32,7 @@ public abstract class SocketHand {
         } else mIpAddress = ipAddress;
         mPort = port;
 
-        Debug.Log("Sender using IP address: " + ipAddress + ":" + port);
+        Debug.Log(GetType().Name + " using IP address: " + ipAddress + ":" + port);
 
         mSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
         

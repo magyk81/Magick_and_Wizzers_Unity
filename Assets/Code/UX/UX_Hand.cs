@@ -87,8 +87,7 @@ public class UX_Hand : MonoBehaviour
                 // Put the cursor on the right-most column.
                 mCursorIdx += CARDS_PER_ROW - 1;
                 if (mCursorIdx >= mCount) mCursorIdx = mCount - 1;
-            }
-            else mCursorIdx--;
+            } else mCursorIdx--;
         } else if (x_move == Util.RIGHT) {
             // The cursor is along the right-most column. Put the cursor on the left-most column.
             if (mCursorIdx % CARDS_PER_ROW == CARDS_PER_ROW - 1) mCursorIdx -= CARDS_PER_ROW - 1;
@@ -99,14 +98,24 @@ public class UX_Hand : MonoBehaviour
         if (y_move == Util.UP) {
             mCursorIdx -= CARDS_PER_ROW;
 
-            // The cursur is on the top row.
-            if (mCursorIdx < 0) mCursorIdx += mCount + (mCount % CARDS_PER_ROW);
+            // The cursor is on the top row.
+            if (mCursorIdx < 0) {
+                // If there is more than one row.
+                if (mCursorIdx + CARDS_PER_ROW * 2 < mCount) mCursorIdx += mCount + (mCount % CARDS_PER_ROW);
+                // Put back to unchanged.
+                else mCursorIdx += CARDS_PER_ROW;
+            }
             if (mCursorIdx >= mCount) mCursorIdx -= CARDS_PER_ROW;
         } else if (y_move == Util.DOWN) {
             mCursorIdx += CARDS_PER_ROW;
 
             // The cursor is on the bottom row.
-            if (mCursorIdx >= mCount) mCursorIdx -= mCount + (mCount % CARDS_PER_ROW);
+            if (mCursorIdx >= mCount) {
+                // If there is more than one row.
+                if (mCursorIdx - CARDS_PER_ROW * 2 >= 0) mCursorIdx -= mCount + (mCount % CARDS_PER_ROW);
+                // Put back to unchanged.
+                else mCursorIdx -= CARDS_PER_ROW;
+            }
             if (mCursorIdx < 0) mCursorIdx += CARDS_PER_ROW;
         }
 

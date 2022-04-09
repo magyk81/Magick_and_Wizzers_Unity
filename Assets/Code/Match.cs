@@ -33,12 +33,13 @@ public class Match {
                     break;
                 case SignalFromClient.Request.ADD_WAYPOINT:
                     SignalAddWaypoint signalAddWaypoint = new SignalAddWaypoint(message);
-                    outcomes = mBoards[signalAddWaypoint.BoardID].AddWaypoint(signalAddWaypoint, true);
+                    outcomes = new SignalFromHost[] {
+                        mBoards[signalAddWaypoint.BoardID].AddWaypoint(signalAddWaypoint) };
                     break;
                 case SignalFromClient.Request.REMOVE_WAYPOINT:
                     SignalRemoveWaypoint signalRemoveWaypoint = new SignalRemoveWaypoint(message);
-                    // outcomeArr = mBoards[signalRemoveWaypoint.BoardID].SetWaypoint(signalRemoveWaypoint, false);
-                    // if (outcomeArr != null) mSignalsToSend.AddRange(outcomeArr);
+                    outcomes = new SignalFromHost[] {
+                        mBoards[signalRemoveWaypoint.BoardID].RemoveWaypoint(signalRemoveWaypoint) };
                     break;
             }
             if (outcomes != null) mSignalsToSend.AddRange(outcomes);

@@ -68,7 +68,10 @@ public class UX_Waypoint : MonoBehaviour {
         gameObject.SetActive(true);
     }
 
-    public void Show() {}
+    public void Show() {
+        Debug.Log("Show");
+        gameObject.SetActive(true);
+    }
 
     public void Hide() {
         gameObject.SetActive(false);
@@ -76,8 +79,10 @@ public class UX_Waypoint : MonoBehaviour {
         mPiece = null;
     }
 
-    public void Hover() { }
-    public void Unhover() { }
+    // Should only be called once if this is the hovering waypoint.
+    public void Hover() { rendMaterial = mOpaque ? matHovered : matHovering; }
+    // Should never be called if this is the hovering waypoint.
+    public void Unhover() { rendMaterial = mOpaque ? matOpaque : matSemitrans; }
 
     public bool ForPiece() { return mPieceTran != null; }
 

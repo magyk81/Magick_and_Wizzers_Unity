@@ -81,7 +81,9 @@ public class Board {
         return Coord._(tile.X / Chunk.SIZE, tile.Z / Chunk.SIZE);
     }
 
-    private SignalFromHost AddPiece(Piece piece) {
+    private SignalAddPiece AddPiece(Piece piece) {
+        // If the piece to be added would overlap the positions of any other piece.
+        // TODO: Check for overlap, not just if the positions are equal.
         foreach (Piece p in mPieces) {
             if (p.Pos == piece.Pos) return null;
         }
@@ -90,48 +92,26 @@ public class Board {
         return new SignalAddPiece(piece);
     }
 
-    public SignalFromHost[] AddWaypoint(SignalAddWaypoint signal, bool add) {
-        List<SignalFromHost> waypointUpdates = new List<SignalFromHost>();
+    public SignalUpdateWaypoints AddWaypoint(SignalAddWaypoint signal) {
+        // Get the piece that will be added the waypoint.
+        Piece piece = mIdToPiece[signal.PieceID];
 
-        Piece[] pieces = new Piece[signal.PieceIDs.Length];
-        for (int i = 0; i < signal.PieceIDs.Length; i++)
-        { pieces[i] = mIdToPiece[signal.PieceIDs[i]]; }
+        // Add waypoint for piece if X value is -1, else add waypoint for tile.
+        if (signal.TargetTile.X == -1) {
+            piece.AddWaypoint(mIdToPiece[signal.TargetTile.Z], signal.OrderPlace);
+        } else piece.AddWaypoint(signal.TargetTile, signal.OrderPlace);
+        
+        return new SignalUpdateWaypoints(piece);
+    }
 
-        // Check to see if the pieces have different waypoints.
-        bool waypointsCommon = true;
-        if (signal.PieceIDs.Length > 1) {
-            for (int i = 1; i < signal.PieceIDs.Length; i++) {
-                if (!pieces[i - 1].HasSameWaypoints(pieces[i])) {
-                    waypointsCommon = false;
-                    break;
-                }
-            }
-        }
-        
-        /* If pieces have different waypoints, clear all of their waypoints before adding the new ones, and no need to
-         * remove waypoints. */
-        if (!waypointsCommon) {
-            for (int i = 0; i < signal.PieceIDs.Length; i++) {
-                pieces[i].ClearWaypoints();
-            }
-        }
-        
-        // Add/remove waypoints.
-        // for (int i = 0; i < signal.PieceIDs.Length; i++) {
-        //     if (pieces[i].PlayerID == signal.ActingPlayerID) {
-        //         if (add) {
-        //             Debug.Log("signal.PieceID: " + signal.PieceID);
-        //             Piece waypointTarget = (signal.PieceID == -1) ? null : mIdToPiece[signal.PieceID];
-        //             pieces[i].AddWaypoint(waypointTarget, signal.OrderPlace);
-        //         } else if (!waypointsCommon) pieces[i].RemoveWaypoint(signal.OrderPlace);
-                
-        //         waypointUpdates.Add(new SignalUpdateWaypoints(pieces[i]));
-        //     } else {
-        //         Debug.Log("Error: Attempted to add waypoint to the piece " + pieces[i].Name
-        //             + " but it does not belong to player #" + signal.ActingPlayerID);
-        //     }
-        // }
-        return waypointUpdates.ToArray();
+    public SignalUpdateWaypoints RemoveWaypoint(SignalRemoveWaypoint signal) {
+        // Get the piece that will be removed the waypoint.
+        Piece piece = mIdToPiece[signal.PieceID];
+
+        // Remove waypoint for piece based solely on order place.
+        piece.RemoveWaypoint(signal.OrderPlace);
+
+        return new SignalUpdateWaypoints(piece);
     }
 
     public SignalFromHost[] CastSpell(SignalCastSpell signal) {
@@ -141,11 +121,9 @@ public class Board {
 
             SignalRemoveCard signalRemoveCard = caster.CastSpell(playCard);
             if (signalRemoveCard != null) {
+                SignalAddPiece signalAddPiece = AddPiece(new Piece(caster.ID, ID, signal.Tile, playCard));
                 // If the spell resolved, return SignalRemoveCard and SignalAddPiece.
-                return new SignalFromHost[] {
-                    signalRemoveCard,
-                    AddPiece(new Piece(caster.ID, ID, signal.Tile, playCard))
-                };
+                if (signalAddPiece != null) return new SignalFromHost[] { signalRemoveCard, signalAddPiece };
             }
         }
         return null;

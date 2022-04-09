@@ -2,7 +2,7 @@ using System.Linq;
 
 public class SignalRemoveWaypoint : SignalFromClient {
     public readonly int BoardID, OrderPlace;
-    public readonly int[] PieceIDs;
+    public readonly int PieceID;
 
     /// <remarks>
     /// Used by host to interpret a received message.
@@ -12,24 +12,23 @@ public class SignalRemoveWaypoint : SignalFromClient {
 
         BoardID = intMessageCut[0];
         OrderPlace = intMessageCut[1];
-        PieceIDs = intMessageCut.Skip(2).ToArray();
+        PieceID = intMessageCut[2];
     }
 
     /// <remarks>
     /// Used by client to get ready to send.
     /// </remarks>
-    public SignalRemoveWaypoint(int actingPlayerID, int boardID, int orderPlace, int[] pieceIDs) : this(
-        ClientInfoToIntMessage(actingPlayerID, boardID, orderPlace, pieceIDs)) { }
+    public SignalRemoveWaypoint(int actingPlayerID, int boardID, int orderPlace, int pieceID) : this(
+        ClientInfoToIntMessage(actingPlayerID, boardID, orderPlace, pieceID)) { }
 
-    private static int[] ClientInfoToIntMessage(int actingPlayerID, int boardID, int orderPlace, int[] pieceIDs) {
-        int nonArrCount = 4;
-        int[] intMessage = new int[nonArrCount + pieceIDs.Length];
+    private static int[] ClientInfoToIntMessage(int actingPlayerID, int boardID, int orderPlace, int pieceID) {
+        int[] intMessage = new int[5];
 
         intMessage[0] = (int) Request.REMOVE_WAYPOINT;
         intMessage[1] = actingPlayerID;
         intMessage[2] = boardID;
         intMessage[3] = orderPlace;
-        pieceIDs.CopyTo(intMessage, nonArrCount);
+        intMessage[4] = pieceID;
 
         return intMessage;
     }
