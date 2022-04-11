@@ -8,7 +8,7 @@ public class SignalUpdateWaypoints : SignalFromHost {
 
     public readonly int PieceID;
     // Tile waypoints are [X, Z]. Piece waypoints are [-1, PieceID].
-    public readonly Coord[] WaypointData;
+    public readonly Coord[] WaypointData = new Coord[Piece.MAX_WAYPOINTS];
 
     /// <remarks>
     /// Used by client to interpret a received message.

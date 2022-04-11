@@ -138,7 +138,8 @@ public class Piece {
 
         string _ = "";
         for (int i = 0; i < Piece.MAX_WAYPOINTS; i++) {
-            _ += mWaypoints[i].ToString() + ", ";
+            if (mWaypoints[i] == null) _ += "[ , ], ";
+            else _ += mWaypoints[i].ToString() + ", ";
         }
         Debug.Log(_);
     }

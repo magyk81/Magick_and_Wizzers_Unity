@@ -11,8 +11,8 @@ public class UX_Tile {
 
     private readonly Coord mPos;
     private readonly Vector3 mUxPos;
-    private Vector3[] uxPosAll = null;
-    private UX_Tile real = null;
+    private Vector3[] mUxPosAll = null;
+    private UX_Tile mReal = null;
     private readonly int mBoardID;
 
     public readonly static int LAYER = 10;
@@ -34,8 +34,8 @@ public class UX_Tile {
             if (cloneIdx == Util.LEFT || cloneIdx == Util.UP_LEFT || cloneIdx == Util.DOWN_LEFT)
                 x -= boardTotalSize;
         } else {
-            uxPosAll = new Vector3[9];
-            uxPosAll[0] = new Vector3(x, LIFT_DIST, z);
+            mUxPosAll = new Vector3[9];
+            mUxPosAll[0] = new Vector3(x, LIFT_DIST, z);
         }
         
         mUxPos = new Vector3(x, 0, z);
@@ -43,16 +43,16 @@ public class UX_Tile {
 
     public Coord Pos { get { return mPos; } }
     public Vector3 UX_Pos { get { return mUxPos; } }
-    public Vector3[] UX_PosAll { get => (uxPosAll != null) ? uxPosAll : real.uxPosAll; }
+    public Vector3[] UX_PosAll { get => (mUxPosAll != null) ? mUxPosAll : mReal.mUxPosAll; }
     public int BoardID { get { return mBoardID; } }
 
     /// <summary>
     /// Called 8 times before the match begins: once for each clone needed.
     /// </summary>
     public void SetClone(UX_Tile tileClone, int cloneIdx) {
-        tileClone.real = this;
+        tileClone.mReal = this;
 
-        uxPosAll[cloneIdx] = new Vector3(tileClone.mUxPos.x, LIFT_DIST, tileClone.mUxPos.z);
+        mUxPosAll[cloneIdx] = new Vector3(tileClone.mUxPos.x, LIFT_DIST, tileClone.mUxPos.z);
     }
 
     public override string ToString() { return Pos.ToString(); }

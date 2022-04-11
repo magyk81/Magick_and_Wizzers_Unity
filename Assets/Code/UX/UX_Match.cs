@@ -102,8 +102,9 @@ public class UX_Match : MonoBehaviour
             }
         }
 
-        // Prep uxBoard bounds.
+        // Prep uxBoard bounds and offsets.
         float[][] boardBounds = new float[signal.BoardCount][];
+        Coord[][] boardOffsets = new Coord[signal.BoardCount][];
 
         // Generate uxBoards.
         Transform boardGroup = new GameObject().GetComponent<Transform>();
@@ -118,12 +119,15 @@ public class UX_Match : MonoBehaviour
             boardParent.gameObject.name = signal.BoardNames[i];
             boardParent.gameObject.SetActive(true);
 
+            boardOffsets[i] = new Coord[9];
             for (int j = 0; j < mBoards[i].Length; j++) {
                 mBoards[i][j] = Instantiate(baseBoard.gameObject,boardParent).GetComponent<UX_Board>();
-                mBoards[i][j].gameObject.name = "Clone" + Util.DirToString(j - 1);
+                if (j == 0) mBoards[i][j].gameObject.name = "Real";
+                else mBoards[i][j].gameObject.name = "Clone " + Util.DirToString(j - 1);
                 mBoards[i][j].Init(signal.BoardSizes[i], localPlayerCount, i, j, (j == 0) ? null : mBoards[i][0]);
-                boardBounds[i] = mBoards[i][j].Bounds;
+                boardOffsets[i][j] = mBoards[i][j].Offset;
             }
+            boardBounds[i] = mBoards[i][0].Bounds;
         }
 
         // Generate uxPlayers.
@@ -137,7 +141,7 @@ public class UX_Match : MonoBehaviour
             else mPlayers[i] = Instantiate(basePlayer.gameObject, playerGroup).GetComponent<UX_Player>();
             mPlayers[i].gameObject.name = signal.PlayerNames[playerID];
             mPlayers[i].gameObject.SetActive(true);
-            mPlayers[i].Init(playerID, i, boardBounds, Chunk.SIZE / 2);
+            mPlayers[i].Init(playerID, i, boardBounds, boardOffsets, Chunk.SIZE / 2);
         }
     }
 

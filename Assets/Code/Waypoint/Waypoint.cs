@@ -7,12 +7,6 @@
 public abstract class Waypoint {
     public enum WaypointType { Tile, Piece }
 
-    public static bool operator ==(Waypoint a, Waypoint b) { return a.Equals(b); }
-    public static bool operator !=(Waypoint a, Waypoint b) { return !a.Equals(b); }
-
-    public override bool Equals(object obj) { return Equals(obj as Waypoint); }
-    public override int GetHashCode() { return base.GetHashCode(); }
-
     public abstract Waypoint Copy();
 
     protected abstract bool Equals(Waypoint other);

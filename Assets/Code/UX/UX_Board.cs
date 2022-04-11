@@ -21,10 +21,13 @@ public class UX_Board : MonoBehaviour {
     private readonly Dictionary<int, UX_Piece> mPieces = new Dictionary<int, UX_Piece>();
     private int mBoardID, mApartOffset;
     private float[] mBounds = new float[4];
+    private Coord mOffset;
 
     public UX_Chunk[,] Chunks { get => mChunks; }
 
     public float[] Bounds { get => mBounds; }
+    public Coord Offset { get => mOffset; }
+
 
     /// <summary>
     /// Called once before the match begins.
@@ -56,6 +59,9 @@ public class UX_Board : MonoBehaviour {
             }
         }
 
+        // Set offset.
+        mOffset = Coord._(cloneOffsetX + mApartOffset, cloneOffsetZ);
+
         mTiles = new UX_Tile[totalSize, totalSize];
         mChunks = new UX_Chunk[size, size];
 
@@ -82,7 +88,7 @@ public class UX_Board : MonoBehaviour {
                 int chunkSize = totalSize / size;
                 Transform chunkTra = mChunks[i, j].GetComponent<Transform>();
                 chunkTra.localScale = new Vector3(chunkSize, chunkSize, 1);
-                Coord chunkPos = Coord._((i * chunkSize) + cloneOffsetX + mApartOffset, (j * chunkSize) + cloneOffsetZ);
+                Coord chunkPos = Coord._((i * chunkSize) + mOffset.X, (j * chunkSize) + mOffset.Z);
                 chunkTra.localPosition = new Vector3(
                     chunkPos.X + ((float) chunkSize / 2F), 0, chunkPos.Z + ((float) chunkSize / 2F));
 
@@ -156,7 +162,7 @@ public class UX_Board : MonoBehaviour {
     public void RemoveCard(SignalRemoveCard signal) { mPieces[signal.HolderPieceID].RemoveCard(signal.CardID); }
 
     /// <summary>
-    /// Updates the piece's position on the board between the tiles indicated by the piece's PosPrecise info.
+    /// Updates the piece's position on the board.
     /// </summary>
     public void MovePiece(int pieceID, Coord tile) {
         mPieces[pieceID].SetPos(mTiles[tile.X, tile.Z], mTiles[tile.X, tile.Z], 1);

@@ -85,7 +85,9 @@ public class UX_Player : MonoBehaviour
     /// <summary>
     /// Called once before the match begins.
     /// </summary>
-    public virtual void Init(int playerID, int localPlayerIdx, float[][] boardBounds, int quadSize) {
+    public virtual void Init(int playerID, int localPlayerIdx, float[][] boardBounds, Coord[][] boardOffsets,
+        int quadSize) {
+
         mPlayerID = playerID;
         mLocalPlayerIdx = localPlayerIdx;
 
@@ -113,23 +115,33 @@ public class UX_Player : MonoBehaviour
         mWaypointsForTiles = new UX_Waypoint[Piece.MAX_WAYPOINTS][];
         for (int i = 0; i < mWaypointsForTiles.Length; i++) {
             mWaypointsForTiles[i] = new UX_Waypoint[9];
-            for (int j = 0; j < mWaypointsForTiles.Length; j++) {
+            for (int j = 0; j < mWaypointsForTiles[i].Length; j++) {
                 mWaypointsForTiles[i][j] = Instantiate(baseWaypointForTiles.gameObject, waypointsParent)
                     .GetComponent<UX_Waypoint>();
                 string name = "Waypoint for Tiles " + i;
-                if (j == 0) mWaypointsForTiles[i][j].gameObject.name = name;
-                else mWaypointsForTiles[i][j].gameObject.name = name + " - Clone " + Util.DirToString(j - 1);
+                if (j == 0) {
+                    mWaypointsForTiles[i][j].gameObject.name = name;
+                    mWaypointsForTiles[i][j].SetReal();
+                } else {
+                    mWaypointsForTiles[i][j].gameObject.name = name + " - Clone " + Util.DirToString(j - 1);
+                    mWaypointsForTiles[i][0].AddClone(mWaypointsForTiles[i][j], j);
+                }
             }
         }
         mWaypointsForPieces = new UX_Waypoint[Piece.MAX_WAYPOINTS][];
         for (int i = 0; i < mWaypointsForPieces.Length; i++) {
             mWaypointsForPieces[i] = new UX_Waypoint[9];
-            for (int j = 0; j < mWaypointsForPieces.Length; j++) {
+            for (int j = 0; j < mWaypointsForPieces[i].Length; j++) {
                 mWaypointsForPieces[i][j] = Instantiate(baseWaypointForPieces.gameObject, waypointsParent)
                     .GetComponent<UX_Waypoint>();
                 string name = "Waypoint for Pieces " + i;
-                if (j == 0) mWaypointsForPieces[i][j].gameObject.name = name;
-                else mWaypointsForPieces[i][j].gameObject.name = name + " - Clone " + Util.DirToString(j - 1);
+                if (j == 0) {
+                    mWaypointsForPieces[i][j].gameObject.name = name;
+                    mWaypointsForPieces[i][j].SetReal();
+                } else {
+                    mWaypointsForPieces[i][j].gameObject.name = name + " - Clone " + Util.DirToString(j - 1);
+                    mWaypointsForPieces[i][0].AddClone(mWaypointsForPieces[i][j], j);
+                }
             }
         }
         mWaypointHoveringForTiles = new UX_Waypoint[9];
@@ -137,16 +149,26 @@ public class UX_Player : MonoBehaviour
             mWaypointHoveringForTiles[j] = Instantiate(baseWaypointForTiles.gameObject,waypointsParent)
                 .GetComponent<UX_Waypoint>();
             string name = "Waypoint (Hovered) for Tiles";
-            if (j == 0) mWaypointHoveringForTiles[j].gameObject.name = name;
-            else mWaypointHoveringForTiles[j].gameObject.name = name + " - Clone " + Util.DirToString(j - 1);
+            if (j == 0) {
+                mWaypointHoveringForTiles[j].gameObject.name = name;
+                mWaypointHoveringForTiles[j].SetReal();
+            } else {
+                mWaypointHoveringForTiles[j].gameObject.name = name + " - Clone " + Util.DirToString(j - 1);
+                mWaypointHoveringForTiles[0].AddClone(mWaypointHoveringForTiles[j], j);
+            }
         }
         mWaypointHoveringForPieces = new UX_Waypoint[9];
         for (int j = 0; j < 9; j++) {
             mWaypointHoveringForPieces[j] = Instantiate(baseWaypointForPieces.gameObject,waypointsParent)
                 .GetComponent<UX_Waypoint>();
             string name = "Waypoint (Hovered) for Pieces";
-            if (j == 0) mWaypointHoveringForPieces[j].gameObject.name = name;
-            else mWaypointHoveringForPieces[j].gameObject.name = name + " - Clone " + Util.DirToString(j - 1);
+            if (j == 0) {
+                mWaypointHoveringForPieces[j].gameObject.name = name;
+                mWaypointHoveringForPieces[j].SetReal();
+            } else {
+                mWaypointHoveringForPieces[j].gameObject.name = name + " - Clone " + Util.DirToString(j - 1);
+                mWaypointHoveringForPieces[0].AddClone(mWaypointHoveringForPieces[j], j);
+            }
         }
 
         // Hide hovered tile.

@@ -24,7 +24,7 @@ public class UX_Piece : MonoBehaviour
     private UX_Tile[] mWaypointTiles = new UX_Tile[Piece.MAX_WAYPOINTS];
     private UX_Piece[] mWaypointPieces = new UX_Piece[Piece.MAX_WAYPOINTS];
     private UX_Piece mReal = null;
-    private UX_Piece[] mUxAll = null;
+    private UX_Piece[] mUxAll = new UX_Piece[9];
     private List<int> mHand = new List<int>();
     private Coord mPosPrev, mPosNext;
     private float mPosLerp;
@@ -62,7 +62,6 @@ public class UX_Piece : MonoBehaviour
     public void Init(SignalAddPiece signal, string pieceName, int layerCount) {
         mPieceID = signal.PieceID;
         mBoardID = signal.BoardID;
-        mUxAll = new UX_Piece[9];
 
         mTran = GetComponent<Transform>();
         bool fromCard = signal.CardID >= 0;

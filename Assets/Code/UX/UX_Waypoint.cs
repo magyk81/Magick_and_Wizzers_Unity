@@ -12,12 +12,17 @@ public class UX_Waypoint : MonoBehaviour {
     private Transform mTran, mPieceTran;
     private Renderer mRend;
     private MeshFilter mFilter;
+    private UX_Waypoint mReal = null;
+    private UX_Waypoint[] mUxAll;
+    private Coord[] mClonePosOffset;
 
     [SerializeField]
     private Material matOpaque, matSemitrans, matHovered, matHovering;
-
     private bool mOpaque;
+    private bool mShown = false, mHovered = false;
 
+    public UX_Waypoint[] UX_All { get => mReal.mUxAll; }
+    public int ClonePosOffsetCount { set => mClonePosOffset = new Coord[value]; }
     public UX_Tile Tile {
         get => mTile;
         set {
@@ -69,22 +74,52 @@ public class UX_Waypoint : MonoBehaviour {
     }
 
     public void Show() {
+        if (mShown) return;
         Debug.Log("Show");
-        gameObject.SetActive(true);
+        foreach (UX_Waypoint waypoint in UX_All) {
+            waypoint.gameObject.SetActive(true);
+        }
+        mShown = true;
     }
 
     public void Hide() {
-        gameObject.SetActive(false);
-        mTile = null;
-        mPiece = null;
+        if (!mShown) return;
+        Debug.Log("Hide");
+        foreach (UX_Waypoint waypoint in UX_All) {
+            waypoint.gameObject.SetActive(false);
+            waypoint.mTile = null;
+            waypoint.mPiece = null;
+        }
+        mShown = false;
     }
 
     // Should only be called once if this is the hovering waypoint.
-    public void Hover() { rendMaterial = mOpaque ? matHovered : matHovering; }
+    public void Hover() {
+        if (mHovered) return;
+        foreach (UX_Waypoint waypoint in UX_All) { waypoint.rendMaterial = mOpaque ? matHovered : matHovering; }
+        mHovered = true;
+    }
     // Should never be called if this is the hovering waypoint.
-    public void Unhover() { rendMaterial = mOpaque ? matOpaque : matSemitrans; }
+    public void Unhover() {
+        if (!mHovered) return;
+        foreach (UX_Waypoint waypoint in UX_All) { rendMaterial = mOpaque ? matOpaque : matSemitrans; }
+        mHovered = false;
+    }
 
     public bool ForPiece() { return mPieceTran != null; }
+
+    public void SetReal() {
+        mReal = this;
+        mUxAll = new UX_Waypoint[9];
+        mUxAll[0] = this;
+    }
+    public void AddClone(UX_Waypoint waypoint, int cloneIdx) {
+        waypoint.mReal = this;
+        mUxAll[cloneIdx] = waypoint;
+    }
+    public void AddClonePosOffset(Coord offset, int boardID) {
+        mClonePosOffset[boardID] = offset.Copy();
+    }
 
     private Material rendMaterial { set { if (mRend.material != value) mRend.material = value; } }
 
@@ -108,7 +143,6 @@ public class UX_Waypoint : MonoBehaviour {
         mTran = GetComponent<Transform>();
         mRend = GetComponent<Renderer>();
         mFilter = GetComponent<MeshFilter>();
-        Hide();
     }
 
     // Update is called once per frame
