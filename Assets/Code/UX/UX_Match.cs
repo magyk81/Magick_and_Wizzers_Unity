@@ -27,6 +27,7 @@ public class UX_Match : MonoBehaviour
     private List<SignalFromClient> mSignalsToSend = new List<SignalFromClient>();
 
     public int ClientID { set { if (mClientID < 0) mClientID = value; } }
+    // [BoardID][CloneID]
     public UX_Board[][] Boards { get { return mBoards; } }
     public UX_Player[] Players { get { return mPlayers; } }
     public SignalFromClient[] SignalsToSend {
@@ -124,7 +125,7 @@ public class UX_Match : MonoBehaviour
                 mBoards[i][j] = Instantiate(baseBoard.gameObject,boardParent).GetComponent<UX_Board>();
                 if (j == 0) mBoards[i][j].gameObject.name = "Real";
                 else mBoards[i][j].gameObject.name = "Clone " + Util.DirToString(j - 1);
-                mBoards[i][j].Init(signal.BoardSizes[i], localPlayerCount, i, j, (j == 0) ? null : mBoards[i][0]);
+                mBoards[i][j].Init(signal.BoardSizes[i], localPlayerCount, i, j, mBoards[i][0]);
                 boardOffsets[i][j] = mBoards[i][j].Offset;
             }
             boardBounds[i] = mBoards[i][0].Bounds;

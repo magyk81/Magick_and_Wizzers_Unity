@@ -16,6 +16,7 @@ public struct Coord {
     }
     public Coord Copy() { return new Coord(X, Z); }
     public Vector2 ToVec2() { return new Vector2(X, Z); }
+    public Vector3 ToVec3() { return new Vector3(X, 0, Z); }
     public Coord ToBounds(int size) {
         int newX = X, newZ = Z;
         while (newX > size) newX -= size;

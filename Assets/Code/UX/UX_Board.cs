@@ -40,20 +40,20 @@ public class UX_Board : MonoBehaviour {
         int cloneOffsetX = 0, cloneOffsetZ = 0,
         mApartOffset = boardID * distBetweenBoards;
         int totalSize = size * Chunk.SIZE;
-        if (cloneIdx >= 0) {
+        if (cloneIdx > 0) {
             if (cloneLength <= 0 || cloneLength > size) cloneLength = size;
-            if (cloneIdx == Util.UP || cloneIdx == Util.UP_LEFT || cloneIdx == Util.UP_RIGHT) {
+            if (cloneIdx == Util.UP + 1 || cloneIdx == Util.UP_LEFT + 1 || cloneIdx == Util.UP_RIGHT + 1) {
                 jEnd = cloneLength;
                 cloneOffsetZ = totalSize;
             }
-            if (cloneIdx == Util.DOWN || cloneIdx == Util.DOWN_LEFT || cloneIdx == Util.DOWN_RIGHT) {
+            if (cloneIdx == Util.DOWN + 1 || cloneIdx == Util.DOWN_LEFT + 1 || cloneIdx == Util.DOWN_RIGHT + 1) {
                 j0 = size - cloneLength;
                 cloneOffsetZ = -totalSize;
             }
-            if (cloneIdx == Util.RIGHT || cloneIdx == Util.UP_RIGHT || cloneIdx == Util.DOWN_RIGHT) {
+            if (cloneIdx == Util.RIGHT + 1 || cloneIdx == Util.UP_RIGHT + 1 || cloneIdx == Util.DOWN_RIGHT + 1) {
                 iEnd = cloneLength;
                 cloneOffsetX = totalSize;
-            } if (cloneIdx == Util.LEFT || cloneIdx == Util.UP_LEFT || cloneIdx == Util.DOWN_LEFT) {
+            } if (cloneIdx == Util.LEFT + 1 || cloneIdx == Util.UP_LEFT + 1 || cloneIdx == Util.DOWN_LEFT + 1) {
                 i0 = size - cloneLength;
                 cloneOffsetX = -totalSize;
             }

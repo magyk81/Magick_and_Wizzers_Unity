@@ -25,13 +25,13 @@ public class UX_Tile {
         float x = pos.X + 0.5F + apartOffset, z = pos.Z + 0.5F;
 
         if (cloneIdx > 0) {
-            if (cloneIdx == Util.UP || cloneIdx == Util.UP_RIGHT || cloneIdx == Util.UP_LEFT)
+            if (cloneIdx == Util.UP + 1 || cloneIdx == Util.UP_RIGHT + 1 || cloneIdx == Util.UP_LEFT + 1)
                 z += boardTotalSize;
-            if (cloneIdx == Util.DOWN || cloneIdx == Util.DOWN_RIGHT || cloneIdx == Util.DOWN_LEFT)
+            if (cloneIdx == Util.DOWN + 1 || cloneIdx == Util.DOWN_RIGHT + 1 || cloneIdx == Util.DOWN_LEFT + 1)
                 z -= boardTotalSize;
-            if (cloneIdx == Util.RIGHT || cloneIdx == Util.UP_RIGHT || cloneIdx == Util.DOWN_RIGHT)
+            if (cloneIdx == Util.RIGHT + 1 || cloneIdx == Util.UP_RIGHT + 1 || cloneIdx == Util.DOWN_RIGHT + 1)
                 x += boardTotalSize;
-            if (cloneIdx == Util.LEFT || cloneIdx == Util.UP_LEFT || cloneIdx == Util.DOWN_LEFT)
+            if (cloneIdx == Util.LEFT + 1 || cloneIdx == Util.UP_LEFT + 1 || cloneIdx == Util.DOWN_LEFT + 1)
                 x -= boardTotalSize;
         } else {
             mUxPosAll = new Vector3[9];

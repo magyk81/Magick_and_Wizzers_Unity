@@ -21,8 +21,6 @@ public class UX_Piece : MonoBehaviour
     private GameObject[] mArt, mFrame, mAttackBar, mDefenseBar, mLifeBar, mHover, mSelect, mTarget;
     private Transform mTran;
     private Material mArtMat;
-    private UX_Tile[] mWaypointTiles = new UX_Tile[Piece.MAX_WAYPOINTS];
-    private UX_Piece[] mWaypointPieces = new UX_Piece[Piece.MAX_WAYPOINTS];
     private UX_Piece mReal = null;
     private UX_Piece[] mUxAll = new UX_Piece[9];
     private List<int> mHand = new List<int>();
@@ -32,6 +30,7 @@ public class UX_Piece : MonoBehaviour
     private float[] mBounds = new float[4];
     private int mPieceID, mBoardID, mPlayerID;
     private bool mIsHovered, mIsSelected;
+    private UX_WaypointTrail mTrail = new UX_WaypointTrail();
 
     public UX_Piece[] UX_All {
         get {
@@ -39,8 +38,9 @@ public class UX_Piece : MonoBehaviour
             return mUxAll;
         }
     }
-    public UX_Tile[] WaypointTiles { get => mWaypointTiles; }
-    public UX_Piece[] WaypointPieces { get => mWaypointPieces; }
+    public UX_Tile[] WaypointTiles { get => mTrail.Tiles; }
+    public UX_Piece[] WaypointPieces { get => mTrail.Pieces; }
+    public int WaypointIdx { get => mTrail.Idx; set => mTrail.Idx = value; }
 
     public Card[] Hand {
         get {
@@ -159,10 +159,7 @@ public class UX_Piece : MonoBehaviour
         }
     }
 
-    public void UpdateWaypoints(UX_Tile[] tiles, UX_Piece[] pieces) {
-        for (int i = 0; i < mWaypointTiles.Length; i++) { mWaypointTiles[i] = tiles[i]; }
-        for (int i = 0; i < mWaypointPieces.Length; i++) { mWaypointPieces[i] = pieces[i]; }
-    }
+    public void UpdateWaypoints(UX_Tile[] tiles, UX_Piece[] pieces) { mTrail.Update(tiles, pieces); }
 
     // Called from UX_Player, so apply to every clone.
     public void Hover(int localPlayerID) {
@@ -211,4 +208,33 @@ public class UX_Piece : MonoBehaviour
 
     // Cleans memory if/when application is stopped.
     private void OnDestroy() { if (mArtMat != null) Destroy(mArtMat); }
+
+    private class UX_WaypointTrail {
+        private int mIdxMax = 0;
+        private int mIdx = 0;
+        private UX_Tile[] mWaypointTiles = new UX_Tile[Piece.MAX_WAYPOINTS];
+        private UX_Piece[] mWaypointPieces = new UX_Piece[Piece.MAX_WAYPOINTS];
+        public int Idx {
+            get => mIdx;
+            set {
+                if (value > mIdxMax) mIdx = mIdxMax;
+                else if (value < 0) mIdx = 0;
+                else mIdx = value;
+            }
+        }
+        public UX_Tile[] Tiles { get => mWaypointTiles; }
+        public UX_Piece[] Pieces { get => mWaypointPieces; }
+        public void Update(UX_Tile[] tiles, UX_Piece[] pieces) {
+            mIdxMax = 1;
+            for (int i = 0; i < mWaypointTiles.Length; i++) {
+                mWaypointTiles[i] = tiles[i];
+                if (i > 0 && tiles[i] != null) mIdxMax = i + 1;
+            }
+            for (int i = 0; i < mWaypointPieces.Length; i++) {
+                mWaypointPieces[i] = pieces[i];
+                if (i > 0 && pieces[i] != null && i > mIdxMax) mIdxMax = i + 1;
+            }
+            if (mIdxMax >= Piece.MAX_WAYPOINTS) mIdxMax = Piece.MAX_WAYPOINTS - 1;
+        }
+    }
 }

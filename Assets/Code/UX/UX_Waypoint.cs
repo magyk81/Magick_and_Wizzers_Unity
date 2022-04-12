@@ -19,6 +19,7 @@ public class UX_Waypoint : MonoBehaviour {
     [SerializeField]
     private Material matOpaque, matSemitrans, matHovered, matHovering;
     private bool mOpaque;
+    private int mBoardID = 0;
     private bool mShown = false, mHovered = false;
 
     public UX_Waypoint[] UX_All { get => mReal.mUxAll; }
@@ -26,19 +27,26 @@ public class UX_Waypoint : MonoBehaviour {
     public UX_Tile Tile {
         get => mTile;
         set {
-            mTile = value;
-            mPiece = null;
-            mTran.localPosition = mTile.UX_Pos;
+            foreach (UX_Waypoint waypoint in UX_All) {
+                waypoint.mTile = value;
+                waypoint.mPiece = null;
+                waypoint.SetPosToTile();
+            }
         }
     }
     public UX_Piece Piece {
         get => mPiece;
         set {
-            mPiece = value;
-            mTile = null;
-            mPieceTran = value.gameObject.GetComponent<Transform>();
+            foreach (UX_Waypoint waypoint in UX_All) {
+                waypoint.mPiece = value;
+                waypoint.mTile = null;
+                waypoint.mPieceTran = value.gameObject.GetComponent<Transform>();
+                waypoint.UpdatePosToPiece();
+            }
+            
         }
     }
+    // public int Current
     // public UX_Piece HolderPiece {
     //     set {
     //         if (value != null) {
@@ -57,7 +65,16 @@ public class UX_Waypoint : MonoBehaviour {
     // }
 
     public bool Opaque {
-        set => mOpaque = value;
+        set { foreach (UX_Waypoint waypoint in UX_All) { waypoint.mOpaque = value; } }
+    }
+
+    public int BoardID {
+        set {
+            foreach (UX_Waypoint waypoint in UX_All) {
+                waypoint.mBoardID = value;
+                waypoint.SetPosToTile();
+            }
+        }
     }
 
     public void Show(bool opaque, bool hovered) {
@@ -121,7 +138,13 @@ public class UX_Waypoint : MonoBehaviour {
         mClonePosOffset[boardID] = offset.Copy();
     }
 
-    private Material rendMaterial { set { if (mRend.material != value) mRend.material = value; } }
+    private Material rendMaterial {
+        set {
+            if (mRend.material != value) {
+                foreach (UX_Waypoint waypoint in UX_All) { waypoint.mRend.material = value; }
+            }
+        }
+    }
 
     // private Mesh RendMesh {
     //     set {
@@ -148,5 +171,7 @@ public class UX_Waypoint : MonoBehaviour {
     // Update is called once per frame
     private void Update() { UpdatePosToPiece(); }
 
+    private void SetPosToTile() {
+        if (mTile != null) mTran.localPosition = mTile.UX_Pos + mClonePosOffset[mBoardID].ToVec3(); }
     private void UpdatePosToPiece() { if (mPiece != null) mTran.localPosition = mPieceTran.localPosition; }
 }
