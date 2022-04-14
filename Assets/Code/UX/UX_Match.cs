@@ -78,6 +78,7 @@ public class UX_Match : MonoBehaviour
                 case SignalFromHost.Request.UPDATE_WAYPOINTS:
                     SignalUpdateWaypoints signalUpdateWaypoints = new SignalUpdateWaypoints(message);
                     UX_Board[] _boards = mBoards[mBoardWithPiece[signalUpdateWaypoints.PieceID]];
+                    // Piece on board needs to have its waypoints updated before they are updated on the Player.
                     foreach (UX_Board board in _boards) {
                         board.UpdateWaypoints(signalUpdateWaypoints.PieceID, signalUpdateWaypoints.WaypointData);
                     }

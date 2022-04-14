@@ -41,7 +41,6 @@ public class UX_Piece : MonoBehaviour
     public UX_Tile[] WaypointTiles { get => mTrail.Tiles; }
     public UX_Piece[] WaypointPieces { get => mTrail.Pieces; }
     public int WaypointIdx { get => mTrail.Idx; set => mTrail.Idx = value; }
-
     public Card[] Hand {
         get {
             Card[] hand = new Card[mHand.Count];
@@ -160,6 +159,7 @@ public class UX_Piece : MonoBehaviour
     }
 
     public void UpdateWaypoints(UX_Tile[] tiles, UX_Piece[] pieces) { mTrail.Update(tiles, pieces); }
+    public bool WaypointIdxAtMax() { return mTrail.AtMax(); }
 
     // Called from UX_Player, so apply to every clone.
     public void Hover(int localPlayerID) {
@@ -212,6 +212,7 @@ public class UX_Piece : MonoBehaviour
     private class UX_WaypointTrail {
         private int mIdxMax = 0;
         private int mIdx = 0;
+        private bool mFull = false;
         private UX_Tile[] mWaypointTiles = new UX_Tile[Piece.MAX_WAYPOINTS];
         private UX_Piece[] mWaypointPieces = new UX_Piece[Piece.MAX_WAYPOINTS];
         public int Idx {
@@ -224,7 +225,10 @@ public class UX_Piece : MonoBehaviour
         }
         public UX_Tile[] Tiles { get => mWaypointTiles; }
         public UX_Piece[] Pieces { get => mWaypointPieces; }
+        
+        public bool AtMax() { return mIdxMax == mIdx && !mFull; }
         public void Update(UX_Tile[] tiles, UX_Piece[] pieces) {
+            int idxMaxPrev = mIdxMax;
             mIdxMax = 1;
             for (int i = 0; i < mWaypointTiles.Length; i++) {
                 mWaypointTiles[i] = tiles[i];
@@ -234,7 +238,12 @@ public class UX_Piece : MonoBehaviour
                 mWaypointPieces[i] = pieces[i];
                 if (i > 0 && pieces[i] != null && i > mIdxMax) mIdxMax = i + 1;
             }
-            if (mIdxMax >= Piece.MAX_WAYPOINTS) mIdxMax = Piece.MAX_WAYPOINTS - 1;
+            if (mIdxMax >= Piece.MAX_WAYPOINTS) {
+                mIdxMax = Piece.MAX_WAYPOINTS - 1;
+                mFull = true;
+            } else mFull = false;
+            // The setter for mIdx keeps it in bounds.
+            Idx += mIdxMax - idxMaxPrev;
         }
     }
 }

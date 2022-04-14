@@ -20,7 +20,7 @@ public class UX_Waypoint : MonoBehaviour {
     private Material matOpaque, matSemitrans, matHovered, matHovering;
     private bool mOpaque;
     private int mBoardID = 0;
-    private bool mShown = false, mHovered = false;
+    private bool mShown = true, mHovered = false;
 
     public UX_Waypoint[] UX_All { get => mReal.mUxAll; }
     public int ClonePosOffsetCount { set => mClonePosOffset = new Coord[value]; }
@@ -65,7 +65,13 @@ public class UX_Waypoint : MonoBehaviour {
     // }
 
     public bool Opaque {
-        set { foreach (UX_Waypoint waypoint in UX_All) { waypoint.mOpaque = value; } }
+        set {
+            if (mOpaque == value) return;
+            foreach (UX_Waypoint waypoint in UX_All) {
+                waypoint.mOpaque = value;
+            }
+            UpdateMat();
+        }
     }
 
     public int BoardID {
@@ -75,6 +81,12 @@ public class UX_Waypoint : MonoBehaviour {
                 waypoint.SetPosToTile();
             }
         }
+    }
+
+    public void Init() {
+        mTran = GetComponent<Transform>();
+        mRend = GetComponent<Renderer>();
+        mFilter = GetComponent<MeshFilter>();
     }
 
     public void Show(bool opaque, bool hovered) {
@@ -113,14 +125,14 @@ public class UX_Waypoint : MonoBehaviour {
     // Should only be called once if this is the hovering waypoint.
     public void Hover() {
         if (mHovered) return;
-        foreach (UX_Waypoint waypoint in UX_All) { waypoint.rendMaterial = mOpaque ? matHovered : matHovering; }
         mHovered = true;
+        UpdateMat();
     }
     // Should never be called if this is the hovering waypoint.
     public void Unhover() {
         if (!mHovered) return;
-        foreach (UX_Waypoint waypoint in UX_All) { rendMaterial = mOpaque ? matOpaque : matSemitrans; }
         mHovered = false;
+        UpdateMat();
     }
 
     public bool ForPiece() { return mPieceTran != null; }
@@ -162,14 +174,20 @@ public class UX_Waypoint : MonoBehaviour {
     // }
 
     // Start is called before the first frame update
-    private void Start() {
-        mTran = GetComponent<Transform>();
-        mRend = GetComponent<Renderer>();
-        mFilter = GetComponent<MeshFilter>();
-    }
+    private void Start() {}
 
     // Update is called once per frame
     private void Update() { UpdatePosToPiece(); }
+
+    private void UpdateMat() {
+        if (mOpaque) {
+            if (mHovered) foreach (UX_Waypoint waypoint in UX_All) { rendMaterial = matHovered; }
+            else foreach (UX_Waypoint waypoint in UX_All) { rendMaterial = matOpaque; }
+        } else {
+            if (mHovered) foreach (UX_Waypoint waypoint in UX_All) { rendMaterial = matHovering; }
+            else foreach (UX_Waypoint waypoint in UX_All) { rendMaterial = matSemitrans; }
+        }
+    }
 
     private void SetPosToTile() {
         if (mTile != null) mTran.localPosition = mTile.UX_Pos + mClonePosOffset[mBoardID].ToVec3(); }

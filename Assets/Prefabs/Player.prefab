@@ -52,3 +52,5 @@ MonoBehaviour:
     type: 3}
   baseWaypointForPieces: {fileID: -2610927972562071735, guid: 83e3654d3413c654f84f8b13db70fffd,
     type: 3}
+  baseLineRenderer: {fileID: 1485325646943916463, guid: 1a9468b778cac3c4da5ce87176c19d6a,
+    type: 3}
