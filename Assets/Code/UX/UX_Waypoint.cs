@@ -7,6 +7,8 @@
 using UnityEngine;
 
 public class UX_Waypoint : MonoBehaviour {
+    private Vector3 LIFT_POS_OFFSET = new Vector3(0, UX_Piece.LIFT_DIST, 0);
+
     private UX_Tile mTile;
     private UX_Piece mHolderPiece, mPiece;
     private Transform mTran, mPieceTran;
@@ -24,6 +26,7 @@ public class UX_Waypoint : MonoBehaviour {
 
     public UX_Waypoint[] UX_All { get => mReal.mUxAll; }
     public int ClonePosOffsetCount { set => mClonePosOffset = new Coord[value]; }
+    public bool Shown { get => mShown; }
     public UX_Tile Tile {
         get => mTile;
         set {
@@ -149,6 +152,8 @@ public class UX_Waypoint : MonoBehaviour {
     public void AddClonePosOffset(Coord offset, int boardID) {
         mClonePosOffset[boardID] = offset.Copy();
     }
+
+    public Vector3 GetPosForLines() { Debug.Log(mTran.localPosition); return mTran.localPosition + LIFT_POS_OFFSET; }
 
     private Material rendMaterial {
         set {

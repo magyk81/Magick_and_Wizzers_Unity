@@ -145,6 +145,8 @@ public class UX_Piece : MonoBehaviour
         mUxAll[cloneIdx] = piece;
     }
 
+    public Vector3 GetPosForLines() { return mTran.localPosition; }
+
     public void SetPos(UX_Tile a, UX_Tile b, float lerp) {
         if (a == null || b == null) gameObject.SetActive(false);
         else {
@@ -160,6 +162,7 @@ public class UX_Piece : MonoBehaviour
 
     public void UpdateWaypoints(UX_Tile[] tiles, UX_Piece[] pieces) { mTrail.Update(tiles, pieces); }
     public bool WaypointIdxAtMax() { return mTrail.AtMax(); }
+    public bool WaypointIdxNextToMax() { return mTrail.NextToMax(); }
 
     // Called from UX_Player, so apply to every clone.
     public void Hover(int localPlayerID) {
@@ -227,6 +230,7 @@ public class UX_Piece : MonoBehaviour
         public UX_Piece[] Pieces { get => mWaypointPieces; }
         
         public bool AtMax() { return mIdxMax == mIdx && !mFull; }
+        public bool NextToMax() { return mIdxMax == mIdx + 1 || mFull; }
         public void Update(UX_Tile[] tiles, UX_Piece[] pieces) {
             int idxMaxPrev = mIdxMax;
             mIdxMax = 1;
