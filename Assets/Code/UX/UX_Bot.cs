@@ -9,8 +9,4 @@ public class UX_Bot : UX_Player {
         mPlayerID = playerID;
         mLocalPlayerIdx = localPlayerIdx;
     }
-
-    protected override void Update() {
-        // Nothing
-    }
 }

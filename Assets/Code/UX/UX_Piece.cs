@@ -54,6 +54,7 @@ public class UX_Piece : MonoBehaviour
     public int PlayerID { get => mPlayerID; }
     public bool IsHovered { get => mIsHovered; }
     public bool IsSelected { get => mIsSelected; }
+    public Vector3 UX_Pos { get => mTran.localPosition; }
 
     /// <summary>
     /// Called once before the match begins.

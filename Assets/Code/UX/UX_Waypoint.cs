@@ -153,7 +153,12 @@ public class UX_Waypoint : MonoBehaviour {
         mClonePosOffset[boardID] = offset.Copy();
     }
 
-    public Vector3 GetPosForLines() { Debug.Log(mTran.localPosition); return mTran.localPosition + LIFT_POS_OFFSET; }
+    public Vector3 GetPosForLines() { return mTran.localPosition + LIFT_POS_OFFSET; }
+    public Vector3 GetCoordForLines() {
+        if (mTile != null) return mTile.UX_Pos;
+        if (mPiece != null) return mPiece.UX_Pos;
+        return Vector3.zero;
+    }
 
     private Material rendMaterial {
         set {

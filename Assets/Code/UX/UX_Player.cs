@@ -36,7 +36,7 @@ public class UX_Player : MonoBehaviour
     private UX_Waypoint[][] mWaypointsForTiles, mWaypointsForPieces;
     // Only need one of each, 9 clones.
     private UX_Waypoint[] mWaypointHoveringForTiles, mWaypointHoveringForPieces;
-    private LineRenderer[] mLinesForWaypoints, mLinesForHoveringWaypoints;
+    private UX_WaypointLine mLineForWaypoints, mLineForHoveringWaypoints;
     private Gamepad mGamepad;
     private UX_Tile mHoveredTile;
     private List<UX_Piece> mSelectedPieces = new List<UX_Piece>();
@@ -221,26 +221,10 @@ public class UX_Player : MonoBehaviour
         mWaypointHoveringForPieces[0].Hide();
 
         // Generate lines between waypoints.
-        mLinesForWaypoints = new LineRenderer[9];
-        mLinesForHoveringWaypoints = new LineRenderer[9];
-        for (int j = 0; j < mLinesForWaypoints.Length; j++) {
-            mLinesForWaypoints[j] = Instantiate(baseLineRenderer.gameObject, waypointsParent)
-                .GetComponent<LineRenderer>();
-            string name = "Line Between Waypoints";
-            if (j == 0) {
-                mLinesForWaypoints[j].gameObject.name = name;
-            } else {
-                mLinesForWaypoints[j].gameObject.name = name + " - Clone " + Util.DirToString(j - 1);
-            }
-            mLinesForHoveringWaypoints[j] = Instantiate(baseLineRenderer.gameObject, waypointsParent)
-                .GetComponent<LineRenderer>();
-            string nameH = "Line Between Hovering Waypoints";
-            if (j == 0) {
-                mLinesForHoveringWaypoints[j].gameObject.name = nameH;
-            } else {
-                mLinesForHoveringWaypoints[j].gameObject.name = nameH + " - Clone " + Util.DirToString(j - 1);
-            }
-        }
+        mLineForWaypoints = new UX_WaypointLine(
+            boardOffsets, baseLineRenderer, waypointsParent, "Line Between Waypooints");
+        mLineForHoveringWaypoints = new UX_WaypointLine(
+            boardOffsets, baseLineRenderer, waypointsParent, "Line Between Hovering Waypooints");
 
         // Hide hovered tile.
         HideTileHover();
@@ -287,7 +271,10 @@ public class UX_Player : MonoBehaviour
             if (mMode == Mode.HAND) mHand.MoveCursor(Util.LEFT, -1);
             else if (mMode == Mode.SURRENDER) { /* mSurrenderMenu.MoveCursor(Util.LEFT); */ }
             else if (mMode == Mode.PAUSE) { /* mPauseMenu.MoveCursor(Util.LEFT); */ }
-            else if (mMode == Mode.SELECT_BOARD) { /* mCam.BoardID = mBoardMenu.Select(Util.LEFT); */ }
+            else if (mMode == Mode.SELECT_BOARD) {
+                /* mCam.BoardID = mBoardMenu.Select(Util.LEFT); */
+                mLineForWaypoints.BoardID = BoardID; mLineForHoveringWaypoints.BoardID = BoardID;
+            }
             else if (mMode == Mode.DETAIL) { /* mDetailMenu.MoveCursor(Util.LEFT); */ }
             else if (InSelectPieceMode()) {
                 /* mCam.SnapToPieceFrom(mHoveredTile, Util.LEFT); */ }
@@ -297,7 +284,10 @@ public class UX_Player : MonoBehaviour
             if (mMode == Mode.HAND) mHand.MoveCursor(Util.RIGHT, -1);
             else if (mMode == Mode.SURRENDER) { /* mSurrenderMenu.MoveCursor(Util.RIGHT) */ }
             else if (mMode == Mode.PAUSE) { /* mPauseMenu.MoveCursor(Util.RIGHT); */ }
-            else if (mMode == Mode.SELECT_BOARD) { /* mCam.BoardID = mBoardMenu.Select(Util.RIGHT); */ }
+            else if (mMode == Mode.SELECT_BOARD) {
+                /* mCam.BoardID = mBoardMenu.Select(Util.RIGHT); */
+                mLineForWaypoints.BoardID = BoardID; mLineForHoveringWaypoints.BoardID = BoardID;
+            }
             else if (mMode == Mode.DETAIL) { /* mDetailMenu.MoveCursor(Util.RIGHT); */ }
             else if (InSelectPieceMode()) {
                 /* mCam.SnapToPieceFrom(mHoveredTile, Util.RIGHT); */ }
@@ -306,7 +296,10 @@ public class UX_Player : MonoBehaviour
         } else if (gamepadInput[(int) Gamepad.Button.UP] == 1) {
             if (mMode == Mode.HAND) mHand.MoveCursor(-1, Util.UP);
             else if (mMode == Mode.PAUSE) { /* mPauseMenu.MoveCursor(Util.UP); */ }
-            else if (mMode == Mode.SELECT_BOARD) { /* mCam.BoardID = mBoardMenu.Select(Util.UP); */ }
+            else if (mMode == Mode.SELECT_BOARD) {
+                /* mCam.BoardID = mBoardMenu.Select(Util.UP); */
+                mLineForWaypoints.BoardID = BoardID; mLineForHoveringWaypoints.BoardID = BoardID;
+            }
             else if (mMode == Mode.DETAIL) { /* mDetailMenu.MoveCursor(Util.UP); */ }
             else if (InSelectPieceMode()) {
                 /* mCam.SnapToPieceFrom(mHoveredTile, Util.UP); */ }
@@ -315,7 +308,10 @@ public class UX_Player : MonoBehaviour
         } else if (gamepadInput[(int) Gamepad.Button.DOWN] == 1) {
             if (mMode == Mode.HAND) mHand.MoveCursor(-1, Util.DOWN);
             else if (mMode == Mode.PAUSE) { /* mPauseMenu.MoveCursor(Util.DOWN); */ }
-            else if (mMode == Mode.SELECT_BOARD) { /* mCam.BoardID = mBoardMenu.Select(Util.DOWN); */ }
+            else if (mMode == Mode.SELECT_BOARD) {
+                /* mCam.BoardID = mBoardMenu.Select(Util.DOWN); */
+                mLineForWaypoints.BoardID = BoardID; mLineForHoveringWaypoints.BoardID = BoardID;
+            }
             else if (mMode == Mode.DETAIL) { /* mDetailMenu.MoveCursor(Util.DOWN); */ }
             else if (InSelectPieceMode()) {
                 /* mCam.SnapToPieceFrom(mHoveredTile, Util.DOWN); */ }
@@ -499,8 +495,12 @@ public class UX_Player : MonoBehaviour
     }
 
     // Called once every frame.
-    protected virtual void Update() {
-
+    private void Update() {
+        // Animate the line renderers' textures.
+        // if (InWaypointMode() || mHoveredPieces.Count == 1) {
+        //     mLineForWaypoints.Mat.SetTextureOffset("_MainTex", Vector2.right * Time.time);
+        //     mLineForHoveringWaypoints.Mat.SetTextureOffset("_MainTex", Vector2.right * Time.time);
+        // }
     }
 
     private void HoverPiece(UX_Piece piece) {
@@ -576,11 +576,8 @@ public class UX_Player : MonoBehaviour
                 }
 
                 // Feed waypoint positions to line renderer.
-                foreach (LineRenderer lineForWaypoints in mLinesForWaypoints) {
-                    lineForWaypoints.gameObject.SetActive(true);
-                    lineForWaypoints.positionCount = lineRendererPoints.Count;
-                    lineForWaypoints.SetPositions(lineRendererPoints.ToArray());
-                }
+                mLineForWaypoints.Active = true;
+                mLineForWaypoints.Positions = lineRendererPoints.ToArray();
 
                 // Determine line points for hovering waypoint.
                 ShowLinesForHoveringWaypoints();
@@ -623,12 +620,8 @@ public class UX_Player : MonoBehaviour
             mWaypointHoveringForTiles[i].Hide();
             mWaypointHoveringForPieces[i].Hide();
         }
-        foreach (LineRenderer lineForWaypoints in mLinesForWaypoints) {
-            lineForWaypoints.gameObject.SetActive(false);
-        }
-        foreach (LineRenderer lineForWaypoints in mLinesForHoveringWaypoints) {
-            lineForWaypoints.gameObject.SetActive(false);
-        }
+        mLineForWaypoints.Active = false;
+        mLineForHoveringWaypoints.Active = false;
         mShowingWaypoints = false;
     }
 
@@ -681,11 +674,8 @@ public class UX_Player : MonoBehaviour
         }
 
         // Feed waypoint positions to line renderer for hovering.
-        foreach (LineRenderer lineForWaypoints in mLinesForHoveringWaypoints) {
-            lineForWaypoints.gameObject.SetActive(true);
-            lineForWaypoints.positionCount = lineRendererHoverPoints.Length;
-            lineForWaypoints.SetPositions(lineRendererHoverPoints);
-        }
+        mLineForHoveringWaypoints.Active = true;
+        mLineForHoveringWaypoints.Positions = lineRendererHoverPoints;
     }
 
     private void ShowTileHover() {
