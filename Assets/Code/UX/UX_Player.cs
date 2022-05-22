@@ -89,6 +89,9 @@ public class UX_Player : MonoBehaviour {
                 if (mMode == Mode.SELECT_TILE_WAYPOINT) {
                     // Setting the position for one does it for all the clones.
                     mWaypointHovering.Tile = mHoveredTile;
+                    // Don't show the hovering waypoint if there is already a waypoint there.
+                    if (IsWaypointPresent(mHoveredTile)) mWaypointHovering.Hide();
+                    else mWaypointHovering.Show();
                     mWaypointHovering.Update();
                 }
 
@@ -348,12 +351,25 @@ public class UX_Player : MonoBehaviour {
             } else if (InWaypointMode()) {
                 if (mSelectedPieces.Count == 1) {
                     if (mMode == Mode.SELECT_TILE_WAYPOINT) {
-                        signal = new SignalAddWaypoint(mPlayerID, mHoveredTile.Pos, mCam.BoardID, HoveredWaypointIdx,
-                            mSelectedPieces[0].PieceID);
+                        if (IsWaypointPresent(mHoveredTile)) {
+                            Debug.Log("PLAY SOUND: Cannot place waypoint here.");
+                        } else {
+                            signal = new SignalAddWaypoint(mPlayerID, mHoveredTile.Pos, mCam.BoardID,
+                                HoveredWaypointIdx, mSelectedPieces[0].PieceID);
+                        }
                     } else if (mHoveredPieces.Count == 1) { // if (mMode == Mode.SELECT_PIECE_WAYPOINT)
-                        // Using a coord with X-value -1 means it's a piece waypoint.
-                        signal = new SignalAddWaypoint(mPlayerID, Coord._(-1, mHoveredPieces[0].PieceID), mCam.BoardID,
-                            HoveredWaypointIdx, mSelectedPieces[0].PieceID);
+                        if (IsWaypointPresent(mHoveredPieces[0])) {
+                            Debug.Log("PLAY SOUND: Cannot place waypoint here.");
+                        } else {
+                            // Can't put a waypoint on the selected piece.
+                            if (mSelectedPieces[0].PieceID == mHoveredPieces[0].PieceID)
+                                Debug.Log("PLAY SOUND: Cannot place waypoint here.");
+                            else {
+                                // Using a coord with X-value -1 means it's a piece waypoint.
+                                signal = new SignalAddWaypoint(mPlayerID, Coord._(-1, mHoveredPieces[0].PieceID),
+                                    mCam.BoardID, HoveredWaypointIdx, mSelectedPieces[0].PieceID);
+                            }
+                        }
                     }
                 } else if (mSelectedPieces.Count > 1) {
                     // Send different type of signal if for a group of selected pieces.
@@ -529,10 +545,30 @@ public class UX_Player : MonoBehaviour {
             if (!InWaypointMode()) piece.Hover(mLocalPlayerIdx);
             // Only show waypoints something if 1 piece is hovered.
             if (mHoveredPieces.Count == 1) {
-                if (mMode == Mode.SELECT_PIECE_WAYPOINT) mWaypointHovering.Piece = piece;
-                ShowWaypoints();
+                if (mMode == Mode.SELECT_PIECE_WAYPOINT) {
+                    mWaypointHovering.Piece = piece;
+                    // Don't show the hovering waypoint if there is already a waypoint there. 
+                    if (IsWaypointPresent(piece)) mWaypointHovering.Hide();
+                    else mWaypointHovering.Show();
+                    mWaypointHovering.Update();
+                } else ShowWaypoints();
             } else HideWaypoints();
         } else if (mHoveredPieces.Count == 0 && !InWaypointMode()) HideWaypoints();
+
+        // When no longer hovering a piece, hide the hovering waypoint.
+        if (piece == null && mMode != Mode.SELECT_TILE_WAYPOINT) {
+            mWaypointHovering.Hide();
+            mWaypointHovering.Update();
+        } else if (piece != null) {
+            // If hovering a selected piece, hide the hovering waypoint.
+            foreach (UX_Piece selectedPiece in mSelectedPieces) {
+                if (piece.PieceID == selectedPiece.PieceID) {
+                    mWaypointHovering.Hide();
+                    mWaypointHovering.Update();
+                    break;
+                }
+            }
+        }
     }
 
     private void UnhoverTile() {
@@ -582,7 +618,10 @@ public class UX_Player : MonoBehaviour {
                         mWaypoints[i].Show(); mShowingWaypoints = true;
                         mWaypoints[i].Update();
                     } else { // No waypoint of any type in this slot.
-                        for (int j = i; j < mWaypoints.Length; j++) { mWaypoints[j].Hide(); }
+                        for (int j = i; j < mWaypoints.Length; j++) {
+                            mWaypoints[j].Hide();
+                            mWaypoints[j].Update();
+                        }
                         break;
                     }
                 }
@@ -607,7 +646,10 @@ public class UX_Player : MonoBehaviour {
                     mWaypoints[i].Show(); mShowingWaypoints = true;
                     mWaypoints[i].Update();
                 } else { // No waypoint of any type in this slot.
-                    for (int j = i; j < mWaypoints.Length; j++) { mWaypoints[j].Hide(); }
+                    for (int j = i; j < mWaypoints.Length; j++) {
+                        mWaypoints[j].Hide();
+                        mWaypoints[j].Update();
+                    }
                     break;
                 }
             }
@@ -626,6 +668,19 @@ public class UX_Player : MonoBehaviour {
     }
     private void HideTileHover() {
         for (int i = 0; i < mTileHover.Length; i++) { mTileHover[i].gameObject.SetActive(false); }
+    }
+
+    private bool IsWaypointPresent(UX_Tile tile) {
+        foreach (UX_Waypoint waypoint in mWaypoints) {
+            if (waypoint.Tile != null && waypoint.Tile.Pos == tile.Pos) return true;
+        }
+        return false;
+    }
+    private bool IsWaypointPresent(UX_Piece piece) {
+        foreach (UX_Waypoint waypoint in mWaypoints) {
+            if (waypoint.Piece != null && waypoint.Piece.PieceID == piece.PieceID) return true;
+        }
+        return false;
     }
 
     private bool InMenuMode() { return mMode == Mode.DETAIL || mMode == Mode.SURRENDER || mMode == Mode.PAUSE; }
