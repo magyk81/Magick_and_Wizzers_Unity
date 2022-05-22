@@ -26,6 +26,7 @@ public class UX_Piece : MonoBehaviour
     private List<int> mHand = new List<int>();
     private Coord mPosPrev, mPosNext;
     private float mPosLerp;
+    private UX_Tile mTileAvg;
     private int mSize = 1;
     private float[] mBounds = new float[4];
     private int mPieceID, mBoardID, mPlayerID;
@@ -55,6 +56,7 @@ public class UX_Piece : MonoBehaviour
     public bool IsHovered { get => mIsHovered; }
     public bool IsSelected { get => mIsSelected; }
     public Vector3 UX_Pos { get => mTran.localPosition; }
+    public UX_Tile UX_TileAvg { get => mTileAvg; }
 
     /// <summary>
     /// Called once before the match begins.
@@ -147,6 +149,7 @@ public class UX_Piece : MonoBehaviour
     }
 
     public Vector3 GetPosForLines() { return mTran.localPosition; }
+    public Coord GetCoordForLines() { return UX_TileAvg.Pos; }
 
     public void SetPos(UX_Tile a, UX_Tile b, float lerp) {
         if (a == null || b == null) gameObject.SetActive(false);
@@ -158,6 +161,8 @@ public class UX_Piece : MonoBehaviour
             mPosPrev = a.Pos; mPosNext = b.Pos; mPosLerp = lerp;
             mBounds[0] = mPosPrev.X + ((lerp - 1) * mSize); mBounds[1] = mPosPrev.X + (lerp * mSize);
             mBounds[2] = mPosPrev.Z + ((lerp - 1) * mSize); mBounds[3] = mPosPrev.Z + (lerp * mSize);
+
+            mTileAvg = (lerp < 0.5F) ? a : b;
         }
     }
 
@@ -241,7 +246,7 @@ public class UX_Piece : MonoBehaviour
             }
             for (int i = 0; i < mWaypointPieces.Length; i++) {
                 mWaypointPieces[i] = pieces[i];
-                if (i > 0 && pieces[i] != null && i > mIdxMax) mIdxMax = i + 1;
+                if (i > 0 && pieces[i] != null && i >= mIdxMax) mIdxMax = i + 1;
             }
             if (mIdxMax >= Piece.MAX_WAYPOINTS) {
                 mIdxMax = Piece.MAX_WAYPOINTS - 1;

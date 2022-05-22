@@ -5,12 +5,13 @@
  */
 
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 
 public class UX_Board : MonoBehaviour {
+    public static readonly int DIST_BETWEEN_BOARDS = 200;
+
     [SerializeField]
-    private int distBetweenBoards, cloneLength;
+    private int cloneLength;
     [SerializeField]
     UX_Chunk baseChunk;
     [SerializeField]
@@ -38,7 +39,7 @@ public class UX_Board : MonoBehaviour {
 
         int i0 = 0, j0 = 0, iEnd = size, jEnd = size;
         int cloneOffsetX = 0, cloneOffsetZ = 0,
-        mApartOffset = boardID * distBetweenBoards;
+        mApartOffset = boardID * DIST_BETWEEN_BOARDS;
         int totalSize = size * Chunk.SIZE;
         if (cloneIdx > 0) {
             if (cloneLength <= 0 || cloneLength > size) cloneLength = size;

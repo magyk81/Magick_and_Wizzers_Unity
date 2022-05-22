@@ -31,7 +31,7 @@ public class SignalAddWaypoint : SignalFromClient {
 
         intMessage[0] = (int) Request.ADD_WAYPOINT;
         intMessage[1] = actingPlayerID;
-        intMessage[2] = targetTile.X;
+        intMessage[2] = targetTile.X; // Set to -1 if it's a piece waypoint.
         intMessage[3] = targetTile.Z;
         intMessage[4] = boardID;
         intMessage[5] = orderPlace;

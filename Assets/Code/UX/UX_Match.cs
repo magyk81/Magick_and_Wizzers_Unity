@@ -143,7 +143,7 @@ public class UX_Match : MonoBehaviour
             else mPlayers[i] = Instantiate(basePlayer.gameObject, playerGroup).GetComponent<UX_Player>();
             mPlayers[i].gameObject.name = signal.PlayerNames[playerID];
             mPlayers[i].gameObject.SetActive(true);
-            mPlayers[i].Init(playerID, i, boardBounds, boardOffsets, Chunk.SIZE / 2);
+            mPlayers[i].Init(playerID, i, boardBounds, boardOffsets, signal.BoardSizes);
         }
     }
 

@@ -20,9 +20,9 @@ public class Gamepad {
                 GetInput(KeyCode.Escape, Button.START);
                 GetInput(KeyCode.Backspace, Button.SELECT);
                 GetInput(KeyCode.Space, Button.A);
-                GetInput(KeyCode.L, Button.B);
-                GetInput(KeyCode.J, Button.X);
-                GetInput(KeyCode.K, Button.Y);
+                GetInput(KeyCode.R, Button.B);
+                GetInput(KeyCode.F, Button.X);
+                GetInput(KeyCode.J, Button.Y);
                 GetInput(KeyCode.LeftShift, Button.L_TRIG);
                 GetInput(KeyCode.RightShift, Button.R_TRIG);
                 GetInput(KeyCode.Q, Button.L_BUMP);

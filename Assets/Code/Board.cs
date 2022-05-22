@@ -35,6 +35,29 @@ public class Board {
     public int TotalSize { get { return mTotalSize; } }
     public string Name { get { return mName; } }
 
+    public static int GetTravelDirs(Coord pos, Coord dest, int boardSize) {
+        int size = boardSize * Chunk.SIZE;
+        int xDir = -1, zDir = -1;
+        if (pos.X < dest.X) xDir = Util.RIGHT;
+        else if (pos.X > dest.X) xDir = Util.LEFT;
+        if (Mathf.Abs(dest.X - pos.X) > size / 2) xDir = Util.DirOpp(xDir);
+        if (pos.Z < dest.Z) zDir = Util.UP;
+        else if (pos.Z > dest.Z) zDir = Util.DOWN;
+        if (Mathf.Abs(dest.Z - pos.Z) > size / 2) zDir = Util.DirOpp(zDir);
+        return Util.AddDirs(xDir, zDir);
+    }
+    public static int GetTravelDirsChangeOnly(Coord pos, Coord dest, int boardSize) {
+        int size = boardSize * Chunk.SIZE;
+        int xDir = -1, zDir = -1;
+        if (pos.X < dest.X) xDir = Util.RIGHT;
+        else if (pos.X > dest.X) xDir = Util.LEFT;
+        if (Mathf.Abs(dest.X - pos.X) > size / 2) xDir = Util.DirOpp(xDir); else xDir = -1;
+        if (pos.Z < dest.Z) zDir = Util.UP;
+        else if (pos.Z > dest.Z) zDir = Util.DOWN;
+        if (Mathf.Abs(dest.Z - pos.Z) > size / 2) zDir = Util.DirOpp(zDir); else zDir = -1;
+        return Util.AddDirs(xDir, zDir);
+    }
+
     /// <summary>
     /// Adds 1 master to the boards for each player. The masters' starting positions depend on the number of players.
     /// </summary>
