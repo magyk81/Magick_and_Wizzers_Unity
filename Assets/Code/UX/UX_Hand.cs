@@ -181,6 +181,7 @@ public class UX_Hand : MonoBehaviour
 
         // Setup play-card visualization.
         mPlayCardTran = Instantiate(baseCard, mTran).GetComponent<RectTransform>();
+        mPlayCardTran.name = "Play Card";
         mPlayCardTran.sizeDelta = new Vector2(mCardWidth + CURSOR_THICKNESS, mCardHeight + CURSOR_THICKNESS);
         mPlayCardTran.anchoredPosition = Coord._(0, (int) (mCamDims.Z - mCardHeight) / 2).ToVec2();
         mPlayCardTran.gameObject.SetActive(false);
@@ -195,6 +196,7 @@ public class UX_Hand : MonoBehaviour
 
         // Setup cursor.
         cursor = Instantiate(cursor, mTran).GetComponent<RectTransform>();
+        cursor.name = "Card Cursor";
         cursor.sizeDelta = new Vector2(mCardWidth + CURSOR_THICKNESS, mCardHeight + CURSOR_THICKNESS);
         cursor.sizeDelta = new Vector2(mCardWidth + CURSOR_THICKNESS, mCardHeight + CURSOR_THICKNESS);
         cursor.anchoredPosition = GetCardPos(0).ToVec2();

@@ -23,10 +23,14 @@ public class UX_Player : MonoBehaviour {
     private Material waypointMatOpaqueForTile, waypointMatSemitransForTile,
         waypointMatHoveredForTile, waypointMatHoveringForTile,
         waypointMatOpaqueForPiece, waypointMatSemitransForPiece,
-        waypointMatHoveredForPiece, waypointMatHoveringForPiece;
+        waypointMatHoveredForPiece, waypointMatHoveringForPiece,
+        waypointMatOpaqueForTileOnGroup, waypointMatSemitransForTileOnGroup,
+        waypointMatOpaqueForPieceOnGroup, waypointMatSemitransForPieceOnGroup;
 
-    private enum Mode { SELECT_PIECE_PLAIN, SELECT_PIECE_GROUP, SELECT_PIECE_SPELLCAST, SELECT_PIECE_WAYPOINT,
-        SELECT_TILE_SPELLCAST, SELECT_TILE_WAYPOINT, SELECT_CHUNK_SPELLCAST, SELECT_BOARD, HAND, DETAIL, SURRENDER,
+    private enum Mode { SELECT_PIECE_PLAIN, SELECT_PIECE_GROUP,
+        SELECT_TILE_SPELLCAST, SELECT_PIECE_SPELLCAST, SELECT_CHUNK_SPELLCAST,
+        SELECT_TILE_WAYPOINT, SELECT_PIECE_WAYPOINT, SELECT_TILE_WAYPOINT_GROUP, SELECT_PIECE_WAYPOINT_GROUP,
+        SELECT_BOARD, HAND, DETAIL, SURRENDER,
         PAUSE
     }
     
@@ -86,7 +90,7 @@ public class UX_Player : MonoBehaviour {
                 for (int i = 0; i < mTileHover.Length; i++) { mTileHover[i].localPosition = tileHoverPos[i]; }
 
                 // Relocate the hovering waypoint to the hovered tile if in the tile-waypoint mode.
-                if (mMode == Mode.SELECT_TILE_WAYPOINT) {
+                if (mMode == Mode.SELECT_TILE_WAYPOINT || mMode == Mode.SELECT_TILE_WAYPOINT_GROUP) {
                     // Setting the position for one does it for all the clones.
                     mWaypointHovering.Tile = mHoveredTile;
                     // Don't show the hovering waypoint if there is already a waypoint there.
@@ -137,115 +141,21 @@ public class UX_Player : MonoBehaviour {
                 waypointMatOpaqueForTile, waypointMatSemitransForTile,
                 waypointMatHoveredForTile, waypointMatHoveringForTile,
                 waypointMatOpaqueForPiece, waypointMatSemitransForPiece,
-                waypointMatHoveredForPiece, waypointMatHoveringForPiece);
+                waypointMatHoveredForPiece, waypointMatHoveringForPiece,
+                waypointMatOpaqueForTileOnGroup, waypointMatSemitransForTileOnGroup,
+                waypointMatOpaqueForPieceOnGroup, waypointMatSemitransForPieceOnGroup);
             /* Both this waypoint and the previous need to be instantiated before assigning Next (which also assigns
              * Prev). */
             if (i > 0) mWaypoints[i - 1].Next = mWaypoints[i];
         }
 
-        // mWaypointsForTiles = new UX_Waypoint[Piece.MAX_WAYPOINTS][];
-        // for (int i = 0; i < mWaypointsForTiles.Length; i++) {
-        //     mWaypointsForTiles[i] = new UX_Waypoint[9];
-        //     for (int j = 0; j < mWaypointsForTiles[i].Length; j++) {
-        //         mWaypointsForTiles[i][j] = Instantiate(baseWaypointForTiles.gameObject, waypointsParent)
-        //             .GetComponent<UX_Waypoint>();
-        //         mWaypointsForTiles[i][j].ClonePosOffsetCount = boardOffsets.Length;
-        //         for (int boardID = 0; boardID < boardOffsets.Length; boardID++) {
-        //             mWaypointsForTiles[i][j].AddClonePosOffset(boardOffsets[boardID][j], boardID);
-        //         }
-        //         string name = "Waypoint for Tiles " + i;
-        //         if (j == 0) {
-        //             mWaypointsForTiles[i][j].gameObject.name = name;
-        //             mWaypointsForTiles[i][j].SetReal();
-        //         } else {
-        //             mWaypointsForTiles[i][j].gameObject.name = name + " - Clone " + Util.DirToString(j - 1);
-        //             mWaypointsForTiles[i][0].AddClone(mWaypointsForTiles[i][j], j);
-        //         }
-        //         mWaypointsForTiles[i][j].Init();
-        //     }
-        //     mWaypointsForTiles[i][0].Opaque = true; // Sets the material.
-        //     mWaypointsForTiles[i][0].Hide();
-        // }
-
-        // mWaypointsForPieces = new UX_Waypoint[Piece.MAX_WAYPOINTS][];
-        // for (int i = 0; i < mWaypointsForPieces.Length; i++) {
-        //     mWaypointsForPieces[i] = new UX_Waypoint[9];
-        //     for (int j = 0; j < mWaypointsForPieces[i].Length; j++) {
-        //         mWaypointsForPieces[i][j] = Instantiate(baseWaypointForPieces.gameObject, waypointsParent)
-        //             .GetComponent<UX_Waypoint>();
-        //         mWaypointsForPieces[i][j].ClonePosOffsetCount = boardOffsets.Length;
-        //         for (int boardID = 0; boardID < boardOffsets.Length; boardID++) {
-        //             mWaypointsForPieces[i][j].AddClonePosOffset(boardOffsets[boardID][j], boardID);
-        //         }
-        //         string name = "Waypoint for Pieces " + i;
-        //         if (j == 0) {
-        //             mWaypointsForPieces[i][j].gameObject.name = name;
-        //             mWaypointsForPieces[i][j].SetReal();
-        //         } else {
-        //             mWaypointsForPieces[i][j].gameObject.name = name + " - Clone " + Util.DirToString(j - 1);
-        //             mWaypointsForPieces[i][0].AddClone(mWaypointsForPieces[i][j], j);
-        //         }
-        //         mWaypointsForPieces[i][j].Init();
-        //     }
-        //     mWaypointsForPieces[i][0].Opaque = true; // Sets the material.
-        //     mWaypointsForPieces[i][0].Hide();
-        // }
-
         mWaypointHovering = new UX_Waypoint(-1, waypointsParent, baseWaypointForTile, baseWaypointForPiece, boardSizes,
                 waypointMatOpaqueForTile, waypointMatSemitransForTile,
                 waypointMatHoveredForTile, waypointMatHoveringForTile,
                 waypointMatOpaqueForPiece, waypointMatSemitransForPiece,
-                waypointMatHoveredForPiece, waypointMatHoveringForPiece);
-
-        // mWaypointHoveringForTiles = new UX_Waypoint[9];
-        // for (int j = 0; j < 9; j++) {
-        //     mWaypointHoveringForTiles[j] = Instantiate(baseWaypointForTiles.gameObject, waypointsParent)
-        //         .GetComponent<UX_Waypoint>();
-        //     mWaypointHoveringForTiles[j].ClonePosOffsetCount = boardOffsets.Length;
-        //     for (int boardID = 0; boardID < boardOffsets.Length; boardID++) {
-        //         mWaypointHoveringForTiles[j].AddClonePosOffset(boardOffsets[boardID][j], boardID);
-        //     }
-        //     string name = "Waypoint (Hovered) for Tiles";
-        //     if (j == 0) {
-        //         mWaypointHoveringForTiles[j].gameObject.name = name;
-        //         mWaypointHoveringForTiles[j].SetReal();
-        //     } else {
-        //         mWaypointHoveringForTiles[j].gameObject.name = name + " - Clone " + Util.DirToString(j - 1);
-        //         mWaypointHoveringForTiles[0].AddClone(mWaypointHoveringForTiles[j], j);
-        //     }
-        //     mWaypointHoveringForTiles[j].Init();
-        // }
-        // // Make it semi-transparent.
-        // mWaypointHoveringForTiles[0].Opaque = true; mWaypointHoveringForTiles[0].Opaque = false;
-        // mWaypointHoveringForTiles[0].Hide();
-
-        // mWaypointHoveringForPieces = new UX_Waypoint[9];
-        // for (int j = 0; j < 9; j++) {
-        //     mWaypointHoveringForPieces[j] = Instantiate(baseWaypointForPieces.gameObject, waypointsParent)
-        //         .GetComponent<UX_Waypoint>();
-        //     mWaypointHoveringForPieces[j].ClonePosOffsetCount = boardOffsets.Length;
-        //     for (int boardID = 0; boardID < boardOffsets.Length; boardID++) {
-        //         mWaypointHoveringForPieces[j].AddClonePosOffset(boardOffsets[boardID][j], boardID);
-        //     }
-        //     string name = "Waypoint (Hovered) for Pieces";
-        //     if (j == 0) {
-        //         mWaypointHoveringForPieces[j].gameObject.name = name;
-        //         mWaypointHoveringForPieces[j].SetReal();
-        //     } else {
-        //         mWaypointHoveringForPieces[j].gameObject.name = name + " - Clone " + Util.DirToString(j - 1);
-        //         mWaypointHoveringForPieces[0].AddClone(mWaypointHoveringForPieces[j], j);
-        //     }
-        //     mWaypointHoveringForPieces[j].Init();
-        // }
-        // // Make it opaque.
-        // mWaypointHoveringForPieces[0].Opaque = true; mWaypointHoveringForPieces[0].Opaque = false;
-        // mWaypointHoveringForPieces[0].Hide();
-
-        // // Generate lines between waypoints.
-        // mLineForWaypoints = new UX_WaypointLine(
-        //     boardOffsets, boardSizes, baseLineRenderer, waypointsParent, "Line Between Waypooints");
-        // mLineForHoveringWaypoints = new UX_WaypointLine(
-        //     boardOffsets, boardSizes, baseLineRenderer, waypointsParent, "Line Between Hovering Waypooints");
+                waypointMatHoveredForPiece, waypointMatHoveringForPiece,
+                waypointMatOpaqueForTileOnGroup, waypointMatSemitransForTileOnGroup,
+                waypointMatOpaqueForPieceOnGroup, waypointMatSemitransForPieceOnGroup);
 
         // Hide hovered tile.
         HideTileHover();
@@ -349,32 +259,60 @@ public class UX_Player : MonoBehaviour {
                 mHand.HideAll();
                 SetMode(Mode.SELECT_PIECE_PLAIN);
             } else if (InWaypointMode()) {
-                if (mSelectedPieces.Count == 1) {
-                    if (mMode == Mode.SELECT_TILE_WAYPOINT) {
-                        if (IsWaypointPresent(mHoveredTile)) {
+                if (mMode == Mode.SELECT_TILE_WAYPOINT) {
+                    if (IsWaypointPresent(mHoveredTile)) {
+                        Debug.Log("PLAY SOUND: Cannot place waypoint here.");
+                    } else {
+                        signal = new SignalAddWaypoint(mPlayerID, mHoveredTile.Pos, mCam.BoardID,
+                            HoveredWaypointIdx, mSelectedPieces[0].PieceID);
+                    }
+                } else if (mMode == Mode.SELECT_PIECE_WAYPOINT && mHoveredPieces.Count > 0) {
+                    if (IsWaypointPresent(mHoveredPieces[0])) {
                             Debug.Log("PLAY SOUND: Cannot place waypoint here.");
-                        } else {
-                            signal = new SignalAddWaypoint(mPlayerID, mHoveredTile.Pos, mCam.BoardID,
-                                HoveredWaypointIdx, mSelectedPieces[0].PieceID);
-                        }
-                    } else if (mHoveredPieces.Count == 1) { // if (mMode == Mode.SELECT_PIECE_WAYPOINT)
-                        if (IsWaypointPresent(mHoveredPieces[0])) {
+                    } else {
+                        // Can't put a waypoint on the selected piece.
+                        if (mSelectedPieces[0].PieceID == mHoveredPieces[0].PieceID)
                             Debug.Log("PLAY SOUND: Cannot place waypoint here.");
-                        } else {
-                            // Can't put a waypoint on the selected piece.
-                            if (mSelectedPieces[0].PieceID == mHoveredPieces[0].PieceID)
-                                Debug.Log("PLAY SOUND: Cannot place waypoint here.");
-                            else {
-                                // Using a coord with X-value -1 means it's a piece waypoint.
-                                signal = new SignalAddWaypoint(mPlayerID, Coord._(-1, mHoveredPieces[0].PieceID),
-                                    mCam.BoardID, HoveredWaypointIdx, mSelectedPieces[0].PieceID);
-                            }
+                        else {
+                            // Using a coord with X-value -1 means it's a piece waypoint.
+                            signal = new SignalAddWaypoint(mPlayerID, Coord._(-1, mHoveredPieces[0].PieceID),
+                                mCam.BoardID, HoveredWaypointIdx, mSelectedPieces[0].PieceID);
                         }
                     }
-                } else if (mSelectedPieces.Count > 1) {
-                    // Send different type of signal if for a group of selected pieces.
-                    signal = new SignalAddGroupWaypoints(mPlayerID, mWaypointTargetsForGroup, mCam.BoardID,
-                        mSelectedPieces.Select(piece => piece.PieceID).ToArray());
+                } else if (mMode == Mode.SELECT_TILE_WAYPOINT_GROUP) {
+                    if (IsWaypointPresent(mHoveredTile)) {
+                        // Send different type of signal if for a group of selected pieces.
+                        signal = new SignalAddGroupWaypoints(mPlayerID, mWaypoints, mCam.BoardID,
+                            mSelectedPieces.Select(piece => piece.PieceID).ToArray());
+                    } else {
+                        // Manually place a waypoint (without sending/receiving signals from the host).
+                        UX_Waypoint newWaypoint = mWaypoints[0];
+                        while (newWaypoint.Tile != null || newWaypoint.Piece != null) {
+                            newWaypoint = newWaypoint.Next;
+                        }
+                        if (newWaypoint != null) {
+                            // Still a waypoint that hasn't been set.
+                            newWaypoint.Tile = mHoveredTile;
+                            ShowWaypoints();
+                        }
+                    }
+                } else if (mMode == Mode.SELECT_PIECE_WAYPOINT_GROUP && mHoveredPieces.Count > 0) {
+                    if (IsWaypointPresent(mHoveredPieces[0])) {
+                        // Send different type of signal if for a group of selected pieces.
+                        signal = new SignalAddGroupWaypoints(mPlayerID, mWaypoints, mCam.BoardID,
+                            mSelectedPieces.Select(piece => piece.PieceID).ToArray());
+                    } else {
+                        // Manually place a waypoint (without sending/receiving signals from the host).
+                        UX_Waypoint newWaypoint = mWaypoints[0];
+                        while (newWaypoint.Tile != null || newWaypoint.Piece != null) {
+                            newWaypoint = newWaypoint.Next;
+                        }
+                        if (newWaypoint != null) {
+                            // Still a waypoint that hasn't been set.
+                            newWaypoint.Piece = mHoveredPieces[0];
+                            ShowWaypoints();
+                        }
+                    }
                 }
             }
         }
@@ -409,47 +347,6 @@ public class UX_Player : MonoBehaviour {
             }
         }
 
-        //     } else if (mMode == Mode.WAYPOINT_TILE) { // Set waypoint on hovered tile.
-        //         if (mSelectedPieces.Count > 0) {
-        //             int orderPlace = mHoveredWaypoint;
-        //             if (mHoveredWaypoint == -1 || mHoveredWaypoint >= Piece.MAX_WAYPOINTS)
-        //                 orderPlace = mHoveredWaypointMax;
-        //             // int[] selectedPieceIDs = mSelectedPieces.Select(uxPiece => uxPiece.PieceID).ToArray();
-        //             // if (mSelectedPieces[0].WaypointTiles[orderPlace] != null
-        //             //     && mSelectedPieces[0].WaypointTiles[orderPlace].Pos == mHoveredTile.Pos) {
-
-        //             //     signal = new SignalRemoveWaypoint(
-        //             //         mPlayerID, mHoveredTile.BoardID, orderPlace, selectedPieceIDs);
-        //             // } else {
-        //             //     signal = SignalFromClient.AddWaypoint(
-        //             //         mPlayerID, mHoveredTile, orderPlace, mSelectedPieces.ToArray());
-        //             // }
-        //         }
-        //     } else if (mMode == Mode.WAYPOINT_PIECE) {
-        //         if (mSelectedPieces.Count > 0) {
-        //             int orderPlace = mHoveredWaypoint;
-        //             if (mHoveredWaypoint == -1 || mHoveredWaypoint >= Piece.MAX_WAYPOINTS)
-        //                 orderPlace = mHoveredWaypointMax;
-        //             // if (mSelectedPieces[0].WaypointPieces[orderPlace] != null
-        //             //     && mSelectedPieces[0].WaypointPieces[orderPlace].PieceID == mHoveredPiece.PieceID) {
-        //             //     signal = SignalFromClient.RemoveWaypoint(
-        //             //         mHoveredPiece.BoardID, orderPlace,
-        //             //         mSelectedPieces.ToArray());
-        //             // } else {
-        //             //     int targetID = mHoveredPiece != null ? mHoveredPiece.PieceID : -1;
-        //             //     signal = SignalFromClient.AddWaypoint(
-        //             //         mHoveredPiece.BoardID, targetID, orderPlace,mSelectedPieces.ToArray());
-        //             // }
-        //         }
-        //     } else if (mMode == Mode.TARGET_TILE) { // Play the selected card.
-        //         // signal = SignalFromClient.CastSpell(mPlayCardID, mCasterPieceID, mHoveredTile);
-        //         signal = new SignalCastSpell(mPlayerID, mHand.PlayCardID, mHand.CasterID, mCam.BoardID, mHoveredTile);
-        //         mHand.Hide();
-        //         SetMode(Mode.PLAIN);
-        //     // Select the hovered card.
-        //     } else if (mMode == Mode.HAND) { if (mHand.Select()) SetMode(Mode.TARGET_TILE); }
-        // }
-
         // <B button | R>
         else if (gamepadInput[(int) Gamepad.Button.B] == 1) {
             // Unselect every piece.
@@ -480,21 +377,29 @@ public class UX_Player : MonoBehaviour {
 
         // <Bumpers | Q/E>
         else if (gamepadInput[(int) Gamepad.Button.L_BUMP] == 1) {
-            if (InWaypointMode()) {
+            if (mMode == Mode.SELECT_TILE_WAYPOINT || mMode == Mode.SELECT_PIECE_WAYPOINT) {
+                // Cannot hover previous waypoints if for a group.
                 HoveredWaypointIdx--;
                 ShowWaypoints();
             } else if (mMode == Mode.SELECT_PIECE_PLAIN && mSelectedPieces.Count > 0) {
-                HoveredWaypointIdx = mWaypoints.Length - 1;
-                SetMode(Mode.SELECT_TILE_WAYPOINT);
+                if (mSelectedPieces.Count == 1) {
+                    HoveredWaypointIdx = mWaypoints.Length - 1;
+                    SetMode(Mode.SELECT_TILE_WAYPOINT);
+                } else {
+                    HoveredWaypointIdx = 0;
+                    SetMode(Mode.SELECT_TILE_WAYPOINT_GROUP);
+                }
                 ShowWaypoints();
             }
         } else if (gamepadInput[(int) Gamepad.Button.R_BUMP] == 1) {
-            if (InWaypointMode()) {
+            if (mMode == Mode.SELECT_TILE_WAYPOINT || mMode == Mode.SELECT_PIECE_WAYPOINT) {
+                // Cannot hover previous waypoints if for a group.
                 HoveredWaypointIdx++;
                 ShowWaypoints();
             } else if (mMode == Mode.SELECT_PIECE_PLAIN && mSelectedPieces.Count > 0) {
                 HoveredWaypointIdx = 0;
-                SetMode(Mode.SELECT_TILE_WAYPOINT);
+                if (mSelectedPieces.Count == 1) SetMode(Mode.SELECT_TILE_WAYPOINT);
+                else SetMode(Mode.SELECT_TILE_WAYPOINT_GROUP);
                 ShowWaypoints();
             }
         }
@@ -502,10 +407,10 @@ public class UX_Player : MonoBehaviour {
         // <Left trigger | Left shift>
         else if (gamepadInput[(int) Gamepad.Button.L_TRIG] == 1) {
             if (InWaypointMode()) {
-                if (mSelectedPieces.Count == 1) {
+                if (mMode == Mode.SELECT_TILE_WAYPOINT || mMode == Mode.SELECT_PIECE_WAYPOINT) {
                     signal = new SignalRemoveWaypoint(mPlayerID, mCam.BoardID, HoveredWaypointIdx,
                         mSelectedPieces[0].PieceID);
-                } else if (mSelectedPieces.Count > 1) {
+                } else if (mMode == Mode.SELECT_TILE_WAYPOINT_GROUP || mMode == Mode.SELECT_PIECE_WAYPOINT_GROUP) {
                     // Send different type of signal if for a group of selected pieces.
                     signal = new SignalRemoveGroupWaypoints(mPlayerID, mCam.BoardID,
                         mSelectedPieces.Select(piece => piece.PieceID).ToArray());
@@ -519,6 +424,8 @@ public class UX_Player : MonoBehaviour {
                 // Toggle between targeting tiles and pieces when setting waypoints.
                 if (mMode == Mode.SELECT_TILE_WAYPOINT) SetMode(Mode.SELECT_PIECE_WAYPOINT);
                 else if (mMode == Mode.SELECT_PIECE_WAYPOINT) SetMode(Mode.SELECT_TILE_WAYPOINT);
+                else if (mMode == Mode.SELECT_TILE_WAYPOINT_GROUP) SetMode(Mode.SELECT_PIECE_WAYPOINT_GROUP);
+                else if (mMode == Mode.SELECT_PIECE_WAYPOINT_GROUP) SetMode(Mode.SELECT_TILE_WAYPOINT_GROUP);
             }
         }
         
@@ -531,11 +438,11 @@ public class UX_Player : MonoBehaviour {
 
     // Called once every frame.
     private void Update() {
-        // Animate the line renderers' textures.
-        // if (InWaypointMode() || mHoveredPieces.Count == 1) {
-        //     mLineForWaypoints.Mat.SetTextureOffset("_MainTex", Vector2.right * Time.time);
-        //     mLineForHoveringWaypoints.Mat.SetTextureOffset("_MainTex", Vector2.right * Time.time);
-        // }
+        // Animate the waypoints.
+        if (mWaypoints != null) {
+            foreach (UX_Waypoint waypoint in mWaypoints) { waypoint.UpdateAnimation(); }
+            mWaypointHovering.UpdateAnimation();
+        }
     }
 
     private void HoverPiece(UX_Piece piece) {
@@ -585,45 +492,50 @@ public class UX_Player : MonoBehaviour {
     private void ShowWaypoints() {
         // If modifying the selected piece(s)'s waypoints.
         if (InWaypointMode()) {
-            if (mSelectedPieces.Count >= 1) {
-                // Show the hovering waypoint only if there is something to hover over.
-                if (mMode == Mode.SELECT_TILE_WAYPOINT) {
-                    mWaypointHovering.Tile = mHoveredTile;
-                    mWaypointHovering.Show(); mShowingWaypoints = true;
-                } else if (mMode == Mode.SELECT_PIECE_WAYPOINT && mHoveredPieces.Count == 1) {
-                    mWaypointHovering.Piece = mHoveredPieces[0];
-                    mWaypointHovering.Show(); mShowingWaypoints = true;
-                } else { mWaypointHovering.Hide(); mShowingWaypoints = false; }
-                if (mSelectedPieces[0].WaypointIdxAtMax()) mWaypointHovering.Unhover();
-                else mWaypointHovering.Hover();
-                mWaypointHovering.Update();
+            // Show the hovering waypoint only if there is something to hover over.
+            if (mMode == Mode.SELECT_TILE_WAYPOINT || mMode == Mode.SELECT_TILE_WAYPOINT_GROUP) {
+                mWaypointHovering.Tile = mHoveredTile;
+                mWaypointHovering.Show(); mShowingWaypoints = true;
+            } else if ((mMode == Mode.SELECT_PIECE_WAYPOINT || mMode == Mode.SELECT_PIECE_WAYPOINT_GROUP)
+                && mHoveredPieces.Count == 1) {
 
-                /* Show the opaque waypoints + (maybe) the hovered waypoint that are already held by the selected
-                 * piece. */
-                UX_Tile[] waypointTiles = mSelectedPieces[0].WaypointTiles;
-                UX_Piece[] waypointPieces = mSelectedPieces[0].WaypointPieces;
-                for (int i = 0; i < waypointTiles.Length; i++) {
-                    if (waypointTiles[i] != null) {
-                        mWaypoints[i].Tile = waypointTiles[i];
-                        mWaypoints[i].Opaque = true;
-                        if (HoveredWaypointIdx == i) mWaypoints[i].Hover();
-                        else mWaypoints[i].Unhover();
-                        mWaypoints[i].Show(); mShowingWaypoints = true;
-                        mWaypoints[i].Update();
-                    } else if (waypointPieces[i] != null) {
-                        mWaypoints[i].Piece = waypointPieces[i];
-                        mWaypoints[i].Opaque = true;
-                        if (HoveredWaypointIdx == i) mWaypoints[i].Hover();
-                        else mWaypoints[i].Unhover();
-                        mWaypoints[i].Show(); mShowingWaypoints = true;
-                        mWaypoints[i].Update();
-                    } else { // No waypoint of any type in this slot.
-                        for (int j = i; j < mWaypoints.Length; j++) {
-                            mWaypoints[j].Hide();
-                            mWaypoints[j].Update();
-                        }
-                        break;
+                mWaypointHovering.Piece = mHoveredPieces[0];
+                mWaypointHovering.Show(); mShowingWaypoints = true;
+            } else { mWaypointHovering.Hide(); mShowingWaypoints = false; }
+            if (mSelectedPieces[0].WaypointIdxAtMax()) mWaypointHovering.Unhover();
+            else mWaypointHovering.Hover();
+            mWaypointHovering.ForGroup = mMode == Mode.SELECT_TILE_WAYPOINT_GROUP
+                || mMode == Mode.SELECT_PIECE_WAYPOINT_GROUP;
+            mWaypointHovering.Update();
+
+            // Show the opaque waypoints + (maybe) the hovered waypoint that are already held by the selected piece.
+            UX_Tile[] waypointTiles = mSelectedPieces[0].WaypointTiles;
+            UX_Piece[] waypointPieces = mSelectedPieces[0].WaypointPieces;
+            for (int i = 0; i < waypointTiles.Length; i++) {
+                if (waypointTiles[i] != null) {
+                    mWaypoints[i].Tile = waypointTiles[i];
+                    mWaypoints[i].Opaque = true;
+                    if (HoveredWaypointIdx == i) mWaypoints[i].Hover();
+                    else mWaypoints[i].Unhover();
+                    mWaypoints[i].ForGroup = mMode == Mode.SELECT_TILE_WAYPOINT_GROUP
+                        || mMode == Mode.SELECT_PIECE_WAYPOINT_GROUP;
+                    mWaypoints[i].Show(); mShowingWaypoints = true;
+                    mWaypoints[i].Update();
+                } else if (waypointPieces[i] != null) {
+                    mWaypoints[i].Piece = waypointPieces[i];
+                    mWaypoints[i].Opaque = true;
+                    if (HoveredWaypointIdx == i) mWaypoints[i].Hover();
+                    else mWaypoints[i].Unhover();
+                    mWaypoints[i].ForGroup = mMode == Mode.SELECT_TILE_WAYPOINT_GROUP
+                        || mMode == Mode.SELECT_PIECE_WAYPOINT_GROUP;
+                    mWaypoints[i].Show(); mShowingWaypoints = true;
+                    mWaypoints[i].Update();
+                } else { // No waypoint of any type in this slot.
+                    for (int j = i; j < mWaypoints.Length; j++) {
+                        mWaypoints[j].Hide();
+                        mWaypoints[j].Update();
                     }
+                    break;
                 }
             }
         /* If just hovering over a single piece. Doesn't matter if pieces are selected.
@@ -685,14 +597,17 @@ public class UX_Player : MonoBehaviour {
 
     private bool InMenuMode() { return mMode == Mode.DETAIL || mMode == Mode.SURRENDER || mMode == Mode.PAUSE; }
     private bool InSelectTileMode() {
-        return mMode == Mode.SELECT_TILE_SPELLCAST || mMode == Mode.SELECT_TILE_WAYPOINT;
+        return mMode == Mode.SELECT_TILE_SPELLCAST || mMode == Mode.SELECT_TILE_WAYPOINT
+            || mMode == Mode.SELECT_TILE_WAYPOINT_GROUP;
     }
     private bool InSelectPieceMode() {
         return mMode == Mode.SELECT_PIECE_PLAIN || mMode == Mode.SELECT_PIECE_GROUP
-            || mMode == Mode.SELECT_PIECE_SPELLCAST || mMode == Mode.SELECT_PIECE_WAYPOINT;
+            || mMode == Mode.SELECT_PIECE_SPELLCAST || mMode == Mode.SELECT_PIECE_WAYPOINT
+            || mMode == Mode.SELECT_PIECE_WAYPOINT_GROUP;
     }
     private bool InWaypointMode() {
-        return mMode == Mode.SELECT_TILE_WAYPOINT || mMode == Mode.SELECT_PIECE_WAYPOINT;
+        return mMode == Mode.SELECT_TILE_WAYPOINT || mMode == Mode.SELECT_PIECE_WAYPOINT
+            || mMode == Mode.SELECT_TILE_WAYPOINT_GROUP || mMode == Mode.SELECT_PIECE_WAYPOINT_GROUP;
     }
 
     /// <returns>
@@ -709,17 +624,20 @@ public class UX_Player : MonoBehaviour {
         else mCanv.SetCrosshair(1);
         mCanv.SetDarkScreen(InMenuMode() || mMode == Mode.HAND);
 
-        if (mMode == Mode.SELECT_TILE_SPELLCAST) ShowTileHover(); else HideTileHover();
         if (InWaypointMode()) {
-            if (mMode == Mode.SELECT_TILE_WAYPOINT) mWaypointHovering.Tile = mHoveredTile;
+            HideTileHover();
+            if (InSelectTileMode()) mWaypointHovering.Tile = mHoveredTile;
             else if (mHoveredPieces.Count == 1) mWaypointHovering.Piece = mHoveredPieces[0];
             ShowWaypoints();
             foreach (UX_Piece piece in mHoveredPieces) { piece.Unhover(mLocalPlayerIdx); }
-        } else if (mHoveredPieces.Count == 1) {
-            ShowWaypoints();
-            foreach (UX_Piece piece in mHoveredPieces) { piece.Hover(mLocalPlayerIdx); }
+            if (mMode == Mode.SELECT_TILE_WAYPOINT_GROUP || mMode == Mode.SELECT_PIECE_WAYPOINT_GROUP) {
+                foreach (UX_Waypoint waypoint in mWaypoints) { waypoint.Tile = null; waypoint.Piece = null; }
+            }
         } else {
-            HideWaypoints();
+            if (mHoveredPieces.Count == 1) ShowWaypoints();
+            else HideWaypoints();
+            if (InSelectTileMode()) ShowTileHover();
+            else HideTileHover();
             foreach (UX_Piece piece in mHoveredPieces) { piece.Hover(mLocalPlayerIdx); }
         }
 

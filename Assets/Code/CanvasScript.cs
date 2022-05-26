@@ -24,12 +24,15 @@ public class CanvasScript : MonoBehaviour {
         reticle = Instantiate(
             reticle.gameObject, GetComponent<Transform>())
             .GetComponent<RectTransform>();
+        reticle.name = "Reticle";
         crosshair = Instantiate(
             crosshair.gameObject, GetComponent<Transform>())
             .GetComponent<RectTransform>();
+        crosshair.name = "Crosshair";
         darkScreen = Instantiate(
             darkScreen.gameObject, GetComponent<Transform>())
             .GetComponent<RectTransform>();
+        darkScreen.name = "Dark Screen";
 
         SetCrosshair(0);
         SetDarkScreen(false);

@@ -7,7 +7,8 @@
 using UnityEngine;
 
 public class UX_Waypoint {
-    private Vector3 LIFT_POS_OFFSET = new Vector3(0, UX_Piece.LIFT_DIST, 0);
+    private readonly Vector3 LIFT_POS_OFFSET = new Vector3(0, UX_Piece.LIFT_DIST, 0);
+    private readonly float ROT_INCREMENT = 0.1F, ROT_MAX = 360, PIVOT_INCREMENT = 0.01F, PIVOT_MAG = 1F;
 
     private UX_Tile mTile;
     private UX_Piece mPiece;
@@ -17,13 +18,15 @@ public class UX_Waypoint {
     private Renderer[] mRendForTile, mRendForPiece;
     private Vector3[][] mCloneOffsets;
     private Material mMatOpaqueForTile, mMatSemitransForTile, mMatHoveredForTile, mMatHoveringForTile,
-        mMatOpaqueForPiece, mMatSemitransForPiece, mMatHoveredForPiece, mMatHoveringForPiece;
+        mMatOpaqueForPiece, mMatSemitransForPiece, mMatHoveredForPiece, mMatHoveringForPiece,
+        mMatOpaqueForTileOnGroup, mMatSemitransForTileOnGroup, mMatOpaqueForPieceOnGroup, mMatSemitransForPieceOnGroup;
 
     private UX_Waypoint mPrev, mNext;
-    private bool mOpaque;
-    private bool mShown = true, mHovered = false;
+    private bool mOpaque, mShown = true, mHovered = false, mForGroup = false;
     private int mBoardID = 0;
     private bool mUpdatePending = false;
+
+    private float rot = 0;
 
     public bool Shown { get => mShown; }
     public UX_Tile Tile {
@@ -46,11 +49,22 @@ public class UX_Waypoint {
             mUpdatePending = true;
         }
     }
-    public UX_Waypoint Next { set { mNext = value; value.mPrev = this; } }
+    public UX_Waypoint Next {
+        get => mNext;
+        set { mNext = value; value.mPrev = this; }
+    }
     public bool Opaque {
         set {
             if (mOpaque == value) return;
             mOpaque = value;
+            mUpdatePending = true;
+        }
+    }
+
+    public bool ForGroup {
+        set {
+            if (mForGroup == value) return;
+            mForGroup = value;
             mUpdatePending = true;
         }
     }
@@ -69,6 +83,7 @@ public class UX_Waypoint {
         GameObject baseWaypointForTile,
         GameObject baseWaypointForPiece,
         int[] boardSizes,
+
         Material matOpaqueForTile,
         Material matSemitransForTile,
         Material matHoveredForTile,
@@ -76,7 +91,12 @@ public class UX_Waypoint {
         Material matOpaqueForPiece,
         Material matSemitransForPiece,
         Material matHoveredForPiece,
-        Material matHoveringForPiece) {
+        Material matHoveringForPiece,
+
+        Material matOpaqueForTileOnGroup,
+        Material matSemitransForTileOnGroup,
+        Material matOpaqueForPieceOnGroup,
+        Material matSemitransForPieceOnGroup) {
 
         mUxForTile = new GameObject[9];
         mUxForPiece = new GameObject[9];
@@ -119,6 +139,11 @@ public class UX_Waypoint {
         mMatSemitransForPiece = matSemitransForPiece;
         mMatHoveredForPiece = matHoveredForPiece;
         mMatHoveringForPiece = matHoveringForPiece;
+
+        mMatOpaqueForTileOnGroup = matOpaqueForTileOnGroup;
+        mMatSemitransForTileOnGroup = matSemitransForTileOnGroup;
+        mMatOpaqueForPieceOnGroup = matOpaqueForPieceOnGroup;
+        mMatSemitransForPieceOnGroup = matSemitransForPieceOnGroup;
     }
 
     public void Show() {
@@ -156,7 +181,10 @@ public class UX_Waypoint {
                 }
             } else if (mTile != null) {
                 for (int i = 0; i < mUxForTile.Length; i++) {
-                    if (mHovered) {
+                    if (mForGroup) {
+                        if (mOpaque) mRendForTile[i].material = mMatOpaqueForTileOnGroup;
+                        else mRendForTile[i].material = mMatSemitransForTileOnGroup;
+                    } else if (mHovered) {
                         if (mOpaque) mRendForTile[i].material = mMatHoveredForTile;
                         else mRendForTile[i].material = mMatHoveringForTile;
                     } else {
@@ -168,7 +196,10 @@ public class UX_Waypoint {
                 }
             } else if (mPiece != null) {
                 for (int i = 0; i < mUxForPiece.Length; i++) {
-                    if (mHovered) {
+                    if (mForGroup) {
+                        if (mOpaque) mRendForPiece[i].material = mMatOpaqueForPieceOnGroup;
+                        else mRendForPiece[i].material = mMatSemitransForPieceOnGroup;
+                    } else if (mHovered) {
                         if (mOpaque) mRendForPiece[i].material = mMatHoveredForPiece;
                         else mRendForPiece[i].material = mMatHoveringForPiece;
                     } else {
@@ -195,6 +226,31 @@ public class UX_Waypoint {
         } else if (mPiece != null && mUxForPiece[0].activeSelf) {
             for (int i = 0; i < mTranForPiece.Length; i++) {
                 mTranForPiece[i].localPosition = mPieceTran.localPosition + mCloneOffsets[mBoardID][i];
+            }
+        }
+    }
+
+    public void UpdateAnimation() {
+        if (mTile != null && mUxForTile[0].activeSelf) {
+            for (int i = 0; i < mTranForTile.Length; i++) {
+                if (mForGroup) {
+
+                } else {
+                    rot += ROT_INCREMENT;
+                    if (rot >= ROT_MAX) rot -= ROT_MAX;
+                    mTranForTile[i].eulerAngles = new Vector3(0, (int) rot, 0);
+                }
+            }
+        } else if (mPiece != null && mUxForPiece[0].activeSelf) {
+            for (int i = 0; i < mTranForPiece.Length; i++) {
+                if (mForGroup) {
+
+                } else {
+                    rot += PIVOT_INCREMENT;
+                    if (rot >= ROT_MAX) rot -= ROT_MAX;
+                    mTranForPiece[i].eulerAngles = new Vector3(
+                        90 + (Mathf.Sin(rot) * PIVOT_MAG), Mathf.Cos(rot) * PIVOT_MAG, 0);
+                }
             }
         }
     }
