@@ -40,9 +40,9 @@ namespace Matches.UX {
         private Waypoint mWaypointHovering;
         private Gamepad mGamepad;
         private Tile mHoveredTile;
-        private List<Piece> mSelectedPieces = new List<Piece>();
+        private HashSet<Piece> mSelectedPieces = new HashSet<Piece>();
         // Pieces hovered by group selection before the user depresses the Select button.
-        private List<Piece> mHoveredPieces = new List<Piece>();
+        private HashSet<Piece> mHoveredPieces = new HashSet<Piece>();
         private WaypointTrail mWaypointTrailForGroup = new WaypointTrail();
         private bool mShowingWaypoints = false;
 
@@ -52,20 +52,23 @@ namespace Matches.UX {
         public int BoardID { get => mCam.BoardID; }
         public int HoveredWaypointIdx {
             get {
-                if (mSelectedPieces.Count > 0) { return mSelectedPieces[0].WaypointIdx; }
+                if (mSelectedPieces.Count > 0) { return SelectedPiece.WaypointIdx; }
                 return -1;
             }
             set {
-                if (mSelectedPieces.Count == 1) mSelectedPieces[0].WaypointIdx = value;
+                if (mSelectedPieces.Count == 1) SelectedPiece.WaypointIdx = value;
             }
         }
         public Piece HoveredPiece {
+            get => (mHoveredPieces.Count == 0) ? null : mHoveredPieces.ElementAt(0);
             set {
-                if (mMode != Mode.SELECT_PIECE_GROUP) {
+                if (mMode == Mode.SELECT_PIECE_GROUP) {
+                    HoverPiece(value);
+                } else {
                     if (mHoveredPieces.Count == 0) HoverPiece(value);
                     else if (mHoveredPieces.Count == 1) {
-                        if (value == null || mHoveredPieces[0].PieceID != value.PieceID) {
-                            mHoveredPieces[0].Unhover(mLocalPlayerIdx);
+                        if (value == null || HoveredPiece.PieceID != value.PieceID) {
+                            HoveredPiece.Unhover(mLocalPlayerIdx);
                             mHoveredPieces.Clear();
                             HoverPiece(value);
                         }
@@ -102,6 +105,7 @@ namespace Matches.UX {
                 }
             }
         }
+        private Piece SelectedPiece { get => (mSelectedPieces.Count == 0) ? null : mSelectedPieces.ElementAt(0); }
 
         /// <summary>
         /// Called once before the match begins.
@@ -260,7 +264,7 @@ namespace Matches.UX {
                 if (mMode == Mode.SELECT_PIECE_PLAIN) SetMode(Mode.SELECT_PIECE_GROUP);
                 else if (mMode == Mode.HAND) {
                     /* Try selecting the hovered card in the hand.
-                    * Switch to the appropriate mode depending on what kind of entity the card's spell targets. */
+                     * Switch to the appropriate mode depending on what kind of entity the card's spell targets. */
                     SetModeFromPlayCard(mHand.Select());
                 } else if (mMode == Mode.SELECT_TILE_SPELLCAST) {
                     signal = new SignalCastSpell(
@@ -273,19 +277,19 @@ namespace Matches.UX {
                             Debug.Log("PLAY SOUND: Cannot place waypoint here.");
                         } else {
                             signal = new SignalAddWaypoint(mPlayerID, mHoveredTile.Pos, mCam.BoardID,
-                                HoveredWaypointIdx, mSelectedPieces[0].PieceID);
+                                HoveredWaypointIdx, SelectedPiece.PieceID);
                         }
                     } else if (mMode == Mode.SELECT_PIECE_WAYPOINT && mHoveredPieces.Count > 0) {
-                        if (IsWaypointPresent(mHoveredPieces[0])) {
+                        if (IsWaypointPresent(HoveredPiece)) {
                                 Debug.Log("PLAY SOUND: Cannot place waypoint here.");
                         } else {
                             // Can't put a waypoint on the selected piece.
-                            if (mSelectedPieces[0].PieceID == mHoveredPieces[0].PieceID)
+                            if (SelectedPiece.PieceID == HoveredPiece.PieceID)
                                 Debug.Log("PLAY SOUND: Cannot place waypoint here.");
                             else {
                                 // Using a coord with X-value -1 means it's a piece waypoint.
-                                signal = new SignalAddWaypoint(mPlayerID, Coord._(-1, mHoveredPieces[0].PieceID),
-                                    mCam.BoardID, HoveredWaypointIdx, mSelectedPieces[0].PieceID);
+                                signal = new SignalAddWaypoint(mPlayerID, Coord._(-1, HoveredPiece.PieceID),
+                                    mCam.BoardID, HoveredWaypointIdx, SelectedPiece.PieceID);
                             }
                         }
                     } else if (mMode == Mode.SELECT_TILE_WAYPOINT_GROUP) {
@@ -317,7 +321,7 @@ namespace Matches.UX {
                             }
                         }
                     } else if (mMode == Mode.SELECT_PIECE_WAYPOINT_GROUP && mHoveredPieces.Count > 0) {
-                        if (IsWaypointPresent(mHoveredPieces[0])) {
+                        if (IsWaypointPresent(HoveredPiece)) {
                             // Send different type of signal if for a group of selected pieces.
                             signal = new SignalAddGroupWaypoints(mPlayerID, mWaypointTrailForGroup.Waypoints, mCam.BoardID,
                                 mSelectedPieces.Select(piece => piece.PieceID).ToArray());
@@ -338,8 +342,8 @@ namespace Matches.UX {
                             }
                             if (newWaypoint != null) {
                                 // Still a waypoint that hasn't been set.
-                                newWaypoint.Piece = mHoveredPieces[0];
-                                mWaypointTrailForGroup.SetPiece(mHoveredPieces[0], idx);
+                                newWaypoint.Piece = HoveredPiece;
+                                mWaypointTrailForGroup.SetPiece(HoveredPiece, idx);
                                 newWaypoint.Show();
                                 ShowWaypoints();
                             }
@@ -353,13 +357,13 @@ namespace Matches.UX {
                 if (mMode == Mode.SELECT_PIECE_GROUP) {
                     // If only one piece was hovered (typical for non-group selection).
                     if (mHoveredPieces.Count == 1) {
-                        Piece hoveredPiece = mHoveredPieces[0];
+                        Piece hoveredPiece = HoveredPiece;
                         // Unselect the hovered piece if it's already selected.
                         if (mSelectedPieces.Contains(hoveredPiece)) {
                             hoveredPiece.Unselect(mLocalPlayerIdx);
                             mSelectedPieces.Remove(hoveredPiece);
                         /* Select the hovered piece if it isn't selected.
-                        * Can only select this piece if it's belongs to this player. */
+                         * Can only select this piece if it's belongs to this player. */
                         } else if (hoveredPiece.PlayerID == mPlayerID) {
                             hoveredPiece.Select(mLocalPlayerIdx);
                             mSelectedPieces.Add(hoveredPiece);
@@ -383,6 +387,7 @@ namespace Matches.UX {
                 // Unselect every piece.
                 if (mMode == Mode.SELECT_PIECE_PLAIN) {
                     foreach (Piece piece in mSelectedPieces) { piece.Unselect(mLocalPlayerIdx); }
+                    mSelectedPieces.Clear();
                 // Go back to mode that was saved before entering high-level menu.
                 } else if (InMenuMode()) SetMode(mModePrev);
                 // Go to Plain mode if viewing the hand.
@@ -400,7 +405,7 @@ namespace Matches.UX {
             else if (gamepadInput[(int) Gamepad.Button.X] == 1) {
                 // View the hand of a hovered piece if it's the only piece being hovered.
                 if (mMode == Mode.SELECT_PIECE_PLAIN && mHoveredPieces.Count == 1) {
-                    mHand.Show(mHoveredPieces[0]);
+                    mHand.Show(HoveredPiece);
                     SetMode(Mode.HAND);
                 // Go to Plain mode if viewing the hand.
                 } else if (mMode == Mode.HAND) { mHand.HideAll(); SetMode(Mode.SELECT_PIECE_PLAIN); }
@@ -440,7 +445,7 @@ namespace Matches.UX {
                 if (InWaypointMode()) {
                     if (mMode == Mode.SELECT_TILE_WAYPOINT || mMode == Mode.SELECT_PIECE_WAYPOINT) {
                         signal = new SignalRemoveWaypoint(mPlayerID, mCam.BoardID, HoveredWaypointIdx,
-                            mSelectedPieces[0].PieceID);
+                            SelectedPiece.PieceID);
                     } else if (mMode == Mode.SELECT_TILE_WAYPOINT_GROUP || mMode == Mode.SELECT_PIECE_WAYPOINT_GROUP) {
                         // Send different type of signal if for a group of selected pieces.
                         signal = new SignalRemoveGroupWaypoints(mPlayerID, mCam.BoardID,
@@ -469,7 +474,7 @@ namespace Matches.UX {
 
         private void HoverPiece(Piece piece) {
             if (piece != null) {
-                mHoveredPieces.Add(piece);
+                mHoveredPieces.Add(piece.UX_All[0]);
                 // Do not show that the piece is hovered if in waypoint mode.
                 if (!InWaypointMode()) piece.Hover(mLocalPlayerIdx);
                 // Only show waypoints something if 1 piece is hovered.
@@ -521,10 +526,10 @@ namespace Matches.UX {
                 } else if ((mMode == Mode.SELECT_PIECE_WAYPOINT || mMode == Mode.SELECT_PIECE_WAYPOINT_GROUP)
                     && mHoveredPieces.Count == 1) {
 
-                    mWaypointHovering.Piece = mHoveredPieces[0];
+                    mWaypointHovering.Piece = HoveredPiece;
                     mWaypointHovering.Show(); mShowingWaypoints = true;
                 } else { mWaypointHovering.Hide(); mShowingWaypoints = false; }
-                if (mSelectedPieces[0].WaypointIdxAtMax()) mWaypointHovering.Unhover();
+                if (SelectedPiece.WaypointIdxAtMax()) mWaypointHovering.Unhover();
                 else mWaypointHovering.Hover();
                 mWaypointHovering.ForGroup = mMode == Mode.SELECT_TILE_WAYPOINT_GROUP
                     || mMode == Mode.SELECT_PIECE_WAYPOINT_GROUP;
@@ -532,17 +537,9 @@ namespace Matches.UX {
 
                 // Waypoint[] waypoints;
                 Matches.Waypoints.Waypoint[] waypoints;
-                if (mMode == Mode.SELECT_TILE_WAYPOINT || mMode == Mode.SELECT_PIECE_WAYPOINT) {
-                    // waypoints = mSelectedPieces[0].Waypoints;
-                    waypoints = mSelectedPieces[0].Trail.Waypoints;
-                    // waypointTiles = mSelectedPieces[0].WaypointTiles;
-                    // waypointPieces = mSelectedPieces[0].WaypointPieces;
-                } else {
-                    // waypoints = mWaypointTrailForGroup.Waypoints;
-                    waypoints = mWaypointTrailForGroup.Waypoints;
-                    // waypointTiles = mWaypointTrailForGroup.Tiles;
-                    // waypointPieces = mWaypointTrailForGroup.Pieces;
-                }
+                if (mMode == Mode.SELECT_TILE_WAYPOINT || mMode == Mode.SELECT_PIECE_WAYPOINT)
+                    waypoints = SelectedPiece.Trail.Waypoints;
+                else waypoints = mWaypointTrailForGroup.Waypoints;
                 // Show the opaque waypoints + (maybe) the hovered waypoint that are already held by the selected piece.
                 for (int i = 0; i < waypoints.Length; i++) {
                     if (waypoints[i] is WaypointTile) {
@@ -579,7 +576,7 @@ namespace Matches.UX {
             * Don't bother with multiple hovered pieces. */
             } else if (mHoveredPieces.Count == 1) {
                 // Show just the waypoints as transparent (no hovering waypoint, no hovered waypoint).
-                Matches.Waypoints.Waypoint[] waypoints = mHoveredPieces[0].Trail.Waypoints;
+                Matches.Waypoints.Waypoint[] waypoints = HoveredPiece.Trail.Waypoints;
                 for (int i = 0; i < waypoints.Length; i++) {
                     if (waypoints[i] is WaypointTile) {
                         WaypointTile waypointTile = waypoints[i] as WaypointTile;
@@ -669,7 +666,7 @@ namespace Matches.UX {
             if (InWaypointMode()) {
                 HideTileHover();
                 if (InSelectTileMode()) mWaypointHovering.Tile = mHoveredTile;
-                else if (mHoveredPieces.Count == 1) mWaypointHovering.Piece = mHoveredPieces[0];
+                else if (mHoveredPieces.Count == 1) mWaypointHovering.Piece = HoveredPiece;
                 ShowWaypoints();
                 foreach (Piece piece in mHoveredPieces) { piece.Unhover(mLocalPlayerIdx); }
                 if ((mMode == Mode.SELECT_TILE_WAYPOINT_GROUP || mMode == Mode.SELECT_PIECE_WAYPOINT_GROUP)

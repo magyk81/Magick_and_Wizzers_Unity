@@ -27,9 +27,9 @@ namespace Network.SignalsFromHost {
         public SignalRemoveCards(Piece holderPiece, params Card[] cards)
             : this(HostInfoToIntMessage(holderPiece.ID, cards)) { }
         private static int[] HostInfoToIntMessage(int holderPieceID, Card[] cards) {
-            int nonArrCount = 2;
+            int nonArrCount = 3;
             int[] intMessage = new int[nonArrCount + cards.Length];
-            intMessage[0] = (int) Request.ADD_CARDS;
+            intMessage[0] = (int) Request.REMOVE_CARDS;
             intMessage[1] = holderPieceID;
             intMessage[2] = cards.Length;
             cards.Select(card => card.ID).ToArray().CopyTo(intMessage, nonArrCount);
