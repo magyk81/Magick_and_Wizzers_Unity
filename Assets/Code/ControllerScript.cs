@@ -7,12 +7,15 @@
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using Matches;
+using Network;
+using Network.SignalsFromHost;
 
 public class ControllerScript : MonoBehaviour {
     private Host mHost;
     private Client mClient;
     private Match mMatch;
-    private UX_Match mUxMatch;
+    private Matches.UX.Match mUxMatch;
 
     private static int sClientsToInit;
 
@@ -35,7 +38,7 @@ public class ControllerScript : MonoBehaviour {
         // Every new entity to start from zero.
         IdHandler.Reset();
 
-        mUxMatch = GetComponent<UX_Match>();
+        mUxMatch = GetComponent<Matches.UX.Match>();
 
         /* Starting from the Match scene in Unity Editor, which is only for debugging.
          * Assume this machine is the host and there are no remote clients. */

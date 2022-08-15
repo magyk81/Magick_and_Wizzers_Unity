@@ -4,17 +4,19 @@
  * Written by Robin Campos <magyk81@gmail.com>, year 2021.
  */
 
-public abstract class SignalFromClient : Signal {
-    // Each enum value corresponds to one of the signal classes that extends this class.
-    public enum Request { INIT_FINISHED, CAST_SPELL, ADD_WAYPOINT, REMOVE_WAYPOINT }
+namespace Network {
+    public abstract class SignalFromClient : Signal {
+        // Each enum value corresponds to one of the signal classes that extends this class.
+        public enum Request { INIT_FINISHED, CAST_SPELL, ADD_WAYPOINT, ADD_GROUP_WAYPOINTS, REMOVE_WAYPOINT }
 
-    protected static int OVERHEAD_LEN = 2;
+        protected const int OVERHEAD_LEN = 2;
 
-    public readonly Request SignalRequest;
-    public readonly int ActingPlayerID;
+        public readonly Request SignalRequest;
+        public readonly int ActingPlayerID;
 
-    protected SignalFromClient(params int[] intMessage) : base(intMessage) {
-        SignalRequest = (Request) intMessage[0];
-        ActingPlayerID = intMessage[1];
+        protected SignalFromClient(params int[] intMessage) : base(intMessage) {
+            SignalRequest = (Request) intMessage[0];
+            ActingPlayerID = intMessage[1];
+        }
     }
 }

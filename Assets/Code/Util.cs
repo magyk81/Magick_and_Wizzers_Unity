@@ -7,7 +7,7 @@
 using System.Globalization;
 using UnityEngine;
 
-public class Util {
+public static class Util {
     public static readonly int UP = 0, RIGHT = 1, DOWN = 2, LEFT = 3,
         UP_RIGHT = 4, UP_LEFT = 5, DOWN_RIGHT = 6, DOWN_LEFT = 7, COUNT = 8;
     
@@ -191,7 +191,7 @@ public class Util {
         return false;
     }
 
-    public static int[] GetDists(Coord a, Coord b, int totalSize) {
+    public static int[] GetDists(Matches.Coord a, Matches.Coord b, int totalSize) {
         int[] dists = new int[4];
         if (a.X > b.X) {
             dists[Util.LEFT] = b.X - a.X;

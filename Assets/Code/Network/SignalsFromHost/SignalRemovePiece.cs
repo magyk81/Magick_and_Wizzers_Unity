@@ -1,9 +1,7 @@
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+namespace Network.SignalsFromHost {
+    public class SignalRemovePiece : SignalFromHost {
+        public readonly int PieceID;
 
-public class SignalRemovePiece : SignalFromHost {
-    public readonly int PieceID;
-
-    public SignalRemovePiece(params int[] intMessage) : base(intMessage) { PieceID = intMessage[1]; }
+        public SignalRemovePiece(params int[] intMessage) : base(intMessage) { PieceID = intMessage[1]; }
+    }
 }

@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 1465740467625092871}
   - component: {fileID: 1465740467625092870}
   - component: {fileID: 1465740467625092873}
-  - component: {fileID: -1360623949794414271}
+  - component: {fileID: 7439512524602268789}
   m_Layer: 5
   m_Name: Player Canvas
   m_TagString: Untagged
@@ -31,6 +31,7 @@ RectTransform:
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 0, y: 0, z: 0}
+  m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 0
@@ -118,7 +119,7 @@ MonoBehaviour:
     type: 3}
   darkScreen: {fileID: 5806508540534723607, guid: 314158eb59b61ee4e9ccaac7baa085bf,
     type: 3}
---- !u!114 &-1360623949794414271
+--- !u!114 &7439512524602268789
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -127,10 +128,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 1465740467625092872}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 221b7fe0905feff4bb5c1b1db1f363a8, type: 3}
+  m_Script: {fileID: 11500000, guid: 06b18245f5d7f8147b4ac87a3c83c5a9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   baseCard: {fileID: 9156593049272992656, guid: 4e4a51a003434da48902ff00f43797c5,
     type: 3}
   cursor: {fileID: 7044971992638209540, guid: 69bdb00485cda6a43a6efc139e9fae46, type: 3}
-  cursorThickness: 40

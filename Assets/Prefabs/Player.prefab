@@ -27,6 +27,7 @@ Transform:
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 0
@@ -40,7 +41,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 7743981988738146676}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4757783264701b849a823bc0c2ad2731, type: 3}
+  m_Script: {fileID: 11500000, guid: 4614082a3f5e59643836ae92f7dcf601, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   baseCam: {fileID: 824023851655665683, guid: 7f77b20a34fddab4db51108904dfb77b, type: 3}
@@ -48,31 +49,5 @@ MonoBehaviour:
     type: 3}
   baseTileHover: {fileID: 7357313190539987364, guid: 9c2e43f591bde0d4f99c3623c6ea8f2a,
     type: 3}
-  baseWaypointForTile: {fileID: 7483999637899632847, guid: 962458794240a5d4f9a7bdab38785f25,
+  baseWaypoint: {fileID: 920882549468273753, guid: 83e3654d3413c654f84f8b13db70fffd,
     type: 3}
-  baseWaypointForPiece: {fileID: 7483999637899632847, guid: 83e3654d3413c654f84f8b13db70fffd,
-    type: 3}
-  waypointMatOpaqueForTile: {fileID: 2100000, guid: 4dcb6b6c22201804fa83239492490031,
-    type: 2}
-  waypointMatSemitransForTile: {fileID: 2100000, guid: 47059d7921961eb40b5dc9b334bc07ef,
-    type: 2}
-  waypointMatHoveredForTile: {fileID: 2100000, guid: eca293a160a396245b097514b5911293,
-    type: 2}
-  waypointMatHoveringForTile: {fileID: 2100000, guid: e8cc8a7d2ba8b4d469dc6b4a8034722b,
-    type: 2}
-  waypointMatOpaqueForPiece: {fileID: 2100000, guid: 16899950facddf94c9fe46b1a985cfbf,
-    type: 2}
-  waypointMatSemitransForPiece: {fileID: 2100000, guid: 0b09b5a289d0b3c49a912097f633c789,
-    type: 2}
-  waypointMatHoveredForPiece: {fileID: 2100000, guid: feaf1c9999744ed4fbd7866c4facd915,
-    type: 2}
-  waypointMatHoveringForPiece: {fileID: 2100000, guid: b0f2924b53926d640a7ff52470e0b796,
-    type: 2}
-  waypointMatOpaqueForTileOnGroup: {fileID: 2100000, guid: f247a89f12de13743a8e9a0b7a92618a,
-    type: 2}
-  waypointMatSemitransForTileOnGroup: {fileID: 2100000, guid: 75008d9eb1eef0e40a42ee9e83ae38bc,
-    type: 2}
-  waypointMatOpaqueForPieceOnGroup: {fileID: 2100000, guid: 91afedebae055a24ea02cf64e2077681,
-    type: 2}
-  waypointMatSemitransForPieceOnGroup: {fileID: 2100000, guid: 48b40c9e1ab3de4468d2b3ac5402bf98,
-    type: 2}
