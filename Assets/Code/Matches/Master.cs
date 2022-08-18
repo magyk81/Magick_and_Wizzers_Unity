@@ -11,10 +11,10 @@ namespace Matches {
     public class Master : Piece {
         private readonly Texture mArt;
 
-        public Master(Player player, int boardID, Coord tile, Texture art)
-            : base(player.ID, boardID, tile, null) {
+        public Master(Player player, int boardID, int boardSize, Coord tile, Texture art)
+            : base(player.ID, boardID, boardSize, tile, null) {
 
-            mName = player.Name;
+            mName = "Master - " + player.Name;
             mPieceType = Type.MASTER;
             mArt = art;
 

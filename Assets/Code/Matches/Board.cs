@@ -40,29 +40,6 @@ namespace Matches {
         public int TotalSize { get { return mTotalSize; } }
         public string Name { get { return mName; } }
 
-        public static int GetTravelDirs(Coord pos, Coord dest, int boardSize) {
-            int size = boardSize * Chunk.SIZE;
-            int xDir = -1, zDir = -1;
-            if (pos.X < dest.X) xDir = Util.RIGHT;
-            else if (pos.X > dest.X) xDir = Util.LEFT;
-            if (Mathf.Abs(dest.X - pos.X) > size / 2) xDir = Util.DirOpp(xDir);
-            if (pos.Z < dest.Z) zDir = Util.UP;
-            else if (pos.Z > dest.Z) zDir = Util.DOWN;
-            if (Mathf.Abs(dest.Z - pos.Z) > size / 2) zDir = Util.DirOpp(zDir);
-            return Util.AddDirs(xDir, zDir);
-        }
-        public static int GetTravelDirsChangeOnly(Coord pos, Coord dest, int boardSize) {
-            int size = boardSize * Chunk.SIZE;
-            int xDir = -1, zDir = -1;
-            if (pos.X < dest.X) xDir = Util.RIGHT;
-            else if (pos.X > dest.X) xDir = Util.LEFT;
-            if (Mathf.Abs(dest.X - pos.X) > size / 2) xDir = Util.DirOpp(xDir); else xDir = -1;
-            if (pos.Z < dest.Z) zDir = Util.UP;
-            else if (pos.Z > dest.Z) zDir = Util.DOWN;
-            if (Mathf.Abs(dest.Z - pos.Z) > size / 2) zDir = Util.DirOpp(zDir); else zDir = -1;
-            return Util.AddDirs(xDir, zDir);
-        }
-
         /// <summary>
         /// Adds 1 master to the boards for each player. The masters' starting positions depend on the number of players.
         /// </summary>
@@ -88,8 +65,7 @@ namespace Matches {
 
                 int signalIdx = i * 2;
 
-                Master initialMaster = new Master(
-                    players[i], 0, masterStartPos[i], masterTex);
+                Master initialMaster = new Master(players[i], ID, mTotalSize, masterStartPos[i], masterTex);
                 signals[signalIdx] = AddPiece(initialMaster);
 
                 // The 5 cards that players start with at the beginning of a match.
@@ -113,6 +89,7 @@ namespace Matches {
             }
             mPieces.Add(piece);
             mIdToPiece.Add(piece.ID, piece);
+            piece.Chunk = mChunks[piece.Pos.X / Chunk.SIZE, piece.Pos.Z / Chunk.SIZE];
             return new SignalAddPiece(piece);
         }
 
@@ -168,7 +145,11 @@ namespace Matches {
 
                 SignalRemoveCards signalRemoveCards = caster.CastSpell(playCard);
                 if (signalRemoveCards != null) {
-                    SignalAddPiece signalAddPiece = AddPiece(new Piece(caster.ID, ID, signal.Tile, playCard));
+                    SignalAddPiece signalAddPiece = null;
+                    if (playCard is CardSummon) {
+                        CardSummon card = playCard as CardSummon;
+                        signalAddPiece = AddPiece(new Piece(caster.ID, ID, mTotalSize, signal.Tile, card));
+                    }
                     // If the spell resolved, return SignalRemoveCard and SignalAddPiece.
                     if (signalAddPiece != null) return new SignalFromHost[] { signalRemoveCards, signalAddPiece };
                 }
@@ -176,10 +157,15 @@ namespace Matches {
             return null;
         }
 
-        public void Update() {
+        public SignalFromHost[] Update() {
+            List<SignalFromHost> outcomes = new List<SignalFromHost>();
+
             foreach (Piece piece in mPieces) {
-                piece.Update();
+                SignalFromHost[] pieceOutcomes = piece.Update();
+                if (pieceOutcomes.Length > 0) outcomes.AddRange(pieceOutcomes);
             }
+
+            return outcomes.ToArray();
         }
     }
 }

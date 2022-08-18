@@ -31,6 +31,10 @@ namespace Matches {
             if (dir == Util.DOWN) { return new Coord(X, Z - 1); }
             if (dir == Util.LEFT) { return new Coord(X - 1, Z); }
             if (dir == Util.RIGHT) { return new Coord(X + 1, Z); }
+            if (dir == Util.UP_LEFT) { return new Coord(X - 1, Z + 1); }
+            if (dir == Util.UP_RIGHT) { return new Coord(X + 1, Z + 1); }
+            if (dir == Util.DOWN_LEFT) { return new Coord(X - 1, Z - 1); }
+            if (dir == Util.DOWN_RIGHT) { return new Coord(X + 1, Z - 1); }
             return this;
         }
         public Coord Dir(int horiz, int vert) {

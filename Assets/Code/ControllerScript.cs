@@ -56,8 +56,8 @@ public class ControllerScript : MonoBehaviour {
 
             // Players are magic data.
             Player[] players = new Player[2];
-            players[0] = new Player("Brooke", 0, false);
-            players[1] = new Player("Rachel", 0, true);
+            players[0] = new Player("Harry", 0, false);
+            players[1] = new Player("Ron", 0, true);
 
             // Boards are magic data.
             Board[] boards = new Board[2];

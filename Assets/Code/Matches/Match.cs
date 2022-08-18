@@ -70,7 +70,7 @@ namespace Matches {
             return mBoards[0].InitMasters(mPlayers, STARTING_HAND_COUNT); }
 
         public void MainLoop() {
-            foreach (Board board in mBoards) { board.Update(); }
+            foreach (Board board in mBoards) { mSignalsToSend.AddRange(board.Update()); }
         }
 
         private static void PrintReceivedMessage(SignalFromClient.Request request) {
