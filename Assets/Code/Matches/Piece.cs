@@ -13,6 +13,8 @@ using Network.SignalsFromHost;
 
 namespace Matches {
     public class Piece {
+        private const int MOVE_ON_WITHIN_RANGE = 3;
+
         public readonly int ID;
 
         protected Deck mDeck;
@@ -23,7 +25,6 @@ namespace Matches {
         private Speed mSpeed;
         private Size mSize;
         private int mDirLater = -1;
-        private Coord mWaypointTargetPos = Coord.Null;
 
         private readonly int mPlayerID, mBoardID;
         private Chunk mChunk;
@@ -78,26 +79,56 @@ namespace Matches {
             }
         }
 
-        public SignalFromHost[] Update(params Chunk[] chunks) {
+        public SignalFromHost[] Update() {
             List<SignalFromHost> outcomes = new List<SignalFromHost>();
 
-            // Try travelling and save the new spot.
-            PiecePos newPos = mPos.Travel(GetSpeedInt(), mDirLater);
+            // Save the old spot before travelling.
+            PiecePos oldPos = mPos;
+
+            // completedTravel set to true if it finishes claiming a new tile after this travel.
+            bool completedTravel;
+            PiecePos newPos = mPos.Travel(GetSpeedInt(), mDirLater, out completedTravel);
+
+            // overlap gets set to true if there is another piece in the way of travelling in this direction.
             bool overlap = false;
             if (newPos.Pos != mPos.Pos) {
-                foreach (Chunk chunk in chunks) {
-                    if (chunk != null && chunk.InPiecesBounds(mPos)) {
-                        overlap = true;
+                foreach (Chunk chunk in mChunk.Neighbors) {
+                    if (chunk.InPiecesBounds(ID, mPos)) {
+                        overlap = true; Debug.Log("overlap == true");
                         break;
                     }
                 }
+                if (!overlap) Debug.Log("oldPos: " + oldPos.Pos + ", newPos: " + newPos.Pos);
             }
             if (!overlap) mPos = newPos;
+            else mPos = oldPos;
 
-            // Update mWaypointTargetPos and dirLater.
-            UpdateWaypointTargetPos();
+            // Check if target piece is dead or invisible to update the waypoints.
 
-            Debug.Log(Pos);
+            // Claimed a new tile.
+            if (completedTravel) {
+                bool targetPosUpdated = false;
+
+                if (mWaypoints[0] != null) {
+                    if (mWaypoints[0] is WaypointPiece) {
+                        // New tile is within range of the target waypoint piece.
+                        if ((mWaypoints[0] as WaypointPiece).Piece.IsWithinRange(mPos, 1)) {
+                            // Attack or use ability on target piece.
+                        }
+                    } else {
+                        // New tile is within range of the target waypoint tile.
+                        if (overlap && IsWithinRange((mWaypoints[0] as WaypointTile).Tile, MOVE_ON_WITHIN_RANGE)
+                            || IsWithinRange((mWaypoints[0] as WaypointTile).Tile, 1)) {
+
+                            RemoveWaypoint(0);
+                            targetPosUpdated = true;
+                            outcomes.Add(new SignalUpdateWaypoints(this));
+                        }
+                    }
+                }
+
+                if (!targetPosUpdated) UpdateWaypointTargetPos();
+            }
 
             return outcomes.ToArray();
         }
@@ -118,6 +149,9 @@ namespace Matches {
             for (int i = 0; i < mWaypoints.Length; i++) {
                 mWaypoints[i] = null;
             }
+
+            // Update dirLater.
+            UpdateWaypointTargetPos();
         }
 
         public int[] GetWaypointData()
@@ -148,19 +182,57 @@ namespace Matches {
             return true;
         }
 
-        public bool InBounds(PiecePos pos) {
+        public bool Intersects(PiecePos pos) {
             bool inX = false, inZ = false;
-            if (mPos.LoopsX) {
-                if (pos.Bound.X >= Pos.X || pos.Pos.X <= mPos.Bound.X) inX = true;
+
+            if (mPos.LoopsX && pos.LoopsX)  inX = true;
+            else if (mPos.LoopsX) {
+                if (pos.Pos.X <= mPos.Bound.X || pos.Bound.X >= mPos.Pos.X) inX = true;
+            } else if (pos.LoopsX) {
+                if (mPos.Pos.X <= pos.Bound.X || mPos.Bound.X >= pos.Pos.X) inX = true;
             } else {
                 if (pos.Bound.X >= Pos.X && pos.Pos.X <= mPos.Bound.X) inX = true;
             }
-            if (mPos.LoopsZ) {
-                if (pos.Bound.Z >= Pos.Z || pos.Pos.Z <= mPos.Bound.Z) inZ = true;
+
+            if (mPos.LoopsZ && pos.LoopsZ) inZ = true;
+            else if (mPos.LoopsZ) {
+                if (pos.Pos.Z <= mPos.Bound.Z || pos.Bound.Z >= mPos.Pos.Z) inZ = true;
+            } else if (pos.LoopsZ) {
+                if (mPos.Pos.Z <= pos.Bound.Z || mPos.Bound.Z >= pos.Pos.Z) inZ = true;
             } else {
                 if (pos.Bound.Z >= Pos.Z && pos.Pos.Z <= mPos.Bound.Z) inZ = true;
             }
+
             return inX && inZ;
+        }
+
+        public bool IsWithinRange(PiecePos pos, int dist) {
+            // if (dest.X == 0 && pos.X ==)
+            return false;
+        }
+
+        public bool IsWithinRange(Coord tile, int dist) {
+            int distX = 0, distZ = 0;
+
+            if (mPos.LoopsX) {
+                distX = Mathf.Min(Pos.X - tile.X, tile.X - mPos.Bound.X);
+            } else {
+                if (tile.X < Pos.X)
+                    distX = Mathf.Min(Pos.X - tile.X, tile.X + mPos.BoardSize - mPos.Bound.X);
+                else if (tile.X > mPos.Bound.X)
+                    distX = Mathf.Min(tile.X - mPos.Bound.X, mPos.BoardSize - tile.X + Pos.X);
+            }
+
+            if (mPos.LoopsZ) {
+                distZ = Mathf.Min(Pos.Z - tile.Z, tile.Z - mPos.Bound.Z);
+            } else {
+                if (tile.Z < Pos.Z)
+                    distZ = Mathf.Min(Pos.Z - tile.Z, tile.Z + mPos.BoardSize - mPos.Bound.Z);
+                else if (tile.Z > mPos.Bound.Z)
+                    distZ = Mathf.Min(tile.Z - mPos.Bound.Z, mPos.BoardSize - tile.Z + Pos.Z);
+            }
+
+            return distX + distZ <= dist;
         }
 
         public SignalFromHost DrawCards(int count) {
@@ -185,11 +257,18 @@ namespace Matches {
         /// Move all items in the array to the left, removing any gaps.
         /// </summary>
         private void ArrangeWaypointOrder() {
+            // Automatically resolve a waypoint if it's first and occupying this piece.
+            if (mWaypoints[0] != null && AutoResolveWaypoint(mWaypoints[0])) mWaypoints[0] = null;
+
             Queue<int> emptySlots = new Queue<int>();
             for (int i = 0; i < mWaypoints.Length - 1; i++) {
                 if (mWaypoints[i] == null) emptySlots.Enqueue(i);
                 else if (emptySlots.Count > 0) {
-                    mWaypoints[emptySlots.Dequeue()] = mWaypoints[i];
+
+                    // Automatically resolve a waypoint if it's first and occupying this piece.
+                    if (emptySlots.Peek() != 0 || !AutoResolveWaypoint(mWaypoints[i]))
+                        mWaypoints[emptySlots.Dequeue()] = mWaypoints[i];
+
                     mWaypoints[i] = null;
                     emptySlots.Enqueue(i);
                 }
@@ -201,50 +280,43 @@ namespace Matches {
                 else _ += mWaypoints[i].ToString() + ", ";
             }
             Debug.Log(_);
+
+            // Update dirLater.
+            UpdateWaypointTargetPos();
         }
 
+        private bool AutoResolveWaypoint(Waypoint waypoint) {
+            if (waypoint is WaypointTile) {
+                if (IsWithinRange((waypoint as WaypointTile).Tile, 0)) {
+                    Debug.Log("Resolving waypoint: " + (waypoint as WaypointTile).Tile);
+                    // Resolve it.
+                } else return false;
+            } else {
+                if (IsWithinRange((waypoint as WaypointPiece).Piece.Pos, 0)) {
+                    // Resolve it.
+                    Debug.Log("Resolving waypoint: " + (waypoint as WaypointPiece).Piece.mName);
+                } else return false;
+            }
+            return true;
+        }
+
+        /// <remarks>
+        /// Call this whenever the waypoints are updated and when a new tile is claimed.
+        /// </remarks>
         private void UpdateWaypointTargetPos() {
             if (mWaypoints[0] != null) {
-                if (mWaypoints[0] is WaypointPiece)  {}
-
                 Coord pos;
 
-                if (mWaypoints[0] is WaypointPiece) {
-                    pos = (mWaypoints[0] as WaypointPiece).Piece.Pos;
-                } else { // mWaypoints[0] is WaypointTile
-                    pos = (mWaypoints[0] as WaypointTile).Tile;
-                }
+                if (mWaypoints[0] is WaypointPiece) pos = (mWaypoints[0] as WaypointPiece).Piece.Pos;
+                else /* mWaypoints[0] is WaypointTile */ pos = (mWaypoints[0] as WaypointTile).Tile;
 
-                if (pos != mWaypointTargetPos) {
-                    mWaypointTargetPos = pos;
-                    mDirLater = CalcTravelDir();
-                }
-            }
+                mDirLater = CalcTravelDir(pos);
+            } else mDirLater = -1;
         }
 
-        private bool IsAdjacent(Coord dest) {
-            // if (dest.X == 0 && pos.X ==)
-            return false;
-        }
-
-        private bool InBounds(Coord dest) {
-            bool inX = false, inZ = false;
-            if (mPos.LoopsX) {
-                if (dest.X >= Pos.X || dest.X <= mPos.Bound.X) inX = true;
-            } else {
-                if (dest.X >= Pos.X && dest.X <= mPos.Bound.X) inX = true;
-            }
-            if (mPos.LoopsZ) {
-                if (dest.Z >= Pos.Z || dest.Z <= mPos.Bound.Z) inZ = true;
-            } else {
-                if (dest.Z >= Pos.Z && dest.Z <= mPos.Bound.Z) inZ = true;
-            }
-            return inX && inZ;
-        }
-
-        private int CalcTravelDir() {
+        private int CalcTravelDir(Coord dest) {
             int xDir = -1, zDir = -1;
-            Coord pos = Pos, dest = mWaypointTargetPos;
+            Coord pos = Pos;
             
             if (pos.X < dest.X) xDir = Util.RIGHT;
             else if (pos.X > dest.X) xDir = Util.LEFT;
@@ -286,7 +358,7 @@ namespace Matches {
             if (mSize == Size.HUGE) return 2;
             if (mSize == Size.GARGANTUAN) return 3;
             if (mSize == Size.COLOSSAL) return 4;
-            return 0;
+            return 1;
         }
     }
 }

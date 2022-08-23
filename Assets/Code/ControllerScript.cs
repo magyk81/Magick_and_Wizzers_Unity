@@ -61,7 +61,7 @@ public class ControllerScript : MonoBehaviour {
 
             // Boards are magic data.
             Board[] boards = new Board[2];
-            boards[0] = new Board("Main", 2);
+            boards[0] = new Board("Main", 3);
             boards[1] = new Board("Sheol", 1);
 
             mMatch = new Match(players, boards);

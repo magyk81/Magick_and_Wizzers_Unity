@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace Matches {
     public struct PiecePos {
-        private const int LERP_MAX = 1000;
+        private const int LERP_MAX = 500;
 
         private readonly Coord mPrev, mNext, mPrevBound, mNextBound;
         private readonly int mDirNext, mLerpDist, mSize, mBoardSize;
@@ -26,18 +26,35 @@ namespace Matches {
             mNextBound = Coord._(mNext.X + size, mNext.Z + size).ToBounds(boardSize);
         }
 
-        public PiecePos Travel(int speed, int dirLater) {
-            int newLerpDist = speed + mLerpDist;
-            if (newLerpDist >= LERP_MAX) {
-                return new PiecePos(
-                    mNext.ToBounds(mBoardSize),
-                    mSize,
-                    mBoardSize,
-                    dirLater,
-                    Mathf.Clamp(newLerpDist - LERP_MAX, 0, LERP_MAX - 1)
-                );
+        public PiecePos Travel(int speed, int dirLater, out bool completedTravel) {
+            // No longer moving.
+            if (dirLater == -1) {
+                completedTravel = false;
+                if (mNext == mPrev) return this;
+                return _(mPrev, mSize, mBoardSize);
             }
-            return new PiecePos(mPrev, mSize, mBoardSize, mDirNext, newLerpDist);
+
+            // dirLater did not change so continue in the same direction.
+            if (dirLater == mDirNext) {
+                int newLerpDist = speed + mLerpDist;
+                if (newLerpDist >= LERP_MAX) {
+                    completedTravel = true;
+                    return new PiecePos(
+                        mNext.ToBounds(mBoardSize),
+                        mSize,
+                        mBoardSize,
+                        dirLater,
+                        Mathf.Clamp(newLerpDist - LERP_MAX, 0, LERP_MAX - 1)
+                    );
+                }
+
+                completedTravel = false;
+                return new PiecePos(mPrev, mSize, mBoardSize, dirLater, newLerpDist);
+            }
+
+            // dirLater changed, so start from mLerpDist 0.
+            completedTravel = false;
+            return new PiecePos(mPrev, mSize, mBoardSize, dirLater, speed);
         }
 
         public static PiecePos _(Coord coord, int size, int boardSize) {

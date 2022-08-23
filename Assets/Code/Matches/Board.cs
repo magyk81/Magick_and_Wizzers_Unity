@@ -28,10 +28,30 @@ namespace Matches {
             mName = name;
             mSize = size;
             mTotalSize = size * Chunk.SIZE;
+
+            // Setup chunks.
             mChunks = new Chunk[size, size];
             for (int i = 0; i < size; i++) {
                 for (int j = 0; j < size; j++) {
                     mChunks[i, j] = new Chunk(Coord._(i, j));
+                }
+            }
+
+            // Setup chunk neighbors.
+            for (int i = 0; i < size; i++) {
+                for (int j = 0; j < size; j++) {
+                    int left = (i == 0) ? size - 1 : i - 1;
+                    int right = (i == size - 1) ? 0 : i + 1;
+                    int up = (j == size - 1) ? 0 : j + 1;
+                    int down = (j == 0) ? size - 1 : j - 1;
+                    mChunks[i, j].AddNeighbor(mChunks[left, j], Util.LEFT);
+                    mChunks[i, j].AddNeighbor(mChunks[right, j], Util.RIGHT);
+                    mChunks[i, j].AddNeighbor(mChunks[i, up], Util.UP);
+                    mChunks[i, j].AddNeighbor(mChunks[i, down], Util.DOWN);
+                    mChunks[i, j].AddNeighbor(mChunks[left, up], Util.UP_LEFT);
+                    mChunks[i, j].AddNeighbor(mChunks[right, up], Util.UP_RIGHT);
+                    mChunks[i, j].AddNeighbor(mChunks[left, down], Util.DOWN_LEFT);
+                    mChunks[i, j].AddNeighbor(mChunks[right, down], Util.DOWN_RIGHT);
                 }
             }
         }
@@ -162,6 +182,7 @@ namespace Matches {
 
             foreach (Piece piece in mPieces) {
                 SignalFromHost[] pieceOutcomes = piece.Update();
+                piece.Chunk = mChunks[piece.Pos.X / Chunk.SIZE, piece.Pos.Z / Chunk.SIZE];
                 if (pieceOutcomes.Length > 0) outcomes.AddRange(pieceOutcomes);
             }
 
