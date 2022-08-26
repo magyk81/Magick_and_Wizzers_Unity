@@ -19,6 +19,7 @@ namespace Matches {
         public Vector2 ToVec2() { return new Vector2(X, Z); }
         public Vector3 ToVec3() { return new Vector3(X, 0, Z); }
         public Coord ToBounds(int size) {
+            if (size == -1) return Coord.Null;
             int newX = X, newZ = Z;
             while (newX > size) newX -= size;
             while (newX < 0) newX += size;

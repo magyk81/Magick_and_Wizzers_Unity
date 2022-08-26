@@ -129,18 +129,31 @@ public static class Util {
         return -1;
     }
     
-    public static Vector3 DirToVec3(int dir) {
+    public static Vector3 DirToVec3(int dir, float l = 1) {
         if (dir == -1) return Vector3.zero;
-        if (dir == UP) return new Vector3(0, 0, 1);
-        if (dir == RIGHT) return new Vector3(1, 0, 0);
-        if (dir == DOWN) return new Vector3(0, 0, -1);
-        if (dir == LEFT) return new Vector3(-1, 0, 0);
+        if (dir == UP) return new Vector3(0, 0, l);
+        if (dir == RIGHT) return new Vector3(l, 0, 0);
+        if (dir == DOWN) return new Vector3(0, 0, -l);
+        if (dir == LEFT) return new Vector3(-l, 0, 0);
         if (dir == UP_RIGHT) return DirToVec3(UP) + DirToVec3(RIGHT);
         if (dir == UP_LEFT) return DirToVec3(UP) + DirToVec3(LEFT);
         if (dir == DOWN_RIGHT) return DirToVec3(DOWN) + DirToVec3(RIGHT);
         if (dir == DOWN_LEFT) return DirToVec3(DOWN) + DirToVec3(LEFT);
         return Vector3.zero;
     }
+
+    // public static float[] DirToFloats(int dir, float l = 1) {
+    //     if (dir == -1) return new float[] { 0, 0 };
+    //     if (dir == UP) return new float[] { l, 0 };
+    //     if (dir == RIGHT) return new Vector3(1, 0, 0);
+    //     if (dir == DOWN) return new Vector3(0, 0, -1);
+    //     if (dir == LEFT) return new Vector3(-1, 0, 0);
+    //     if (dir == UP_RIGHT) return DirToVec3(UP) + DirToVec3(RIGHT);
+    //     if (dir == UP_LEFT) return DirToVec3(UP) + DirToVec3(LEFT);
+    //     if (dir == DOWN_RIGHT) return DirToVec3(DOWN) + DirToVec3(RIGHT);
+    //     if (dir == DOWN_LEFT) return DirToVec3(DOWN) + DirToVec3(LEFT);
+    //     return new float[] { 0, 0 };
+    // }
 
     public static string DirToString(int dir) {
         if (dir == UP) return "UP";

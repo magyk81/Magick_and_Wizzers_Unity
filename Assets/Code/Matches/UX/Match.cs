@@ -69,6 +69,18 @@ namespace Matches.UX {
                         foreach (Player player in mPlayers) {
                             if (player is not Bot) player.AddHandForPiece(signalAddPiece.PieceID); }
                         break;
+                    case SignalFromHost.Request.MOVE_PIECE:
+                        SignalMovePiece signalMovePiece = new SignalMovePiece(message);
+                        foreach (Board board in mBoards[mBoardWithPiece[signalMovePiece.PieceID]]) {
+                            board.MovePiece(
+                                signalMovePiece.PieceID,
+                                signalMovePiece.Position,
+                                signalMovePiece.Size,
+                                signalMovePiece.DirNext,
+                                signalMovePiece.Lerp
+                            );
+                        }
+                        break;
                     case SignalFromHost.Request.ADD_CARDS:
                         SignalAddCards signalAddCards = new SignalAddCards(message);
                         foreach (Board board in mBoards[mBoardWithPiece[signalAddCards.HolderPieceID]]) {

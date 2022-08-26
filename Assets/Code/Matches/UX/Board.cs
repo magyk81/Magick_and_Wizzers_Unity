@@ -157,7 +157,7 @@ namespace Matches.UX {
             uxPiece.gameObject.name = pieceName;
             mPieces.Add(signal.PieceID, uxPiece);
             uxPiece.Init(signal, pieceName, layerCount);
-            MovePiece(signal.PieceID, signal.Tile);
+            MovePiece(signal.PieceID, signal.Tile, signal.Size);
             return uxPiece;
         }
 
@@ -168,8 +168,9 @@ namespace Matches.UX {
         /// <summary>
         /// Updates the piece's position on the board.
         /// </summary>
-        public void MovePiece(int pieceID, Coord tile) {
-            mPieces[pieceID].SetPos(mTiles[tile.X, tile.Z], mTiles[tile.X, tile.Z], 1);
+        public void MovePiece(int pieceID, Coord tile, Matches.Piece.Size size, int dirNext = -1, float lerp = 0) {
+            mPieces[pieceID].SetSize(size);
+            mPieces[pieceID].SetPos(mTiles[tile.X, tile.Z], dirNext, lerp);
         }
 
         public void UpdateWaypoints(int pieceID, Coord[] coords) {

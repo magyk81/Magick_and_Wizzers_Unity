@@ -46,7 +46,7 @@ namespace Matches {
             mPlayerID = playerID;
             mBoardID = boardID;
             mSize = (card != null) ? card.Size : Size.MEDIUM;
-            mPos = PiecePos._(tile.Copy(), GetSizeInt() - 1, boardSize);
+            mPos = PiecePos._(tile.Copy(), SizeToInt(mSize) - 1, boardSize);
             mCard = card;
             mSpeed = (card != null) ? card.Speed : Speed.NORMAL;
         }
@@ -100,8 +100,11 @@ namespace Matches {
                 }
                 if (!overlap) Debug.Log("oldPos: " + oldPos.Pos + ", newPos: " + newPos.Pos);
             }
-            if (!overlap) mPos = newPos;
-            else mPos = oldPos;
+
+            if (!overlap) {
+                mPos = newPos;
+                outcomes.Add(new SignalMovePiece(this));
+            } else mPos = oldPos;
 
             // Check if target piece is dead or invisible to update the waypoints.
 
@@ -171,6 +174,11 @@ namespace Matches {
                     data[i + 1] = tile.Z;
                 }
             }
+            return data;
+        }
+        public int[] GetPosData() {
+            int[] data = mPos.Data;
+            data[2] = (int) mSize;
             return data;
         }
 
@@ -251,6 +259,14 @@ namespace Matches {
             * the spell if a SignalRemoveCard gets returned. */
             if (mHand.Remove(card)) { return new SignalRemoveCards(this, card); }
             return null;
+        }
+
+        public Size GetSize() { return mSize; }
+        public static int SizeToInt(Size size) {
+            if (size == Size.HUGE) return 2;
+            if (size == Size.GARGANTUAN) return 3;
+            if (size == Size.COLOSSAL) return 4;
+            return 1;
         }
 
         /// <summary>
@@ -353,12 +369,6 @@ namespace Matches {
             if (mSpeed == Speed.FAST) return 4;
             if (mSpeed == Speed.SHOOT) return 8;
             return 0;
-        }
-        private int GetSizeInt() {
-            if (mSize == Size.HUGE) return 2;
-            if (mSize == Size.GARGANTUAN) return 3;
-            if (mSize == Size.COLOSSAL) return 4;
-            return 1;
         }
     }
 }

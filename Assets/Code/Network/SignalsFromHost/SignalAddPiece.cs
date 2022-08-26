@@ -4,6 +4,7 @@ using Matches;
 namespace Network.SignalsFromHost {
     public class SignalAddPiece : SignalFromHost {
         public readonly int PieceID, CardID, BoardID, PlayerOwnID;
+        public readonly Piece.Size Size;
         public readonly Coord Tile;
 
         /// <remarks>
@@ -16,7 +17,8 @@ namespace Network.SignalsFromHost {
             CardID = intMessageCut[1];
             BoardID = intMessageCut[2];
             PlayerOwnID = intMessageCut[3];
-            Tile = Coord._(intMessageCut[4], intMessageCut[5]);
+            Size = (Piece.Size) intMessageCut[4];
+            Tile = Coord._(intMessageCut[5], intMessageCut[6]);
         }
 
         /// <remarks>
@@ -25,14 +27,15 @@ namespace Network.SignalsFromHost {
         public SignalAddPiece(Piece piece) : this(PieceToIntMessage(piece)) { }
 
         private static int[] PieceToIntMessage(Piece piece) {
-            int[] intMessage = new int[7];
+            int[] intMessage = new int[8];
             intMessage[0] = (int) Request.ADD_PIECE;
             intMessage[1] = piece.ID;
             intMessage[2] = (piece.Card != null) ? piece.Card.ID : -1;
             intMessage[3] = piece.BoardID;
             intMessage[4] = piece.PlayerID;
-            intMessage[5] = piece.Pos.X;
-            intMessage[6] = piece.Pos.Z;
+            intMessage[5] = (int) piece.GetSize();
+            intMessage[6] = piece.Pos.X;
+            intMessage[7] = piece.Pos.Z;
             return intMessage;
         }
     }

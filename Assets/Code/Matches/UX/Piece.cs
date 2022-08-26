@@ -28,10 +28,9 @@ namespace Matches.UX {
         private Piece mReal = null;
         private Piece[] mUxAll = new Piece[9];
         private List<int> mHand = new List<int>();
-        private Coord mPosPrev, mPosNext;
-        private float mPosLerp;
-        private Tile mTileAvg;
-        private int mSize = 1;
+        private float[] mPos;
+        private Matches.Piece.Size mSize;
+        private int mSizeInt = 1;
         private float[] mBounds = new float[4];
         private int mPieceID, mBoardID, mPlayerID;
         private bool mIsHovered, mIsSelected;
@@ -43,7 +42,6 @@ namespace Matches.UX {
                 return mUxAll;
             }
         }
-        // public Matches.Waypoints.Waypoint[] Waypoints { get => mTrail.Waypoints; set => mTrail.Waypoints = value; }
         public Matches.Waypoints.Waypoint[] Waypoints { set => mTrail.Waypoints = value; }
         public WaypointTrail Trail { get => mTrail; }
         public int WaypointIdx { get => mTrail.Idx; set => mTrail.Idx = value; }
@@ -61,7 +59,7 @@ namespace Matches.UX {
         public bool IsHovered { get => mIsHovered; }
         public bool IsSelected { get => mIsSelected; }
         public Vector3 UX_Pos { get => mTran.localPosition; }
-        public Tile UX_TileAvg { get => mTileAvg; }
+        // public Tile UX_TileAvg { get => mTileAvg; }
 
         /// <summary>
         /// Called once before the match begins.
@@ -153,21 +151,25 @@ namespace Matches.UX {
             mUxAll[cloneIdx] = piece;
         }
 
-        public Vector3 GetPosForLines() { return mTran.localPosition; }
-        public Coord GetCoordForLines() { return UX_TileAvg.Pos; }
-
-        public void SetPos(Tile a, Tile b, float lerp) {
-            if (a == null || b == null) gameObject.SetActive(false);
+        public void SetSize(Matches.Piece.Size size) {
+            mSize = size;
+            mSizeInt = Matches.Piece.SizeToInt(size);
+        }
+        public void SetPos(Tile tile, int dirNext, float lerp) {
+            if (tile == null) gameObject.SetActive(false);
             else {
-                Vector3 pos = Vector3.Lerp(a.UX_Pos, b.UX_Pos, lerp);
-                mTran.localPosition = new Vector3(pos.x, LIFT_DIST, pos.z);
+                Vector3 center = Util.DirToVec3(dirNext, lerp);
+                if (mSizeInt == 1) center += new Vector3(tile.UX_Pos.x, LIFT_DIST, tile.UX_Pos.z);
+                else if (mSizeInt == 2) center += new Vector3(tile.UX_Pos.x + 0.5F, LIFT_DIST, tile.UX_Pos.z + 0.5F);
+                else if (mSizeInt == 3) center += new Vector3(tile.UX_Pos.x + 1F, LIFT_DIST, tile.UX_Pos.z + 1F);
+                else if (mSizeInt == 4) center += new Vector3(tile.UX_Pos.x + 1.5F, LIFT_DIST, tile.UX_Pos.z + 1.5F);
+                else Debug.LogError("Invalid mSizeInt: " + mSizeInt);
+
+                mTran.localPosition = new Vector3(center.x, LIFT_DIST, center.z);
                 gameObject.SetActive(true);
 
-                mPosPrev = a.Pos; mPosNext = b.Pos; mPosLerp = lerp;
-                mBounds[0] = mPosPrev.X + ((lerp - 1) * mSize); mBounds[1] = mPosPrev.X + (lerp * mSize);
-                mBounds[2] = mPosPrev.Z + ((lerp - 1) * mSize); mBounds[3] = mPosPrev.Z + (lerp * mSize);
-
-                mTileAvg = (lerp < 0.5F) ? a : b;
+                mBounds[0] = (center.x - ((float) mSizeInt) / 2); mBounds[1] = (center.x + ((float) mSizeInt) / 2);
+                mBounds[2] = (center.z - ((float) mSizeInt) / 2); mBounds[3] = (center.z + ((float) mSizeInt) / 2);
             }
         }
 

@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace Matches {
     public struct PiecePos {
-        private const int LERP_MAX = 500;
+        public const int LERP_MAX = 500;
 
         private readonly Coord mPrev, mNext, mPrevBound, mNextBound;
         private readonly int mDirNext, mLerpDist, mSize, mBoardSize;
@@ -12,9 +12,14 @@ namespace Matches {
         public bool LoopsX { get => Pos.X > Bound.X; }
         public bool LoopsZ { get => Pos.Z > Bound.Z; }
         public int BoardSize { get => mBoardSize; }
+        public int Size { get => mSize; }
+        public int DirNext { get => mDirNext; }
+        public float LerpDist { get => ((float) mLerpDist) / LERP_MAX; }
+
+        // mSize value here gets replaced in Piece::GetPosData with Piece.Size enum value.
+        public int[] Data { get => new int[] { mPrev.X, mPrev.Z, mSize, mDirNext, mLerpDist }; }
 
         private PiecePos(Coord prev, int size, int boardSize, int dirNext = -1, int lerpDist = 0) {
-
             mPrev = prev.ToBounds(boardSize);
             mNext = mPrev.Dir(dirNext).ToBounds(boardSize);
             mDirNext = dirNext;
@@ -59,10 +64,6 @@ namespace Matches {
 
         public static PiecePos _(Coord coord, int size, int boardSize) {
             return new PiecePos(coord.Copy(), size, boardSize);
-        }
-
-        public static PiecePos _(params int[] vals) {
-            return new PiecePos(Coord._(vals[0], vals[1]), vals[2], vals[3], vals[4], vals[5]);
         }
     }
 }
