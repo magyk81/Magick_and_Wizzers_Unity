@@ -468,6 +468,9 @@ namespace Matches.UX {
             return signal;
         }
 
+        public void AddHandForPiece(int pieceID) { mHand.AddPieceEntry(pieceID); }
+        public void RemoveHandForPiece(int pieceID) { mHand.RemovePieceEntry(pieceID); }
+
         public void UpdateWaypoints() {
             if (InWaypointMode() || mHoveredPieces.Count == 1) ShowWaypoints();
         }

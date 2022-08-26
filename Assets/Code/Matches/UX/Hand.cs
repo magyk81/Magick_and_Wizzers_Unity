@@ -4,6 +4,7 @@
  * Written by Robin Campos <magyk81@gmail.com>, year 2021.
  */
 
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using Matches.Cards;
@@ -15,7 +16,9 @@ namespace Matches.UX {
 
         [SerializeField]
         private RectTransform baseCard, cursor;
-        private readonly UX_Card[] mCards = new UX_Card[MAX_HAND_CARDS];
+        private readonly UX_Card[] mCardsBase = new UX_Card[MAX_HAND_CARDS];
+        private UX_Card[] mCards;
+        private readonly Dictionary<int, UX_Card[]> mPieceEntries = new Dictionary<int, UX_Card[]>();
         // IDs of the last card that was selected and its caster.
         private int mPlayCardID = -1, mCasterID = -1;
         private RectTransform mPlayCardTran;
@@ -41,6 +44,16 @@ namespace Matches.UX {
             }
         }
 
+        public void AddPieceEntry(int pieceID) {
+            UX_Card[] cards = new UX_Card[MAX_HAND_CARDS];
+            for (int i = 0; i < MAX_HAND_CARDS; i++) { cards[i] = new UX_Card(mCardsBase[i]); }
+            mPieceEntries.Add(pieceID, cards);
+        }
+        public void RemovePieceEntry(int pieceID) {
+            if (mPiece.PieceID == pieceID) HideAll();
+            mPieceEntries.Remove(pieceID);
+        }
+
         public void Show(Piece piece) {
             if (mSetupDone && piece != null) {
                 mPiece = piece;
@@ -54,6 +67,7 @@ namespace Matches.UX {
                 else if (mCount > 0 && mCursorIdx == -1) mCursorIdx = 0;
                 cursor.gameObject.SetActive(mCount > 0 && mCardParent.gameObject.activeSelf);
 
+                mCards = mPieceEntries[piece.PieceID];
                 for (int i = 0; i < MAX_HAND_CARDS; i++) {
                     if (i < cards.Length) {
                         mCards[i].SetArt(cards[i]);
@@ -206,8 +220,9 @@ namespace Matches.UX {
             // Setup cards.
             Coord initCardPos = Coord._((int) (mCamDims.X + mCardWidth + 1) / 2, 0);
             for (int i = 0; i < MAX_HAND_CARDS; i++) {
-                mCards[i] = new UX_Card(i, baseCard, mCardParent, mCardWidth, mCardHeight, initCardPos);
+                mCardsBase[i] = new UX_Card(i, baseCard, mCardParent, mCardWidth, mCardHeight, initCardPos);
             }
+
             baseCard.gameObject.SetActive(false);
 
             mSetupDone = true;
@@ -258,20 +273,32 @@ namespace Matches.UX {
 
                 this.idx = idx;
 
+                cardPos = new CardPos(initPos);
+                this.initPos = initPos;
+
                 rectTran = Instantiate(baseCard.gameObject, parent).GetComponent<RectTransform>();
                 rectTran.gameObject.name = "Card " + ((idx < 9) ? "0" : "") + (idx + 1);
                 rectTran.sizeDelta = new Vector2(width, height);
-                rectTran.gameObject.SetActive(false);
+                rectTran.gameObject.SetActive(false);                
+                rectTran.anchoredPosition = Curr.ToVec2();
 
                 art = rectTran.gameObject.GetComponent<RawImage>();
+            }
+            public UX_Card(UX_Card card) {
+                idx = card.idx;
 
-                cardPos = new CardPos(initPos);
-                this.initPos = initPos;
-                rectTran.anchoredPosition = Curr.ToVec2();
+                cardPos = new CardPos(card.initPos);
+                initPos = card.initPos;
+
+                rectTran = card.rectTran;
+                art = rectTran.gameObject.GetComponent<RawImage>();
             }
             public Coord Next { set { cardPos.Next = value; tickCountdown = MAX_TICK_COUNT; } }
             public Coord Curr { get => cardPos.Curr; }
-            public void Show() { rectTran.gameObject.SetActive(true); }
+            public void Show() {
+                rectTran.anchoredPosition = Curr.ToVec2();
+                rectTran.gameObject.SetActive(true);
+            }
             public void Hide() {
                 if (rectTran.gameObject.activeSelf) {
                     cardPos = new CardPos(initPos);

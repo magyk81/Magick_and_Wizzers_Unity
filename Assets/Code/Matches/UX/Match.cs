@@ -66,6 +66,8 @@ namespace Matches.UX {
                             real.AddClone(clone, j);
                         }
                         mBoardWithPiece.Add(signalAddPiece.PieceID, signalAddPiece.BoardID);
+                        foreach (Player player in mPlayers) {
+                            if (player is not Bot) player.AddHandForPiece(signalAddPiece.PieceID); }
                         break;
                     case SignalFromHost.Request.ADD_CARDS:
                         SignalAddCards signalAddCards = new SignalAddCards(message);
