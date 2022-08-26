@@ -135,10 +135,10 @@ public static class Util {
         if (dir == RIGHT) return new Vector3(l, 0, 0);
         if (dir == DOWN) return new Vector3(0, 0, -l);
         if (dir == LEFT) return new Vector3(-l, 0, 0);
-        if (dir == UP_RIGHT) return DirToVec3(UP) + DirToVec3(RIGHT);
-        if (dir == UP_LEFT) return DirToVec3(UP) + DirToVec3(LEFT);
-        if (dir == DOWN_RIGHT) return DirToVec3(DOWN) + DirToVec3(RIGHT);
-        if (dir == DOWN_LEFT) return DirToVec3(DOWN) + DirToVec3(LEFT);
+        if (dir == UP_RIGHT) return DirToVec3(UP, l) + DirToVec3(RIGHT, l);
+        if (dir == UP_LEFT) return DirToVec3(UP, l) + DirToVec3(LEFT, l);
+        if (dir == DOWN_RIGHT) return DirToVec3(DOWN, l) + DirToVec3(RIGHT, l);
+        if (dir == DOWN_LEFT) return DirToVec3(DOWN, l) + DirToVec3(LEFT, l);
         return Vector3.zero;
     }
 

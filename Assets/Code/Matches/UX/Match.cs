@@ -160,7 +160,7 @@ namespace Matches.UX {
         }
 
         private static void PrintReceivedMessage(SignalFromHost.Request request) {
-            Debug.Log("Client received: \"" + Util.ToTitleCase(request.ToString()) + "\"");
+            // Debug.Log("Client received: \"" + Util.ToTitleCase(request.ToString()) + "\"");
         }
 
         private void Update() {

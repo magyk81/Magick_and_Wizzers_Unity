@@ -101,7 +101,7 @@ namespace Matches {
                 if (!overlap) Debug.Log("oldPos: " + oldPos.Pos + ", newPos: " + newPos.Pos);
             }
 
-            if (!overlap) {
+            if (!overlap && mPos != newPos) {
                 mPos = newPos;
                 outcomes.Add(new SignalMovePiece(this));
             } else mPos = oldPos;
@@ -120,8 +120,8 @@ namespace Matches {
                         }
                     } else {
                         // New tile is within range of the target waypoint tile.
-                        if (overlap && IsWithinRange((mWaypoints[0] as WaypointTile).Tile, MOVE_ON_WITHIN_RANGE)
-                            || IsWithinRange((mWaypoints[0] as WaypointTile).Tile, 1)) {
+                        if ((overlap && IsWithinRange((mWaypoints[0] as WaypointTile).Tile, MOVE_ON_WITHIN_RANGE))
+                            || IsWithinRange((mWaypoints[0] as WaypointTile).Tile, 0)) {
 
                             RemoveWaypoint(0);
                             targetPosUpdated = true;
@@ -309,8 +309,8 @@ namespace Matches {
                 } else return false;
             } else {
                 if (IsWithinRange((waypoint as WaypointPiece).Piece.Pos, 0)) {
-                    // Resolve it.
                     Debug.Log("Resolving waypoint: " + (waypoint as WaypointPiece).Piece.mName);
+                    // Resolve it.
                 } else return false;
             }
             return true;

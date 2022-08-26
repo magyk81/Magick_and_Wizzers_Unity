@@ -21,7 +21,7 @@ namespace Network.SignalsFromHost {
             Position = Coord._(intMessageCut[1], intMessageCut[2]);
             Size = (Piece.Size) intMessageCut[3];
             DirNext = intMessageCut[4];
-            Lerp = ((float) intMessageCut[5]) / PiecePos.LERP_MAX;
+            Lerp = ((float) intMessageCut[5]) / PiecePos.GetLerpMax(DirNext);
         }
 
         /// <remarks>
