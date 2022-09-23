@@ -2,10 +2,11 @@ using UnityEngine;
 
 namespace Matches {
     public struct PiecePos {
-        private const int LERP_MAX = 500, LERP_MAX_DIAG = (int) (LERP_MAX * 1.414F);
+        private const int LERP_MAX = 1000, LERP_MAX_DIAG = (int) (LERP_MAX * 1.414F);
 
         private readonly Coord mPrev, mNext, mPos, mPrevBound, mNextBound, mBound;
         private readonly int mDirNext, mLerpDist, mSize, mBoardSize;
+        private readonly bool mHalfway;
 
         public Coord Pos { get => mPos; }
         public Coord Bound { get => mBound; }
@@ -19,7 +20,8 @@ namespace Matches {
         private PiecePos(Coord prev, int size, int boardSize, int dirNext = -1, int lerpDist = 0) {
             mPrev = prev.ToBounds(boardSize);
             mNext = mPrev.Dir(dirNext).ToBounds(boardSize);
-            mPos = (lerpDist < GetLerpMax(dirNext) / 2) ? mPrev : mNext;
+            mHalfway = lerpDist >= GetLerpMax(dirNext) / 2;
+            mPos = !mHalfway ? mPrev : mNext;
             mDirNext = dirNext;
             mLerpDist = lerpDist;
 
@@ -39,11 +41,10 @@ namespace Matches {
                 return _(mPrev, mSize, mBoardSize);
             }
 
-            int lerpMax = GetLerpMax(dirLater);
-
-            // dirLater did not change so continue in the same direction.
+            // dirLater did not change, so continue in the same direction.
             if (dirLater == mDirNext) {
                 int newLerpDist = speed + mLerpDist;
+                int lerpMax = GetLerpMax(dirLater);
                 if (newLerpDist >= lerpMax) {
                     completedTravel = true; Debug.Log("claimed new tile");
                     return new PiecePos(
@@ -57,10 +58,46 @@ namespace Matches {
 
                 completedTravel = false;
                 return new PiecePos(mPrev, mSize, mBoardSize, dirLater, newLerpDist);
+
+            // dirLater changed while not stationary.
+            } else if (mLerpDist > 0) {
+                int lerpMax = GetLerpMax(mDirNext);
+                // Made it half-way, so continue in the same direction.
+                if (mHalfway) {
+                    int newLerpDist = speed + mLerpDist;
+                    if (newLerpDist >= lerpMax) {
+                        completedTravel = true; Debug.Log("claimed new tile");
+                        return new PiecePos(
+                            mNext.ToBounds(mBoardSize),
+                            mSize,
+                            mBoardSize,
+                            mDirNext,
+                            Mathf.Clamp(newLerpDist - lerpMax, 0, lerpMax - 1)
+                        );
+                    }
+
+                    completedTravel = false;
+                    return new PiecePos(mPrev, mSize, mBoardSize, mDirNext, newLerpDist);
+
+                // Did not make it half-way, so go in the reverse direction.
+                } else {
+                    int newLerpDist = mLerpDist - speed;
+                    if (newLerpDist <= 0) {
+                        completedTravel = true; Debug.Log("back at old tile");
+                        return new PiecePos(
+                            mPrev,
+                            mSize,
+                            mBoardSize
+                        );
+                    }
+
+                    completedTravel = false;
+                    return new PiecePos(mPrev, mSize, mBoardSize, mDirNext, newLerpDist);
+                }
+                
             }
 
-            // dirLater changed, so start from mLerpDist 0.
-            Debug.Log("dirLater changed from " + Util.DirToString(mDirNext) + " to " + Util.DirToString(dirLater));
+            // dirLater changed while stationary, so start from mLerpDist 0.
             completedTravel = false;
             return new PiecePos(mPrev, mSize, mBoardSize, dirLater, speed);
         }
